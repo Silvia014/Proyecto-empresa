@@ -402,11 +402,14 @@ function setLanguage(lang) {
 }
 const selector = document.getElementById("language-selector");
 
+const idiomaGuardado = localStorage.getItem("language") || "es";
+
 if (selector) {
+  selector.value = idiomaGuardado;
+
   selector.addEventListener("change", (e) => {
     setLanguage(e.target.value);
   });
 }
 
-setLanguage("es");
-
+setLanguage(idiomaGuardado);

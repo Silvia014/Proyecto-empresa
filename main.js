@@ -76,22 +76,6 @@ function setupScrollReveal() {
   elements.forEach((el) => observer.observe(el));
 }
 
-document.getElementById("lang-es")?.addEventListener("click", () => setLanguage("es"));
-document.getElementById("lang-en")?.addEventListener("click", () => setLanguage("en"));
-
-const idiomaGuardado = localStorage.getItem("language") || "es";
-setLanguage(idiomaGuardado);
-
-const selector = document.getElementById("language-selector");
-
-if (selector) {
-  selector.value = idiomaGuardado;
-
-  selector.addEventListener("change", (e) => {
-    setLanguage(e.target.value);
-  });
-}
-
 // if (btnEs) {
 //   btnEs.addEventListener("click", () => setLanguage("es"));
 // }
@@ -103,3 +87,25 @@ if (selector) {
 // if (typeof setLanguage === "function") {
 //   setLanguage("es");
 // }
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupMobileMenu();
+  setCurrentYear();
+  setupScrollReveal();
+
+  const idiomaGuardado = localStorage.getItem("language") || "es";
+
+  if (typeof setLanguage === "function") {
+    setLanguage(idiomaGuardado);
+  }
+
+  const selector = document.getElementById("language-selector");
+
+  if (selector) {
+    selector.value = idiomaGuardado;
+
+    selector.addEventListener("change", (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+});
