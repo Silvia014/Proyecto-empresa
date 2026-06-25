@@ -2,3 +2,12 @@
 <p>La empresa que he seleccionado como reto para solucionar sus diferentes problemas tecnológicos es Brasaland. El principal motivo es por que la dificultad de su gestión por parte de varios deparatamentos se solucionaría facilmente con un gestor centralizado por usuarios que englobe la app dinámica, una web actualizada, un CRM lo cual pueda registrar un club de fidelización, así como herramientas que funcionen en tiempo real para ambos paises en los cuales están basados los locales físicos.</p>
 <p>Los departamentos que personalmente parecen contar con un mayor reto son la API que cubra la información de todos los locales en tiempo real así como un portal como Holded donde puedan internamente trabajar desde RRHH.</p>
 <p>Finalmente relacionado con una integración IA es el asistente dentro del dashboard para la CEO con la finalidad de crear los informes y automatizar su envío cuando fuera necesario, tanto en USD como en COP.</p>
+<h2>Mi idea de Agente de IA</h2>
+<p>Teniendo en cuenta los problemas presentado por la empresa el agente de IA deberá responder lo siguiente: </p>
+<ul>
+  <li>Dentro del dashboard un asistente que realice los informes en tiempo real y se active un trigger que los envie cada lunes a las 7 de la mañana a cada uno de los departamentos involucrados.</li>
+  <li>Validar datos en la API antes de actualizar detectando errores y actualizando documentos que puedan entrarse en la plataforma, lectura y extracción de datos, llamando a la API para actualizar.</li>
+  <li>Traducción de las recentas en tiempo real si se llevan a cabo actualizaciones manuales.</li>
+  <li>Sugerencia de productos relevantes para el restaurante dependiendo el comportamiento de la demanda, dentro del departamento de marketing: estudia el histórico y la plaza para aplicar sugerencias que posteriormente deben ser aceptadas por el humano, como la función de un RMS pero en lugar de sugerir precios sugiere técnicas de marketing.</li>
+  <li>Aviso en la plataforma de conteo de proveedores y compras según el establecido por el humano: si hace un mes que se pidió ketchup, recordarlo. Así como según la salida de productos, entiendo que esto se irá actualizando haciendo un conteo de inventario cada domingo, por ejemplo, o el día más libre de la semana para cocina, para que la IA pueda avisar qué faltará, qué es urgente, y muchas otras sugerencias como si estamos en budget qué proveedores con mejor calidad ofrecen mejor deal.</li>
+</ul>
