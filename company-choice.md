@@ -1,0 +1,4 @@
+<h1>Elección de empresa</h1>
+<p>La empresa que he seleccionado como reto para solucionar sus diferentes problemas tecnológicos es Brasaland. El principal motivo es por que la dificultad de su gestión por parte de varios deparatamentos se solucionaría facilmente con un gestor centralizado por usuarios que englobe la app dinámica, una web actualizada, un CRM lo cual pueda registrar un club de fidelización, así como herramientas que funcionen en tiempo real para ambos paises en los cuales están basados los locales físicos.</p>
+<p>Los departamentos que personalmente parecen contar con un mayor reto son la API que cubra la información de todos los locales en tiempo real así como un portal como Holded donde puedan internamente trabajar desde RRHH.</p>
+<p>Finalmente relacionado con una integración IA es el asistente dentro del dashboard para la CEO con la finalidad de crear los informes y automatizar su envío cuando fuera necesario, tanto en USD como en COP.</p>
