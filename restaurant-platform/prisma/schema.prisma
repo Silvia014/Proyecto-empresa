@@ -1,0 +1,233 @@
+// ==========================================================
+// SCHEMA CENTRAL - Plataforma de gestión de restaurantes
+// Locales, usuarios/roles/permisos, inventario, pedidos/clientes,
+// RRHH, recetas de cocina y ventas para BI.
+// ==========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------
+// LOCALES
+// -----------------------------
+model Location {
+  id        String   @id @default(uuid())
+  name      String
+  city      String
+  country   String
+  currency  String   // moneda "nativa" del local, ej. USD o COP
+  createdAt DateTime @default(now())
+
+  users        User[]
+  suppliers    Supplier[]
+  inventory    InventoryItem[]
+  purchases    Purchase[]
+  orders       Order[]
+  recipes      Recipe[]
+  shifts       Shift[]
+  timeOffs     TimeOff[]
+  serviceStats ServiceStat[]
+}
+
+// -----------------------------
+// USUARIOS Y ROLES / PERMISOS (RBAC)
+// -----------------------------
+enum ModuleName {
+  INVENTORY // inventario, compras, proveedores
+  CRM       // pedidos y clientes
+  HR        // RRHH
+  KITCHEN   // recetas y normas
+  BI        // dashboard de negocio
+  ADMIN     // gestión de usuarios/roles
+}
+
+enum PermissionAction {
+  READ
+  WRITE
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  key         String   @unique // SUPERADMIN, ADMIN, RRHH, JEFE_ECONOMATO, DIRECTOR_COCINA, RESPONSABLE_FORMACION
+  name        String
+  description String?
+
+  users       User[]
+  permissions RolePermission[]
+}
+
+model RolePermission {
+  id       String            @id @default(uuid())
+  roleId   String
+  module   ModuleName
+  action   PermissionAction
+  // scope: null = todos los locales, o un locationId concreto si el permiso está limitado a un local
+  role     Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, module, action])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  active       Boolean  @default(true)
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  // null = acceso a todos los locales (típico de superadmin/admin/CTO/CEO)
+  locationId   String?
+  location     Location? @relation(fields: [locationId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+// -----------------------------
+// INVENTARIO / COMPRAS / PROVEEDORES
+// -----------------------------
+model Supplier {
+  id         String   @id @default(uuid())
+  name       String
+  contact    String?
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  items      InventoryItem[]
+  purchases  Purchase[]
+}
+
+model InventoryItem {
+  id           String   @id @default(uuid())
+  name         String
+  unit         String   // kg, l, unidad...
+  currentStock Float    @default(0)
+  minStock     Float    @default(0) // umbral para disparar alerta
+  price        Float
+  currency     String   @default("USD")
+  supplierId   String
+  supplier     Supplier @relation(fields: [supplierId], references: [id])
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id])
+  updatedAt    DateTime @updatedAt
+
+  @@index([locationId])
+}
+
+model Purchase {
+  id         String   @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  itemName   String
+  quantity   Float
+  unitPrice  Float
+  currency   String
+  createdAt  DateTime @default(now())
+}
+
+// -----------------------------
+// PEDIDOS / CLIENTES (CRM + IA de sugerencias)
+// -----------------------------
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  preferences String?  // texto libre / JSON con preferencias detectadas
+  createdAt   DateTime @default(now())
+
+  orders Order[]
+}
+
+model Order {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  items      OrderItem[]
+  totalUsd   Float
+  totalCop   Float?
+  createdAt  DateTime @default(now())
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dishName  String
+  quantity  Int
+  unitPrice Float
+}
+
+// -----------------------------
+// RRHH
+// -----------------------------
+model Employee {
+  id          String   @id @default(uuid())
+  name        String
+  position    String
+  email       String   @unique
+  active      Boolean  @default(true)
+
+  timeOffs TimeOff[]
+  shifts   Shift[]
+}
+
+model TimeOff {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  type       String   // vacaciones, ausencia, baja...
+  startDate  DateTime
+  endDate    DateTime
+  approved   Boolean  @default(false)
+}
+
+model Shift {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+  startTime  DateTime
+  endTime    DateTime
+}
+
+// KPIs operativos: no-shows, rotación de mesas, tiempos de comida
+model ServiceStat {
+  id               String   @id @default(uuid())
+  locationId       String
+  location         Location @relation(fields: [locationId], references: [id])
+  date             DateTime
+  noShows          Int      @default(0)
+  reservations     Int      @default(0)
+  tableTurnoverMin Float?   // minutos promedio de rotación de mesa
+  avgMealTimeMin   Float?   // minutos promedio de tiempo de comida
+}
+
+// -----------------------------
+// COCINA: recetas y normas (bilingüe, sync en tiempo real entre locales)
+// -----------------------------
+model Recipe {
+  id           String   @id @default(uuid())
+  nameEs       String
+  nameEn       String
+  instructionsEs String
+  instructionsEn String
+  rulesEs      String?  // normas del restaurante asociadas
+  rulesEn      String?
+  // Si es null, la receta/norma es global y aplica a todos los locales;
+  // si tiene locationId, es específica de ese local.
+  locationId   String?
+  location     Location? @relation(fields: [locationId], references: [id])
+  updatedAt    DateTime @updatedAt
+}
