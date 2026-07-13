@@ -86,7 +86,7 @@ Responde SOLO con un JSON de la forma: {"suggestions": [{"dish": "...", "reason"
       }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as { content?: { text?: string }[] };
     const text = data.content?.[0]?.text ?? "{}";
     const clean = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);

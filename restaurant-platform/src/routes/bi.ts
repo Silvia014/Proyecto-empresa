@@ -1,7 +1,11 @@
+
+// Este archivo define las rutas de Business Intelligence (BI) para la API central, incluyendo un resumen de ventas por ubicación y rango de fechas.
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 import { requirePermission } from "../middleware/permissions";
+
+// Define el router de Express para las rutas de BI. Se requiere autenticación y permisos específicos para acceder a estas rutas.
 
 const router = Router();
 router.use(requireAuth);

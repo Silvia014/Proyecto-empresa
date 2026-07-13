@@ -1,3 +1,5 @@
+// Este archivo define las rutas de autenticación para la API central, incluyendo login y obtener información del usuario autenticado.
+
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -5,12 +7,15 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 
+// Define el esquema de validación para el login usando Zod. Se espera un email válido y una contraseña no vacía.
 const router = Router();
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
+
+// Define la ruta POST /login para autenticar a un usuario. Valida el cuerpo de la petición, verifica las credenciales y genera un token JWT si son correctas.
 
 router.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
@@ -72,5 +77,7 @@ router.get("/me", requireAuth, async (req, res) => {
     permissions: user.role.permissions.map((p) => `${p.module}:${p.action}`),
   });
 });
+
+// Exporta el router para que pueda ser usado en el archivo principal de la aplicación (index.ts) y así integrar las rutas de autenticación en la API central.
 
 export default router;
