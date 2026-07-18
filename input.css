@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream text-walnut font-body;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  :focus-visible {
+    outline: 3px solid theme("colors.brass");
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Enlace "saltar al contenido" para usuarios de teclado/lectores de pantalla */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50
+      focus:bg-wine focus:text-cream focus:px-4 focus:py-2 focus:rounded-md focus:font-body;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-wine px-6 py-3
+      font-body font-semibold text-cream transition hover:bg-wine/90
+      focus-visible:ring-2 focus-visible:ring-brass;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-brass/60 px-6 py-3
+      font-body font-semibold text-walnut transition hover:bg-brass/10
+      focus-visible:ring-2 focus-visible:ring-brass;
+  }
+
+  .section-eyebrow {
+    @apply font-body text-sm font-semibold uppercase tracking-[0.2em] text-brass;
+  }
+
+  .nav-link {
+    @apply font-body text-sm font-medium text-walnut/80 transition hover:text-wine;
+  }
+
+  .field-label {
+    @apply block font-body text-sm font-semibold text-walnut mb-1.5;
+  }
+
+  .field-input {
+    @apply w-full rounded-md border border-walnut/20 bg-white px-4 py-2.5 font-body text-walnut
+      placeholder:text-walnut/40 focus:border-wine focus:outline-none focus-visible:ring-2 focus-visible:ring-brass;
+  }
+
+  .field-error {
+    @apply mt-1.5 text-sm font-medium text-wine;
+  }
+}
