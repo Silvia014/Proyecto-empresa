@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
-    "watch:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch"
-  },
+  "build:css": "tailwindcss -i ./input.css -o ./styles.css --minify",
+  "watch:css": "tailwindcss -i ./input.css -o ./styles.css --watch"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
