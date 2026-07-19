@@ -38,102 +38,54 @@
     </div>
 
     <!-- Confirmación de envío -->
-    <div
-  id="confirmacion"
-  role="status"
-  aria-live="polite"
-  class="mt-8 hidden rounded-2xl border border-sage/30 bg-sage/10 p-10 text-center"
->
-  <div class="mb-6 text-6xl"></div>
-
-  <h2 class="text-3xl font-semibold text-sage">
-    ¡Gracias, <span id="nombre-cliente"></span>!
-  </h2>
-
-  <p class="mt-4 text-lg text-walnut/80">
-    Hemos recibido correctamente tu solicitud de reserva.
-  </p>
-
-  <p class="mt-2 text-walnut/70">
-    Nuestro equipo comprobará la disponibilidad y recibirás una confirmación en tu correo electrónico lo antes posible.
-  </p>
-
-  <div class="mt-8 rounded-xl bg-white/70 p-6 text-left shadow-sm">
-    <h3 class="mb-4 font-semibold text-wine">
-      Resumen de tu reserva
-    </h3>
-
-    <dl class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <dt>Nombre</dt>
-        <dd id="res-nombre"></dd>
-      </div>
-
-      <div class="flex justify-between">
-        <dt>Fecha</dt>
-        <dd id="res-fecha"></dd>
-      </div>
-
-      <div class="flex justify-between">
-        <dt>Hora</dt>
-        <dd id="res-hora"></dd>
-      </div>
-
-      <div class="flex justify-between">
-        <dt>Personas</dt>
-        <dd id="res-personas"></dd>
-      </div>
-    </dl>
-  </div>
-
-  <a
-    href="index.html"
-    class="btn-primary mt-8 inline-flex"
-  >
-    Volver al inicio
-  </a>
-</div>
+    <div id="confirmacion" role="status" aria-live="polite" class="mt-6 hidden rounded-md border border-sage/30 bg-sage/10 p-5">
+      <p class="font-semibold text-sage">¡Reserva recibida!</p>
+      <p class="mt-1 text-sm text-walnut/80">
+        Te hemos enviado una copia de la confirmación a tu email. Nuestro equipo revisará la disponibilidad
+        y te contactará si hubiera cualquier cambio.
+      </p>
+    </div>
 
     <form id="form-reserva" class="mt-8 grid gap-6 sm:grid-cols-2" novalidate>
       <div>
         <label for="nombre" class="field-label">Nombre <span aria-hidden="true">*</span></label>
-        <input type="text" id="nombre" name="nombre" class="field-input" autocomplete="given-name" aria-required="true" aria-describedby="error-nombre" />
+        <input type="text" id="nombre" name="nombre" class="field-input" autocomplete="given-name" required aria-required="true" aria-describedby="error-nombre" />
         <p id="error-nombre" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="apellidos" class="field-label">Apellidos <span aria-hidden="true">*</span></label>
-        <input type="text" id="apellidos" name="apellidos" class="field-input" autocomplete="family-name" aria-required="true" aria-describedby="error-apellidos" />
+        <input type="text" id="apellidos" name="apellidos" class="field-input" autocomplete="family-name" required aria-required="true" aria-describedby="error-apellidos" />
         <p id="error-apellidos" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="email" class="field-label">Email <span aria-hidden="true">*</span></label>
-        <input type="email" id="email" name="email" class="field-input" autocomplete="email" aria-required="true" aria-describedby="error-email" />
+        <input type="email" id="email" name="email" class="field-input" autocomplete="email" required aria-required="true" aria-describedby="error-email" />
         <p id="error-email" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="telefono" class="field-label">Teléfono <span aria-hidden="true">*</span></label>
-        <input type="tel" id="telefono" name="telefono" class="field-input" autocomplete="tel" placeholder="600 000 000" aria-required="true" aria-describedby="error-telefono" />
+        <input type="tel" id="telefono" name="telefono" class="field-input" autocomplete="tel" placeholder="600 000 000" required aria-required="true" aria-describedby="error-telefono" />
         <p id="error-telefono" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="personas" class="field-label">Número de personas <span aria-hidden="true">*</span></label>
-        <input type="number" id="personas" name="personas" class="field-input" min="1" max="20" step="1" aria-required="true" aria-describedby="error-personas" />
+        <input type="number" id="personas" name="personas" class="field-input" min="1" max="20" step="1" required aria-required="true" aria-describedby="error-personas" />
         <p id="error-personas" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="dia" class="field-label">Día de la reserva <span aria-hidden="true">*</span></label>
-        <input type="date" id="dia" name="dia" class="field-input" aria-required="true" aria-describedby="error-dia" />
+        <input type="date" id="dia" name="dia" class="field-input" required aria-required="true" aria-describedby="error-dia" />
         <p id="error-dia" class="field-error hidden"></p>
       </div>
 
       <div>
         <label for="hora" class="field-label">Hora de la reserva <span aria-hidden="true">*</span></label>
-        <input type="time" id="hora" name="hora" class="field-input" aria-required="true" aria-describedby="error-hora" />
+        <input type="time" id="hora" name="hora" class="field-input" required aria-required="true" aria-describedby="error-hora" />
         <p id="error-hora" class="field-error hidden"></p>
         <p class="mt-1 text-xs text-walnut/50">Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.</p>
       </div>
@@ -143,9 +95,12 @@
         <textarea id="notas" name="notas" rows="3" class="field-input"></textarea>
       </div>
 
-      <div class="sm:col-span-2 mt-2">
-        <button type="submit" id="btn-enviar" class="btn-primary w-full sm:w-auto">
+      <div class="sm:col-span-2 mt-2 flex flex-wrap gap-3">
+        <button type="submit" id="btn-enviar" class="btn-primary">
           Confirmar reserva
+        </button>
+        <button type="button" id="btn-limpiar" class="btn-secondary">
+          Limpiar campos
         </button>
       </div>
     </form>
@@ -158,5 +113,6 @@
   </footer>
 
   <script src="main.js" defer></script>
+  <script src="validation.js" defer></script>
 </body>
 </html>
