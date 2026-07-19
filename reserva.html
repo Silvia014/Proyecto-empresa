@@ -38,13 +38,61 @@
     </div>
 
     <!-- Confirmación de envío -->
-    <div id="confirmacion" role="status" aria-live="polite" class="mt-6 hidden rounded-md border border-sage/30 bg-sage/10 p-5">
-      <p class="font-semibold text-sage">¡Reserva recibida!</p>
-      <p class="mt-1 text-sm text-walnut/80">
-        Te hemos enviado una copia de la confirmación a tu email. Nuestro equipo revisará la disponibilidad
-        y te contactará si hubiera cualquier cambio.
-      </p>
-    </div>
+    <div
+  id="confirmacion"
+  role="status"
+  aria-live="polite"
+  class="mt-8 hidden rounded-2xl border border-sage/30 bg-sage/10 p-10 text-center"
+>
+  <div class="mb-6 text-6xl"></div>
+
+  <h2 class="text-3xl font-semibold text-sage">
+    ¡Gracias, <span id="nombre-cliente"></span>!
+  </h2>
+
+  <p class="mt-4 text-lg text-walnut/80">
+    Hemos recibido correctamente tu solicitud de reserva.
+  </p>
+
+  <p class="mt-2 text-walnut/70">
+    Nuestro equipo comprobará la disponibilidad y recibirás una confirmación en tu correo electrónico lo antes posible.
+  </p>
+
+  <div class="mt-8 rounded-xl bg-white/70 p-6 text-left shadow-sm">
+    <h3 class="mb-4 font-semibold text-wine">
+      Resumen de tu reserva
+    </h3>
+
+    <dl class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <dt>Nombre</dt>
+        <dd id="res-nombre"></dd>
+      </div>
+
+      <div class="flex justify-between">
+        <dt>Fecha</dt>
+        <dd id="res-fecha"></dd>
+      </div>
+
+      <div class="flex justify-between">
+        <dt>Hora</dt>
+        <dd id="res-hora"></dd>
+      </div>
+
+      <div class="flex justify-between">
+        <dt>Personas</dt>
+        <dd id="res-personas"></dd>
+      </div>
+    </dl>
+  </div>
+
+  <a
+    href="index.html"
+    class="btn-primary mt-8 inline-flex"
+  >
+    Volver al inicio
+  </a>
+</div>
 
     <form id="form-reserva" class="mt-8 grid gap-6 sm:grid-cols-2" novalidate>
       <div>

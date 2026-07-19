@@ -137,8 +137,26 @@ function setupForm() {
 
     try {
       await enviarReserva(datos);
-      confirmacion.classList.remove("hidden");
-      confirmacion.scrollIntoView({ behavior: "smooth", block: "center" });
+
+// Rellenar el resumen
+document.getElementById("nombre-cliente").textContent = datos.nombre;
+document.getElementById("res-nombre").textContent =
+  `${datos.nombre} ${datos.apellidos}`;
+document.getElementById("res-fecha").textContent = datos.dia;
+document.getElementById("res-hora").textContent = datos.hora;
+document.getElementById("res-personas").textContent =
+  `${datos.personas} persona${datos.personas > 1 ? "s" : ""}`;
+
+// Ocultar el formulario
+form.classList.add("hidden");
+
+// Mostrar el mensaje
+confirmacion.classList.remove("hidden");
+confirmacion.scrollIntoView({
+  behavior: "smooth",
+  block: "center",
+});
+
       form.reset();
     } catch (err) {
       mostrarResumenErrores(
