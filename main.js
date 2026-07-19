@@ -5,6 +5,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   setupMobileMenu();
   setCurrentYear();
+  setupScrollReveal(); 
 });
 
 function setupMobileMenu() {
@@ -55,4 +56,19 @@ function setupMobileMenu() {
 function setCurrentYear() {
   const el = document.getElementById("anio-actual");
   if (el) el.textContent = String(new Date().getFullYear());
+}
+function setupScrollReveal() {
+  const elements = document.querySelectorAll(".fade-up");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+      }
+    });
+  }, {
+    threshold: 0.15
+  });
+
+  elements.forEach((el) => observer.observe(el));
 }

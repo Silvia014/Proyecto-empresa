@@ -58,3 +58,13 @@
     @apply mt-1.5 text-sm font-medium text-wine;
   }
 }
+.fade-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
