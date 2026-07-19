@@ -76,3 +76,22 @@ modificar es la función `enviarReserva()` al final de ese archivo:
    nuevo tipo `/api/reservas`), y desde ahí el backend dispara el email al
    cliente y la notificación interna (con Nodemailer, Resend, Postmark...).
 
+
+Solución a los pedidos online:
+
+Web pública (Brasaland)
+   └─ botón "Pedir online" → App de pedido (cliente)
+                                   │
+                                   ▼
+                    API CENTRAL 
+                    ── Menú por local
+                    ── Pedidos (ya existe el modelo Order)
+                    ── Estado del pedido en tiempo real (WebSockets,
+                       igual que con las recetas de cocina)
+                                   │
+                    ┌──────────────┴──────────────┐
+                    ▼                              ▼
+            App de POS (empleados)          Dashboard BI (ya existe)
+            Colombia y EE.UU.                ve ventas de ambos
+            ven los pedidos entrantes         locales en vivo
+            de su propio local en vivo
