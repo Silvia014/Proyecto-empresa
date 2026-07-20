@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cream text-walnut font-body;
+}
+
+h1, h2, h3, h4 {
+  @apply font-display;
+}
+
+:focus-visible {
+  outline: 3px solid theme("colors.brass");
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-md bg-wine px-6 py-3
+    font-body font-semibold text-cream transition hover:bg-wine/90 disabled:opacity-50
+    disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-brass;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-brass/60 px-6 py-3
+    font-body font-semibold text-walnut transition hover:bg-brass/10
+    focus-visible:ring-2 focus-visible:ring-brass;
+}
+
+.field-label {
+  @apply block font-body text-sm font-semibold text-walnut mb-1.5;
+}
+
+.field-input {
+  @apply w-full rounded-md border border-walnut/20 bg-white px-4 py-2.5 font-body text-walnut
+    placeholder:text-walnut/40 focus:border-wine focus:outline-none focus-visible:ring-2 focus-visible:ring-brass;
+}
+
+.field-error {
+  @apply mt-1.5 text-sm font-medium text-wine;
+}

@@ -4,11 +4,9 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const ALL_MODULES: ModuleName[] = ["INVENTORY", "CRM", "HR", "KITCHEN", "BI", "ADMIN"];
+const ALL_MODULES: ModuleName[] = ["INVENTORY", "CRM", "HR", "KITCHEN", "BI", "ADMIN", "ORDERS"];
 const ALL_ACTIONS: PermissionAction[] = ["READ", "WRITE"];
 
-// Matriz de permisos por rol: qué módulos + qué acciones.
-// Esto es lo único que hay que tocar para cambiar quién ve qué.
 const ROLE_DEFINITIONS: {
   key: string;
   name: string;
@@ -48,11 +46,13 @@ const ROLE_DEFINITIONS: {
   {
     key: "DIRECTOR_COCINA",
     name: "Director de cocina",
-    description: "Recetas y normas del restaurante, lectura de inventario para consulta",
+    description: "Recetas y normas del restaurante, lectura de inventario, y gestión de pedidos entrantes (cambia el estado a en preparación/listo)",
     permissions: [
       { module: "KITCHEN", action: "READ" },
       { module: "KITCHEN", action: "WRITE" },
       { module: "INVENTORY", action: "READ" },
+      { module: "ORDERS", action: "READ" },
+      { module: "ORDERS", action: "WRITE" },
     ],
   },
   {
@@ -62,6 +62,15 @@ const ROLE_DEFINITIONS: {
     permissions: [
       { module: "KITCHEN", action: "READ" },
       { module: "HR", action: "READ" },
+    ],
+  },
+  {
+    key: "POS_SALA",
+    name: "Personal de sala / POS",
+    description: "Ve y gestiona los pedidos entrantes (online y de mostrador) en tiempo real",
+    permissions: [
+      { module: "ORDERS", action: "READ" },
+      { module: "ORDERS", action: "WRITE" },
     ],
   },
 ];
@@ -75,19 +84,50 @@ async function main() {
       create: { key: roleDef.key, name: roleDef.name, description: roleDef.description },
     });
 
-    // Reset de permisos para que el seed sea idempotente
     await prisma.rolePermission.deleteMany({ where: { roleId: role.id } });
     await prisma.rolePermission.createMany({
       data: roleDef.permissions.map((p) => ({ roleId: role.id, module: p.module, action: p.action })),
     });
   }
 
-  console.log("Creando locales de ejemplo...");
-  const existingLoc = await prisma.location.findFirst({ where: { name: "Restaurante Sevilla" } });
-  if (!existingLoc) {
-    await prisma.location.create({
-      data: { name: "Restaurante Sevilla", city: "Sevilla", country: "España", currency: "USD" },
-    });
+  console.log("Creando locales...");
+  const locationsSeed = [
+    { name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP" },
+    { name: "Brasaland Miami", city: "Miami", country: "Estados Unidos", currency: "USD" },
+  ];
+  for (const loc of locationsSeed) {
+    const existing = await prisma.location.findFirst({ where: { name: loc.name } });
+    if (!existing) {
+      await prisma.location.create({ data: loc });
+    }
+  }
+
+  console.log("Creando carta de ejemplo...");
+  const bogota = await prisma.location.findFirst({ where: { name: "Brasaland Bogotá" } });
+  const miami = await prisma.location.findFirst({ where: { name: "Brasaland Miami" } });
+
+  const menuSeed = [
+    ...(bogota
+      ? [
+          { name: "Bandeja Brasaland", category: "Principales", price: 45000, currency: "COP", locationId: bogota.id, description: "Carne asada, arroz, frijoles, aguacate y plátano." },
+          { name: "Arepa de choclo", category: "Entrantes", price: 12000, currency: "COP", locationId: bogota.id, description: "Con queso campesino." },
+          { name: "Limonada de coco", category: "Bebidas", price: 9000, currency: "COP", locationId: bogota.id, description: null },
+        ]
+      : []),
+    ...(miami
+      ? [
+          { name: "Brasaland Steak", category: "Principales", price: 28, currency: "USD", locationId: miami.id, description: "Grilled churrasco, chimichurri, yuca fries." },
+          { name: "Yuca Fries", category: "Entrantes", price: 9, currency: "USD", locationId: miami.id, description: "With garlic aioli." },
+          { name: "Passionfruit Iced Tea", category: "Bebidas", price: 6, currency: "USD", locationId: miami.id, description: null },
+        ]
+      : []),
+  ];
+
+  for (const item of menuSeed) {
+    const existing = await prisma.menuItem.findFirst({ where: { name: item.name, locationId: item.locationId } });
+    if (!existing) {
+      await prisma.menuItem.create({ data: item });
+    }
   }
 
   console.log("Creando usuario superadmin...");
@@ -104,7 +144,7 @@ async function main() {
       name: "Superadmin",
       passwordHash,
       roleId: superadminRole.id,
-      locationId: null, // acceso global
+      locationId: null,
     },
   });
 

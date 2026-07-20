@@ -1,0 +1,71 @@
+:root {
+  --bg: #1c1b19;
+  --surface: #242220;
+  --surface-raised: #2c2a26;
+  --ticket: #f2e9d8;
+  --ticket-shadow: #d9cdb4;
+  --ink: #ede6d6;
+  --ink-dim: #a89e8c;
+  --accent: #b5622e;
+  --accent-bright: #d97f47;
+  --sage: #7c9070;
+  --alert: #c1443c;
+  --border: #3a3733;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  background-image: radial-gradient(circle at 20% -10%, #2a2723 0%, var(--bg) 55%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Foco visible siempre, incluso con teclado */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
