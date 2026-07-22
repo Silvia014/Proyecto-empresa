@@ -1,0 +1,43 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
+const auth_1 = __importDefault(require("./routes/auth"));
+const inventory_1 = __importDefault(require("./routes/inventory"));
+const crm_1 = __importDefault(require("./routes/crm"));
+const hr_1 = __importDefault(require("./routes/hr"));
+const bi_1 = __importDefault(require("./routes/bi"));
+const menu_1 = __importDefault(require("./routes/menu"));
+const kitchen_1 = require("./routes/kitchen");
+const ordering_1 = require("./routes/ordering");
+const orders_1 = require("./routes/orders");
+const webhooks_1 = require("./routes/webhooks");
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
+const server = http_1.default.createServer(app);
+const io = new socket_io_1.Server(server, { cors: { origin: "*" } });
+io.on("connection", (socket) => {
+    console.log(`Cliente conectado al canal en tiempo real: ${socket.id}`);
+});
+app.use("/api/webhooks", express_1.default.raw({ type: "application/json" }), (0, webhooks_1.webhooksRouter)(io));
+app.use(express_1.default.json());
+app.use("/api/auth", auth_1.default);
+app.use("/api/inventory", inventory_1.default);
+app.use("/api/crm", crm_1.default);
+app.use("/api/hr", hr_1.default);
+app.use("/api/kitchen", (0, kitchen_1.kitchenRouter)(io));
+app.use("/api/bi", bi_1.default);
+app.use("/api/menu", menu_1.default);
+app.use("/api/ordering", (0, ordering_1.orderingRouter)(io));
+app.use("/api/orders", (0, orders_1.ordersRouter)(io));
+app.get("/api/health", (_req, res) => res.json({ ok: true }));
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+    console.log(`API central escuchando en http://localhost:${PORT}`);
+});
