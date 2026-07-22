@@ -4,13 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "build:css": "tailwindcss -i ./input.css -o ./styles.css --minify",
-  "watch:css": "tailwindcss -i ./input.css -o ./styles.css --watch"
-},
+    "build:css": "tailwindcss -i ./input.css -o ./styles.css --minify",
+    "watch:css": "tailwindcss -i ./input.css -o ./styles.css --watch"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "tailwindcss": "^3.4.19"
+  },
+  "dependencies": {
+    "typescript": "^7.0.2"
   }
 }
