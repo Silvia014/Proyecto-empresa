@@ -75,3 +75,9 @@ function setupScrollReveal() {
 
   elements.forEach((el) => observer.observe(el));
 }
+
+
+document.getElementById("lang-es").addEventListener("click", () => setLanguage("es"));
+document.getElementById("lang-en").addEventListener("click", () => setLanguage("en"));
+
+setLanguage("es");

@@ -7,7 +7,6 @@
   <meta name="description" content="Brasaland: cocina de temporada en Colombia y Florida con el estándar de servicio de la hostelería de hotel boutique. Reserva tu mesa en menos de un minuto." />
   <meta name="keywords" content="restaurante Colombia, restaurante Florida, reservar mesa, cocina de temporada, restaurante boutique" />
   <link rel="canonical" href="https://www.brasaland.example/" />
-
   <!-- Open Graph / redes sociales -->
   <meta property="og:type" content="restaurant" />
   <meta property="og:title" content="Brasaland — Restaurante en Colombia y Florida" />
@@ -70,19 +69,24 @@
 
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+    <div class="flex items-center gap-2 ml-6">
+      <button id="lang-es" class="font-semibold text-wine">ES</button>
+      <span>|</span>
+    <button id="lang-en" class="text-walnut">EN</button>
+    </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="#inicio" class="font-display text-2xl font-semibold text-wine">
+      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> >
         Brasaland
       </a>
 
       <!-- Navegación de escritorio -->
       <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
-        <a href="#inicio" class="nav-link">Inicio</a>
-        <a href="#sobre-nosotros" class="nav-link">Qué hacemos</a>
-        <a href="#experiencia" class="nav-link">Nuestra experiencia</a>
-        <a href="#contacto" class="nav-link">Contacto</a>
-        <a href="reserva.html" class="btn-primary">Reservar mesa</a>
-        <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener">Pedir online</a>
+        <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+        <a href="#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+        <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+        <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener" data-i18n="nav.order">Pedir online</a>
       </nav>
 
       <!-- Botón de menú móvil -->
@@ -109,18 +113,37 @@
       aria-label="Navegación móvil"
       class="hidden flex-col gap-1 border-t border-walnut/10 bg-cream px-6 py-4 lg:hidden"
     >
-      <a href="#inicio" class="nav-link py-2">Inicio</a>
-      <a href="#sobre-nosotros" class="nav-link py-2">Qué hacemos</a>
-      <a href="#experiencia" class="nav-link py-2">Nuestra experiencia</a>
-      <a href="#contacto" class="nav-link py-2">Contacto</a>
-      <a href="reserva.html" class="btn-primary mt-2 w-full">Reservar mesa</a>
-      <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener">Pedir online</a>
+      <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
+
+<a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+Qué hacemos
+</a>
+
+<a href="#experiencia" class="nav-link" data-i18n="nav.experience">
+Nuestra experiencia
+</a>
+
+<a href="#contacto" class="nav-link" data-i18n="nav.contact">
+Contacto
+</a>
+
+<a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
+Reservar mesa
+</a>
+
+<a href="http://localhost:5174"
+   class="btn-secondary"
+   target="_blank"
+   rel="noopener"
+   data-i18n="nav.order">
+Pedir online
+</a>
     </nav>
   </header>
 
   <main id="contenido">
     <!-- ===================== HERO ===================== -->
-    <section id="inicio" class="fade-up relative overflow-hidden bg-walnut">
+    <section id="inicio" class="fade-up relative overflow-hidden bg-walnut" aria-label="Imagen de fondo de un restaurante con varias mesas y sillas vacías y un botellero de fondo con dos camareros preparando mesas">
       <div class="absolute inset-0 opacity-40" aria-hidden="true">
         <img
           src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=60"
@@ -130,27 +153,27 @@
         />
       </div>
       <div class="relative mx-auto max-w-7xl px-6 py-28 lg:px-8 lg:py-40">
-        <p class="section-eyebrow text-brass-bright">Restaurante en Colombia y Florida</p>
+        <p class="section-eyebrow text-brass-bright" data-i18n="hero.location">Restaurante en Colombia y Florida</p>
         <h1 class="mt-4 max-w-2xl font-display text-4xl font-semibold text-cream sm:text-5xl lg:text-6xl">
-          Una mesa con la cuidada hospitalidad de un gran hotel
+          <span data-i18n="hero.title">Una mesa con la cuidada hospitalidad de un gran hotel</span>
         </h1>
-        <p class="mt-6 max-w-xl text-lg leading-relaxed text-cream/85">
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-cream/85" data-i18n="hero.subtitle">
           En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de
           atención que aprendimos en la hostelería de hotel boutique: puntual, cálido y sin fricciones.
           Reservar te toma menos de un minuto.
         </p>
         <div class="mt-10 flex flex-wrap gap-4">
-          <a href="reserva.html" class="btn-primary">
+          <a href="reserva.html" class="btn-primary" data-i18n="hero.button">
             Reservar mesa
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25 21 12l-3.75 3.75M3 12h18" />
             </svg>
           </a>
-          <a href="#sobre-nosotros" class="btn-secondary border-cream/40 text-cream hover:bg-cream/10">
+          <a href="#sobre-nosotros" class="btn-secondary border-cream/40 text-cream hover:bg-cream/10" data-i18n="hero.button2">
             Conócenos
           </a>
           <a href="http://localhost:5174" class="btn-primary" target="_blank" rel="noopener">
-            Pedir online
+            <span data-i18n="hero.order">Pedir online</span>
           </a>
         </div>
       </div>
@@ -160,11 +183,11 @@
     <section id="sobre-nosotros" class="fade-up mx-auto max-w-7xl px-6 py-20 lg:px-8">
       <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
-          <p class="section-eyebrow">Qué hacemos</p>
-          <h2 class="mt-3 text-3xl font-semibold sm:text-4xl">
+          <p class="section-eyebrow" data-i18n="about.title">Qué hacemos</p>
+          <h2 class="mt-3 text-3xl font-semibold sm:text-4xl" data-i18n="about.subtitle">
             Cocina de temporada, servida sin errores
           </h2>
-          <p class="mt-5 leading-relaxed text-walnut/80">
+          <p class="mt-5 leading-relaxed text-walnut/80" data-i18n="about.description">
             Trabajamos directamente con productores locales para diseñar una carta que cambia con las
             estaciones. Pero lo que de verdad nos diferencia es cómo gestionamos tu visita: control de
             aforo real, tiempos de mesa pensados para que nadie espere de más, y un equipo formado para
@@ -173,15 +196,15 @@
           <ul class="mt-8 space-y-4">
             <li class="flex gap-3">
               <span class="mt-1 h-2 w-2 flex-none rounded-full bg-brass" aria-hidden="true"></span>
-              <span><strong class="font-semibold">Reserva confirmada al instante</strong> — recibes la confirmación por email en el momento.</span>
+              <span data-i18n="about.feature1.title"><strong class="font-semibold">Reserva confirmada al instante</strong> — recibes la confirmación por email en el momento.</span>
             </li>
             <li class="flex gap-3">
               <span class="mt-1 h-2 w-2 flex-none rounded-full bg-brass" aria-hidden="true"></span>
-              <span><strong class="font-semibold">Mesas puntuales</strong> — gestionamos la rotación para que tu mesa esté lista a tu hora.</span>
+              <span data-i18n="about.feature2.title"><strong class="font-semibold">Mesas puntuales</strong> — gestionamos la rotación para que tu mesa esté lista a tu hora.</span>
             </li>
             <li class="flex gap-3">
               <span class="mt-1 h-2 w-2 flex-none rounded-full bg-brass" aria-hidden="true"></span>
-              <span><strong class="font-semibold">Producto de temporada</strong> — carta viva, no una carta congelada en el tiempo.</span>
+              <span data-i18n="about.feature3.title"><strong class="font-semibold">Producto de temporada</strong> — carta viva, no una carta congelada en el tiempo.</span>
             </li>
           </ul>
         </div>
@@ -199,11 +222,11 @@
     <!-- ===================== EXPERIENCIA HOTELERA ===================== -->
     <section id="experiencia" class="bg-parchment py-20">
       <div class="fade-up mx-auto max-w-7xl px-6 lg:px-8">
-        <p class="section-eyebrow">Nuestra experiencia</p>
-        <h2 class="mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl">
+        <p class="section-eyebrow" data-i18n="experiencia.title">Nuestra experiencia</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl" data-i18n="experiencia.subtitle">
           De un servicio y cocina premium a tu mesa
         </h2>
-        <p class="mt-5 max-w-2xl leading-relaxed text-walnut/80">
+        <p class="mt-5 max-w-2xl leading-relaxed text-walnut/80" data-i18n="experiencia.description">
           Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&amp;B en hoteles boutique de
           4 y 5 estrellas. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos
           aquí, en un restaurante que cualquiera puede reservar sin necesidad de estar alojado en un hotel.
@@ -212,19 +235,19 @@
         <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
             <p class="font-display text-4xl font-semibold text-wine">15+</p>
-            <p class="mt-2 text-sm text-walnut/70">años de experiencia combinada en hostelería de hotel</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience1">años de experiencia combinada en hostelería de hotel</p>
           </div>
           <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
             <p class="font-display text-4xl font-semibold text-wine">6</p>
-            <p class="mt-2 text-sm text-walnut/70">hoteles boutique donde formamos parte del equipo directivo de sala</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience2">hoteles boutique donde formamos parte del equipo directivo de sala</p>
           </div>
           <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
             <p class="font-display text-4xl font-semibold text-wine">98%</p>
-            <p class="mt-2 text-sm text-walnut/70">de reservas atendidas sin tiempo de espera adicional</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience3">de reservas atendidas sin tiempo de espera adicional</p>
           </div>
           <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
             <p class="font-display text-4xl font-semibold text-wine">2</p>
-            <p class="mt-2 text-sm text-walnut/70">restaurantes hermanos, con recetas y estándares compartidos</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience4">restaurantes hermanos, con recetas y estándares compartidos</p>
           </div>
         </div>
       </div>
@@ -232,16 +255,16 @@
 
   
 <!-- ===================== CLUB BRASALAND ===================== -->
-<section hidden id="brasapuntos" class="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+<section hidden id="brasapuntos" class="mx-auto max-w-7xl px-6 py-24 lg:px-8" data-i18n="brasapuntos.section">
 
   <div class="mx-auto max-w-3xl text-center">
 
-    <h2 class="text-3xl font-semibold sm:text-4xl">
+    <h2 class="text-3xl font-semibold sm:text-4xl" data-i18n="brasapuntos.title">
       Tu fidelidad tiene recompensa
     </h2>
 
     <p class="mt-6 text-lg leading-8 text-walnut/70">
-      Acumula <span class="font-semibold text-brass">Brasapuntos</span>
+      Acumula <span class="font-semibold text-brass" data-i18n="brasapuntos.points">Brasapuntos</span>
       con cada visita y canjéalos por deliciosas recompensas.
     </p>
 
@@ -253,15 +276,15 @@
   <article class="rounded-xl bg-white p-8 shadow-sm ring-1 ring-walnut/5">
     <div class="text-5xl">🍽️</div>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass">
+    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card1.points">
       +50
     </p>
 
-    <h3 class="mt-3 text-xl font-semibold">
+    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card1.title">
       Brasapuntos
     </h3>
 
-    <p class="mt-4 text-walnut/70">
+    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card1.description">
       Por cada consumo superior a
       <strong>50 €</strong>.
     </p>
@@ -271,15 +294,15 @@
   <article class="rounded-xl bg-white p-8 shadow-sm ring-1 ring-walnut/5">
     <div class="text-5xl">⭐</div>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass">
+    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card2.points">
       +20
     </p>
 
-    <h3 class="mt-3 text-xl font-semibold">
+    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card2.title">
       Brasapuntos
     </h3>
 
-    <p class="mt-4 text-walnut/70">
+    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card2.description">
       Comparte una reseña positiva después de tu visita.
     </p>
   </article>
@@ -288,15 +311,15 @@
   <article class="rounded-xl bg-brass/5 p-8 shadow-sm ring-1 ring-brass/20">
     <div class="text-5xl">🎁</div>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass">
+    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card3.points">
       300
     </p>
 
-    <h3 class="mt-3 text-xl font-semibold">
+    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card3.title">
       Brasapuntos
     </h3>
 
-    <p class="mt-4 text-walnut/70">
+    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card3.description">
       Canjéalos por
       <strong>cualquier postre de nuestra carta.</strong>
     </p>
@@ -312,8 +335,8 @@
 
     <!-- Información -->
     <div>
-      <p class="section-eyebrow">Contacto</p>
-      <h2 class="mt-3 text-3xl font-semibold sm:text-4xl">
+      <p class="section-eyebrow" data-i18n="contacto.title">Contacto</p>
+      <h2 class="mt-3 text-3xl font-semibold sm:text-4xl" data-i18n="contacto.subtitle">
         Visítanos o escríbenos
       </h2>
 
@@ -333,7 +356,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.5-7.5 11.25-7.5 11.25S4.5 18 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
             </svg>
 
-            <span class="text-walnut/80">
+            <span class="text-walnut/80" data-i18n="contacto.address1">
               Callejón del Embudo 5<br>
               110111 Bogotá, Colombia
             </span>
@@ -344,7 +367,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a2.25 2.25 0 0 0 2.25-2.25v-1.372a1.5 1.5 0 0 0-1.211-1.47l-3.7-.74a1.5 1.5 0 0 0-1.6.732l-.5.998a11.25 11.25 0 0 1-5.373-5.373l.998-.5a1.5 1.5 0 0 0 .732-1.6l-.74-3.7A1.5 1.5 0 0 0 6.622 2.25H5.25A2.25 2.25 0 0 0 3 4.5v2.25Z"/>
             </svg>
 
-            <a href="tel:+576012345678" class="text-walnut/80 hover:text-wine">
+            <a href="tel:+576012345678" class="text-walnut/80 hover:text-wine" data-i18n="contacto.phone1">
               +57 601 234 5678
             </a>
           </div>
@@ -355,7 +378,7 @@
           onclick="cambiarMapa('https://www.openstreetmap.org/export/embed.html?bbox=-81.3845%2C28.5395%2C-81.3745%2C28.5495&layer=mapnik&marker=28.5445%2C-81.3795')"
           class="cursor-pointer rounded-2xl border border-walnut/10 bg-white p-5 shadow-sm transition hover:border-brass hover:shadow-md"
         >
-          <h3 class="mb-4 text-lg font-semibold text-wine">Orlando</h3>
+          <h3 class="mb-4 text-lg font-semibold text-wine" data-i18n="contacto.city2">Orlando</h3>
 
           <div class="flex gap-4">
             <svg class="h-6 w-6 text-brass flex-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -363,7 +386,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 10.5c0 7.5-7.5 11.25-7.5 11.25S4.5 18 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
             </svg>
 
-            <span class="text-walnut/80">
+            <span class="text-walnut/80" data-i18n="contacto.address2">
               123 Church Street<br>
               Orlando, FL 32801, USA
             </span>
@@ -374,7 +397,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a2.25 2.25 0 0 0 2.25-2.25v-1.372a1.5 1.5 0 0 0-1.211-1.47l-3.7-.74a1.5 1.5 0 0 0-1.6.732l-.5.998a11.25 11.25 0 0 1-5.373-5.373l.998-.5a1.5 1.5 0 0 0 .732-1.6l-.74-3.7A1.5 1.5 0 0 0 6.622 2.25H5.25A2.25 2.25 0 0 0 3 4.5v2.25Z"/>
             </svg>
 
-            <a href="tel:+13051234567" class="text-walnut/80 hover:text-wine">
+            <a href="tel:+13051234567" class="text-walnut/80 hover:text-wine" data-i18n="contacto.phone2">
               +1 305 123 4567
             </a>
           </div>
@@ -391,7 +414,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0a2.25 2.25 0 0 0-2.25-2.25h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-9.75 6.75L2.25 6.75"/>
           </svg>
 
-          <a href="mailto:reservas@brasaland.com" class="text-walnut/80 hover:text-wine">
+          <a href="mailto:reservas@brasaland.com" class="text-walnut/80 hover:text-wine" data-i18n="contacto.email">
             reservas@brasaland.com
           </a>
         </div>
@@ -402,7 +425,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
           </svg>
 
-          <div class="text-walnut/80">
+          <div class="text-walnut/80" data-i18n="contacto.hours">
             Mar–Jue y Dom: 13:00–23:00<br>
             Vie–Sáb: 13:00–00:00 · Lunes cerrado
           </div>
@@ -439,21 +462,21 @@ function cambiarMapa(url) {
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <p class="font-display text-xl font-semibold text-cream">Brasaland</p>
-          <p class="mt-3 text-sm leading-relaxed text-cream/60">
+          <p class="mt-3 text-sm leading-relaxed text-cream/60" data-i18n="footer.description">
             Cocina de temporada en Bogotá y Miami, con el estándar de servicio de la hostelería de hotel boutique.
           </p>
         </div>
         <div>
-          <p class="text-sm font-semibold uppercase tracking-wide text-cream">Navegación</p>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.navigation.title">Navegación</p>
           <ul class="mt-3 space-y-2 text-sm text-cream/60">
-            <li><a href="#inicio" class="hover:text-cream">Inicio</a></li>
-            <li><a href="#sobre-nosotros" class="hover:text-cream">Qué hacemos</a></li>
-            <li><a href="#experiencia" class="hover:text-cream">Nuestra experiencia</a></li>
-            <li><a href="#contacto" class="hover:text-cream">Contacto</a></li>
+            <li><a href="#inicio" class="hover:text-cream" data-i18n="footer.navigation.home">Inicio</a></li>
+            <li><a href="#sobre-nosotros" class="hover:text-cream" data-i18n="footer.navigation.about">Qué hacemos</a></li>
+            <li><a href="#experiencia" class="hover:text-cream" data-i18n="footer.navigation.experience">Nuestra experiencia</a></li>
+            <li><a href="#contacto" class="hover:text-cream" data-i18n="footer.navigation.contact">Contacto</a></li>
           </ul>
         </div>
         <div>
-          <p class="text-sm font-semibold uppercase tracking-wide text-cream">Reservas</p>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.reservations.title">Reservas</p>
           <ul class="mt-3 space-y-2 text-sm text-cream/60">
             <li><a href="reserva.html" class="hover:text-cream">Reservar mesa</a></li>
             <li><a href="http://localhost:5174" class="hover:text-cream" target="_blank" rel="noopener">Pedir online</a></li>
@@ -463,20 +486,21 @@ function cambiarMapa(url) {
           </ul>
         </div>
         <div>
-          <p class="text-sm font-semibold uppercase tracking-wide text-cream">Legal</p>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.legal.title">Legal</p>
           <ul class="mt-3 space-y-2 text-sm text-cream/60">
-            <li><a href="#" class="hover:text-cream">Política de privacidad</a></li>
-            <li><a href="#" class="hover:text-cream">Términos de uso</a></li>
-            <li><a href="#" class="hover:text-cream">Política de cookies</a></li>
+            <li><a href="#" class="hover:text-cream" data-i18n="footer.legal.privacy">Política de privacidad</a></li>
+            <li><a href="#" class="hover:text-cream" data-i18n="footer.legal.terms">Términos de uso</a></li>
+            <li><a href="#" class="hover:text-cream" data-i18n="footer.legal.cookies">Política de cookies</a></li>
           </ul>
         </div>
       </div>
-      <div class="mt-10 border-t border-cream/10 pt-6 text-xs text-cream/50">
+      <div class="mt-10 border-t border-cream/10 pt-6 text-xs text-cream/50" data-i18n="footer.copyright">
         © <span id="anio-actual">2026</span> Brasaland. Todos los derechos reservados.
       </div>
     </div>
   </footer>
 
   <script src="main.js" defer></script>
+  <script src="translations.js" defer></script>
 </body>
 </html>
