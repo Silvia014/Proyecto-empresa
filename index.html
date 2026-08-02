@@ -69,13 +69,17 @@
 
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="flex items-center gap-2 ml-6">
-      <button id="lang-es" class="font-semibold text-wine">ES</button>
-      <span>|</span>
-    <button id="lang-en" class="text-walnut">EN</button>
-    </div>
+  <div class="ml-12 flex items-center gap-2">
+  <span class="text-wine"></span>
+  <select
+    id="language-selector"
+    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine".>
+    <option value="es">ES</option>
+    <option value="en">EN</option>
+  </select>
+  </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> >
+      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
         Brasaland
       </a>
 
@@ -414,8 +418,8 @@ Pedir online
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0a2.25 2.25 0 0 0-2.25-2.25h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-9.75 6.75L2.25 6.75"/>
           </svg>
 
-          <a href="mailto:reservas@brasaland.com" class="text-walnut/80 hover:text-wine" data-i18n="contacto.email">
-            reservas@brasaland.com
+          <a href="mailto:bookings@brasaland.com" class="text-walnut/80 hover:text-wine" data-i18n="contacto.email">
+            bookings@brasaland.com
           </a>
         </div>
 
@@ -482,7 +486,7 @@ function cambiarMapa(url) {
             <li><a href="http://localhost:5174" class="hover:text-cream" target="_blank" rel="noopener">Pedir online</a></li>
             <li><a href="tel:+576012345678" class="hover:text-cream">+57 601 234 5678</a></li>
             <li><a href="tel:+13051234567" class="hover:text-cream">+1 305 123 4567</a></li>
-            <li><a href="mailto:roldansilvi@gmail.com" class="hover:text-cream">reservas@brasaland.com</a></li>
+            <li><a href="mailto:roldansilvi@gmail.com" class="hover:text-cream">bookings@brasaland.com</a></li>
           </ul>
         </div>
         <div>
