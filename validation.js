@@ -11,14 +11,7 @@
 //   - Limpiar el formulario (valores + errores + confirmación) con el
 //     botón secundario "Limpiar campos"
 //
-// NOTA: todavía no hay backend conectado (Supabase u otro). La función
-// enviarReserva() de más abajo simula el envío. Cuando conectes tu API:
-//
-//   const res = await fetch("https://TU-API/api/crm/orders", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(datos),
-//   });
+
 //   if (!res.ok) throw new Error("Fallo al guardar la reserva");
 //
 // y desde ahí el backend dispara el email al cliente y la notificación
@@ -28,6 +21,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   setupForm();
 });
+// Traducción de mensajes de error y textos fijos (i18n)
+function t(key) {
+  const lang = document.documentElement.lang || "es";
+
+  return key.split(".").reduce((obj, k) => obj?.[k], translations[lang]);
+}
 
 // Horario de servicio, usado para validar la hora elegida según el día
 const HORARIO = {
@@ -45,60 +44,60 @@ const HORARIO = {
 // error específico (string) si algo está mal, o null si el valor es válido.
 const VALIDATORS = {
   nombre: (value) => {
-    if (!value.trim()) return "Escribe tu nombre.";
-    if (value.trim().length < 2) return "El nombre es demasiado corto.";
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return "El nombre solo puede contener letras.";
+    if (!value.trim()) return t ("reserva.errors.nombreRequired");
+    if (value.trim().length < 2) return t("reserva.errors.nombreShort");
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.nombreInvalid");
     return null;
   },
   apellidos: (value) => {
-    if (!value.trim()) return "Escribe tus apellidos.";
-    if (value.trim().length < 2) return "Los apellidos son demasiado cortos.";
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return "Los apellidos solo pueden contener letras.";
+    if (!value.trim()) return t("reserva.errors.apellidosRequired");
+    if (value.trim().length < 2) return t("reserva.errors.apellidosShort");
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.apellidosInvalid");
     return null;
   },
   email: (value) => {
-    if (!value.trim()) return "Escribe tu email.";
+    if (!value.trim()) return t("reserva.errors.emailRequired");
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!re.test(value.trim())) return "Escribe un email válido, ej. nombre@dominio.com.";
+    if (!re.test(value.trim())) return t("reserva.errors.emailInvalid");
     return null;
   },
   telefono: (value) => {
-    if (!value.trim()) return "Escribe tu teléfono.";
+    if (!value.trim()) return t("reserva.errors.telefonoRequired");
     const digits = value.replace(/[\s()-]/g, "");
     // Acepta prefijo internacional opcional (+34...) y 9-12 dígitos
     const re = /^(\+?\d{1,3})?\d{9,12}$/;
-    if (!re.test(digits)) return "Escribe un teléfono válido (ej. 600 000 000).";
+    if (!re.test(digits)) return t("reserva.errors.telefonoInvalid");
     return null;
   },
   personas: (value) => {
-    if (!value) return "Indica el número de personas.";
+    if (!value) return t("reserva.errors.personasRequired");
     const n = Number(value);
-    if (!Number.isInteger(n)) return "El número de personas debe ser un número entero.";
-    if (n < 1) return "Debe ser al menos 1 persona.";
-    if (n > 20) return "Para grupos de más de 20 personas, contáctanos por teléfono.";
+    if (!Number.isInteger(n)) return t("reserva.errors.personasInteger");
+    if (n < 1) return t("reserva.errors.personasMin");
+    if (n > 20) return t("reserva.errors.personasMax");
     return null;
   },
   dia: (value) => {
-    if (!value) return "Elige un día para la reserva.";
+    if (!value) return t("reserva.errors.diaRequired");
     const fecha = new Date(`${value}T00:00:00`);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    if (fecha < hoy) return "La fecha no puede ser anterior a hoy.";
-    if (fecha.getDay() === 1) return "Los lunes estamos cerrados. Elige otro día.";
+    if (fecha < hoy) return t("reserva.errors.diaPast");
+    if (fecha.getDay() === 1) return t("reserva.errors.diaClosed");
     const limite = new Date(hoy);
     limite.setMonth(limite.getMonth() + 3);
-    if (fecha > limite) return "Solo aceptamos reservas con hasta 3 meses de antelación.";
+    if (fecha > limite) return t("reserva.errors.diaTooFar");
     return null;
   },
   hora: (value, form) => {
-    if (!value) return "Elige una hora para la reserva.";
+    if (!value) return t("reserva.errors.horaRequired");
     const diaValue = form.dia.value;
     if (!diaValue) return null; // el error de "día" ya se muestra en ese campo
     const dia = new Date(`${diaValue}T00:00:00`).getDay();
     const horario = HORARIO[dia];
     if (!horario) return null; // lunes: ya se marca error en el campo día
     if (value < horario.abre || value > horario.cierra) {
-      return `Ese día servimos de ${horario.abre} a ${horario.cierra}.`;
+      return t("reserva.errors.horaRange").replace("{abre}", horario.abre).replace("{cierra}", horario.cierra);
     }
     return null;
   },
@@ -173,7 +172,7 @@ function setupForm() {
       tocados.clear();
     } catch (err) {
       mostrarResumenErrores(
-        { general: "No se pudo enviar la reserva. Inténtalo de nuevo o llámanos por teléfono." },
+        { general: t("reserva.errors.general"), "data-i18n": "reserva.errors.general" },
         resumen,
         listaErrores
       );
@@ -263,3 +262,15 @@ async function enviarReserva(datos) {
   console.log("Reserva a enviar (todavía sin backend conectado):", datos);
   return new Promise((resolve) => setTimeout(resolve, 600));
 }
+
+// Conectamos Supabase Functions para enviar la reserva al backend y que este se encargue de enviar el email de confirmación y la notificación interna al restaurante.
+await fetch(
+  "https://restaurant-platform.functions.supabase.co/reserva",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(datos)
+  }
+);

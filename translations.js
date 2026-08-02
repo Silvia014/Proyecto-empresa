@@ -78,9 +78,9 @@ const translations = {
       phone1: "+57 601 234 5678",
       phone2: "+1 305 123 4567",
 
-      email: "reservas@brasaland.com",
+      email: "bookings@brasaland.com",
 
-      hours: "Mar–Jue y Dom: 13:00–23:00<br>Vie–Sáb: 13:00–00:00 · Lunes cerrado"
+      hours: "Mar–Jue y Dom: 13:00–23:00<br>Vie–Sáb: 13:00–00:00<br>Lunes cerrado"
     },
 
     footer: {
@@ -109,8 +109,73 @@ const translations = {
 
       copyright:
         "© 2026 Brasaland. Todos los derechos reservados."
-    }
+    },  
+    reserva: {
+      eyebrow: "Reserva",
+      title: "Reservar mesa",
+      intro: "Rellena tus datos y te enviaremos la confirmación por email. Los campos marcados con",
+      introRequired: "(obligatorios)",
+      websiteNote: "No tomamos reservas por teléfono ni redes sociales. Por favor, utiliza este formulario para reservar tu mesa.",
 
+      backToWebsite: "← Volver a la web",
+
+      errorsSummaryTitle: "Por favor revisa los siguientes campos:",
+
+      confirmationTitle: "¡Reserva recibida!",
+      confirmationText: "Te hemos enviado una copia de la confirmación a tu email. Nuestro equipo comprobará la disponibilidad y se pondrá en contacto contigo si hay algún cambio.",
+
+      labels: {
+        nombre: "Nombre",
+        apellidos: "Apellidos",
+        email: "Email",
+        telefono: "Teléfono",
+        personas: "Número de comensales",
+        dia: "Día de la reserva",
+        hora: "Hora de la reserva",
+        notas: "Notas (alergias, celebraciones...)"
+      },
+
+      hoursNote: "Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.",
+
+      buttons: {
+        submit: "Confirmar reserva",
+        submitting: "Enviando...",
+        clear: "Limpiar campos"
+      },
+
+      footerCopyright: "Brasaland. Todos los derechos reservados.",
+
+      errors: {
+        nombreRequired: "Escribe tu nombre.",
+        nombreShort: "El nombre es demasiado corto.",
+        nombreLetters: "El nombre solo puede contener letras.",
+
+        apellidosRequired: "Escribe tus apellidos.",
+        apellidosShort: "Los apellidos son demasiado cortos.",
+        apellidosLetters: "Los apellidos solo pueden contener letras.",
+
+        emailRequired: "Escribe tu email.",
+        emailInvalid: "Escribe un email válido, por ejemplo usuario@dominio.com",
+
+        telefonoRequired: "Escribe tu teléfono.",
+        telefonoInvalid: "Escribe un teléfono válido, por ejemplo +57 601 234 5678",
+
+        personasRequired: "Indica el número de comensales.",
+        personasInteger: "El número de comensales debe ser un número entero.",
+        personasMin: "El número de comensales debe ser al menos 1.",
+        personasMax: "El número de comensales no puede superar 20.",
+
+        diaRequired: "Selecciona el día de la reserva.",
+        diaPast: "No se puede reservar en el pasado.",
+        diaClosed: "El restaurante está cerrado ese día.",
+        diaTooFar: "No se puede reservar con más de 3 meses de antelación.",
+
+        horaRequired: "Selecciona la hora de la reserva.",
+        horaRange: "La hora debe estar entre {abre} y {cierra}.",
+        
+        general: "No se pudo enviar la reserva. Inténtalo de nuevo o llámanos por teléfono."
+      }
+    }
   },
 
   en: {
@@ -126,7 +191,7 @@ const translations = {
 
     hero: {
       location: "Restaurant in Colombia and Florida",
-      title: "The Warm Hospitality of a Boutique Hotel, at Your Table",
+      title: "The warm hospitality of an amazing hotel, at your table",
       subtitle: "At Brasaland we prepare seasonal cuisine and serve every guest with the same high standards of hospitality found in boutique hotels. Booking your table takes less than a minute.",
       button: "Book a Table",
       button2: "Learn More",
@@ -192,9 +257,9 @@ const translations = {
       phone1: "+57 601 234 5678",
       phone2: "+1 305 123 4567",
 
-      email: "reservas@brasaland.com",
+      email: "bookings@brasaland.com",
 
-      hours: "Tue–Thu & Sun: 1:00 PM–11:00 PM<br>Fri–Sat: 1:00 PM–12:00 AM · Closed Mondays"
+      hours: "Tue–Thu & Sun: 1:00 PM–11:00 PM<br>Fri–Sat: 1:00 PM–12:00 AM<br>Closed Mondays"
     },
 
     footer: {
@@ -223,8 +288,76 @@ const translations = {
 
       copyright:
         "© 2026 Brasaland. All rights reserved."
-    }
+    },
+       // ------------------------------------------------------
+    // Reservation form (reserva.html)
+    // ------------------------------------------------------
+    reserva: {
+      eyebrow: "Reservation",
+      title: "Book a table",
+      intro: "Fill in your details and we'll send you the confirmation by email. Fields marked with",
+      introRequired: "(required)",
+      websiteNote: "We don't take reservations by phone or social media. Please use this form to book your table.",
 
+      backToWebsite: "← Back to the website",
+
+      errorsSummaryTitle: "Please check the following fields:",
+
+      confirmationTitle: "Reservation received!",
+      confirmationText: "We've sent a copy of the confirmation to your email. Our team will check availability and contact you if anything changes.",
+
+      labels: {
+        nombre: "First name",
+        apellidos: "Last name",
+        email: "Email",
+        telefono: "Phone",
+        personas: "Number of guests",
+        dia: "Reservation date",
+        hora: "Reservation time",
+        notas: "Notes (allergies, celebrations...)"
+      },
+
+      hoursNote: "We serve from 1:00 PM to 11:00 PM (until midnight Friday and Saturday). Closed Mondays.",
+
+      buttons: {
+        submit: "Confirm reservation",
+        submitting: "Sending...",
+        clear: "Clear fields"
+      },
+
+      footerCopyright: "Brasaland. All rights reserved.",
+
+      errors: {
+        nombreRequired: "Enter your first name.",
+        nombreShort: "First name is too short.",
+        nombreLetters: "First name can only contain letters.",
+
+        apellidosRequired: "Enter your last name.",
+        apellidosShort: "Last name is too short.",
+        apellidosLetters: "Last name can only contain letters.",
+
+        emailRequired: "Enter your email.",
+        emailInvalid: "Enter a valid email, e.g. name@domain.com.",
+
+        telefonoRequired: "Enter your phone number.",
+        telefonoInvalid: "Enter a valid phone number (e.g. 600 000 000).",
+
+        personasRequired: "Enter the number of guests.",
+        personasInteger: "Number of guests must be a whole number.",
+        personasMin: "Must be at least 1 guest.",
+        personasMax: "For groups larger than 20, please contact us by phone.",
+
+        diaRequired: "Choose a date for the reservation.",
+        diaPast: "The date can't be earlier than today.",
+        diaClosed: "We're closed on Mondays. Please choose another day.",
+        diaTooFar: "We only accept reservations up to 3 months in advance.",
+
+        horaRequired: "Choose a time for the reservation.",
+        horaRange: "That day we serve from {abre} to {cierra}.",
+
+        general: "The reservation couldn't be sent. Please try again or call us."
+      }
+    }
   }
 };
 
@@ -246,6 +379,9 @@ function setLanguage(lang) {
       element.innerHTML = value;
     }
 
+    if (element.tagName === "A" && element.dataset.i18n === "contacto.email") {
+      element.href = `mailto:${value}`;
+    }
   });
 
   document.title =
@@ -258,13 +394,18 @@ function setLanguage(lang) {
     .setAttribute(
       "content",
       lang === "es"
-        ? "Brasaland: cocina de temporada en Colombia y Florida con el estándar de servicio de la hostelería de hotel boutique."
-        : "Brasaland: seasonal cuisine in Colombia and Florida with boutique hotel hospitality."
+        ? "Brasaland: cocina de temporada..."
+        : "Brasaland: seasonal cuisine..."
     );
 
 }
+const selector = document.getElementById("language-selector");
 
-document.getElementById("lang-es").addEventListener("click", () => setLanguage("es"));
-document.getElementById("lang-en").addEventListener("click", () => setLanguage("en"));
+if (selector) {
+  selector.addEventListener("change", (e) => {
+    setLanguage(e.target.value);
+  });
+}
 
 setLanguage("es");
+

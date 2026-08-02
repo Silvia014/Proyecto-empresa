@@ -16,31 +16,41 @@
 <body class="antialiased">
   <a href="#contenido" class="skip-link">Saltar al contenido principal</a>
 
-  <header class="border-b border-walnut/10 bg-cream">
-    <div class="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
+  <header class="sticky top-0 z-20 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+    <div class="ml-8 flex items-center gap-2">
+  <span class="text-wine"></span>
+  <select
+    id="language-selector"
+    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine".>
+    <option value="es">ES</option>
+    <option value="en">EN</option>
+  </select>
+  </div>
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
       <a href="index.html" class="font-display text-2xl font-semibold text-wine">Brasaland</a>
-      <a href="index.html" class="nav-link">← Volver a la web</a>
+      <a href="index.html" class="nav-link" data-i18n="reserva.backToWebsite">← Volver a la web</a>
     </div>
+    
   </header>
-
+  
   <main id="contenido" class="mx-auto max-w-3xl px-6 py-14">
-    <p class="section-eyebrow">Reserva</p>
-    <h1 class="mt-3 text-3xl font-semibold sm:text-4xl">Reservar una mesa</h1>
-    <p class="mt-3 max-w-xl text-walnut/70">
+    <p class="section-eyebrow" data-i18n="reserva.eyebrow">Reserva</p>
+    <h1 class="mt-3 text-3xl font-semibold sm:text-4xl" data-i18n="reserva.title">Reservar una mesa</h1>
+    <p class="mt-3 max-w-xl text-walnut/70" data-i18n="reserva.intro">
       Rellena tus datos y te enviaremos la confirmación por email. Los campos marcados con
-      <span aria-hidden="true">*</span><span class="sr-only">(obligatorio)</span> son obligatorios.
+      <span aria-hidden="true">*</span><span class="sr-only" data-i18n="reserva.introRequired">(obligatorio)</span> son obligatorios.
     </p>
 
     <!-- Resumen de errores para lectores de pantalla: se anuncia al enviar el formulario con errores -->
     <div id="resumen-errores" role="alert" aria-live="assertive" class="mt-6 hidden rounded-md border border-wine/30 bg-wine/5 p-4">
-      <p class="font-semibold text-wine">Revisa los siguientes campos:</p>
+      <p class="font-semibold text-wine" data-i18n="reserva.errorsSummaryTitle">Revisa los siguientes campos:</p>
       <ul id="lista-errores" class="mt-2 list-inside list-disc text-sm text-wine"></ul>
     </div>
 
     <!-- Confirmación de envío -->
     <div id="confirmacion" role="status" aria-live="polite" class="mt-6 hidden rounded-md border border-sage/30 bg-sage/10 p-5">
-      <p class="font-semibold text-sage">¡Reserva recibida!</p>
-      <p class="mt-1 text-sm text-walnut/80">
+      <p class="font-semibold text-sage" data-i18n="reserva.confirmationTitle">¡Reserva recibida!</p>
+      <p class="mt-1 text-sm text-walnut/80" data-i18n="reserva.confirmationText">
         Te hemos enviado una copia de la confirmación a tu email. Nuestro equipo revisará la disponibilidad
         y te contactará si hubiera cualquier cambio.
       </p>
@@ -48,58 +58,58 @@
 
     <form id="form-reserva" class="mt-8 grid gap-6 sm:grid-cols-2" novalidate>
       <div>
-        <label for="nombre" class="field-label">Nombre <span aria-hidden="true">*</span></label>
+        <label for="nombre" class="field-label" data-i18n="reserva.labels.nombre">Nombre <span aria-hidden="true">*</span></label>
         <input type="text" id="nombre" name="nombre" class="field-input" autocomplete="given-name" required aria-required="true" aria-describedby="error-nombre" />
         <p id="error-nombre" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="apellidos" class="field-label">Apellidos <span aria-hidden="true">*</span></label>
+        <label for="apellidos" class="field-label" data-i18n="reserva.labels.apellidos">Apellidos <span aria-hidden="true">*</span></label>
         <input type="text" id="apellidos" name="apellidos" class="field-input" autocomplete="family-name" required aria-required="true" aria-describedby="error-apellidos" />
         <p id="error-apellidos" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="email" class="field-label">Email <span aria-hidden="true">*</span></label>
+        <label for="email" class="field-label" data-i18n="reserva.labels.email">Email <span aria-hidden="true">*</span></label>
         <input type="email" id="email" name="email" class="field-input" autocomplete="email" required aria-required="true" aria-describedby="error-email" />
         <p id="error-email" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="telefono" class="field-label">Teléfono <span aria-hidden="true">*</span></label>
+        <label for="telefono" class="field-label" data-i18n="reserva.labels.telefono">Teléfono <span aria-hidden="true">*</span></label>
         <input type="tel" id="telefono" name="telefono" class="field-input" autocomplete="tel" placeholder="600 000 000" required aria-required="true" aria-describedby="error-telefono" />
         <p id="error-telefono" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="personas" class="field-label">Número de personas <span aria-hidden="true">*</span></label>
+        <label for="personas" class="field-label" data-i18n="reserva.labels.personas">Número de personas <span aria-hidden="true">*</span></label>
         <input type="number" id="personas" name="personas" class="field-input" min="1" max="20" step="1" required aria-required="true" aria-describedby="error-personas" />
         <p id="error-personas" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="dia" class="field-label">Día de la reserva <span aria-hidden="true">*</span></label>
+        <label for="dia" class="field-label" data-i18n="reserva.labels.dia">Día de la reserva <span aria-hidden="true">*</span></label>
         <input type="date" id="dia" name="dia" class="field-input" required aria-required="true" aria-describedby="error-dia" />
         <p id="error-dia" class="field-error hidden"></p>
       </div>
 
       <div>
-        <label for="hora" class="field-label">Hora de la reserva <span aria-hidden="true">*</span></label>
+        <label for="hora" class="field-label" data-i18n="reserva.labels.hora">Hora de la reserva <span aria-hidden="true">*</span></label>
         <input type="time" id="hora" name="hora" class="field-input" required aria-required="true" aria-describedby="error-hora" />
         <p id="error-hora" class="field-error hidden"></p>
-        <p class="mt-1 text-xs text-walnut/50">Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.</p>
+        <p class="mt-1 text-xs text-walnut/50" data-i18n="reserva.hoursNote">Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.</p>
       </div>
 
       <div class="sm:col-span-2">
-        <label for="notas" class="field-label">Notas (alergias, celebraciones...)</label>
+        <label for="notas" class="field-label" data-i18n="reserva.labels.notas">Notas (alergias, celebraciones...)</label>
         <textarea id="notas" name="notas" rows="3" class="field-input"></textarea>
       </div>
 
       <div class="sm:col-span-2 mt-2 flex flex-wrap gap-3">
-        <button type="submit" id="btn-enviar" class="btn-primary">
+        <button type="submit" id="btn-enviar" class="btn-primary" data-i18n="reserva.buttons.submit">
           Confirmar reserva
         </button>
-        <button type="button" id="btn-limpiar" class="btn-secondary">
+        <button type="button" id="btn-limpiar" class="btn-secondary" data-i18n="reserva.buttons.clear">
           Limpiar campos
         </button>
       </div>
@@ -107,12 +117,13 @@
   </main>
 
   <footer class="border-t border-walnut/10 bg-cream py-8">
-    <p class="mx-auto max-w-3xl px-6 text-xs text-walnut/50">
+    <p class="mx-auto max-w-3xl px-6 text-xs text-walnut/50" data-i18n="reserva.footerCopyright">
       © <span id="anio-actual">2026</span> Brasaland. Todos los derechos reservados.
     </p>
   </footer>
 
   <script src="main.js" defer></script>
   <script src="validation.js" defer></script>
+  <script src="translations.js" defer></script>
 </body>
 </html>
