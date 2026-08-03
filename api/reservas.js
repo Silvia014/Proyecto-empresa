@@ -46,12 +46,6 @@ console.log(
   notas,
 } = req.body;
 
-const { data: roleData, error: roleError } = await supabase.rpc(
-  "get_current_role"
-);
-
-console.log(roleData, roleError);
-
 const { data, error: selectError } = await supabase
   .from("reservas")
   .select("*")

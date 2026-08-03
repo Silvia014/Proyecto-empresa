@@ -76,17 +76,30 @@ function setupScrollReveal() {
   elements.forEach((el) => observer.observe(el));
 }
 
-const btnEs = document.getElementById("lang-es");
-const btnEn = document.getElementById("lang-en");
+document.getElementById("lang-es")?.addEventListener("click", () => setLanguage("es"));
+document.getElementById("lang-en")?.addEventListener("click", () => setLanguage("en"));
 
-if (btnEs) {
-  btnEs.addEventListener("click", () => setLanguage("es"));
+const idiomaGuardado = localStorage.getItem("language") || "es";
+setLanguage(idiomaGuardado);
+
+const selector = document.getElementById("language-selector");
+
+if (selector) {
+  selector.value = idiomaGuardado;
+
+  selector.addEventListener("change", (e) => {
+    setLanguage(e.target.value);
+  });
 }
 
-if (btnEn) {
-  btnEn.addEventListener("click", () => setLanguage("en"));
-}
+// if (btnEs) {
+//   btnEs.addEventListener("click", () => setLanguage("es"));
+// }
 
-if (typeof setLanguage === "function") {
-  setLanguage("es");
-}
+// if (btnEn) {
+//   btnEn.addEventListener("click", () => setLanguage("en"));
+// }
+
+// if (typeof setLanguage === "function") {
+//   setLanguage("es");
+// }
