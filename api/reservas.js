@@ -1,22 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.?????????????????
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-console.log(
-  "KEY PREFIX:",
-  process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20)
-);
-
-console.log("URL:", process.env.SUPABASE_URL);
-console.log(
-  "KEY empieza por:",
-  process.env.SUPABASE_SECRET_KEY?.substring(0, 12)
-);
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed",
@@ -26,7 +15,11 @@ export default async function handler(req, res) {
   try {
 
 console.log("URL:", !!process.env.SUPABASE_URL);
-console.log("KEY:", !!process.env.SUPABASE_SECRET_KEY);
+console.log("SERVICE ROLE:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+console.log(
+  "KEY PREFIX:",
+  process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20)
+);
 
     const {
   nombre,
@@ -38,6 +31,14 @@ console.log("KEY:", !!process.env.SUPABASE_SECRET_KEY);
   hora,
   notas,
 } = req.body;
+
+const { data, error: selectError } = await supabase
+  .from("reservas")
+  .select("*")
+  .limit(1);
+
+console.log("SELECT ERROR:", selectError);
+console.log("SELECT DATA:", data);
 
 const { error } = await supabase
   .from("reservas")
