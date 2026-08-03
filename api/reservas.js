@@ -5,6 +5,12 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
+console.log("URL:", process.env.SUPABASE_URL);
+console.log(
+  "KEY empieza por:",
+  process.env.SUPABASE_SECRET_KEY?.substring(0, 12)
+);
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -13,6 +19,10 @@ export default async function handler(req, res) {
   }
 
   try {
+
+console.log("URL:", !!process.env.SUPABASE_URL);
+console.log("KEY:", !!process.env.SUPABASE_SECRET_KEY);
+
     const {
   nombre,
   apellidos,
@@ -23,6 +33,11 @@ export default async function handler(req, res) {
   hora,
   notas,
 } = req.body;
+
+const { data: userData, error: userError } = await supabase.auth.getUser();
+
+console.log("Usuario:", userData);
+console.log("Error auth:", userError);
 
 const { error } = await supabase
   .from("reservas")
