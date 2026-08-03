@@ -5,6 +5,20 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error("❌ SUPABASE_SERVICE_ROLE_KEY no existe");
+} else {
+  const payload = JSON.parse(
+    Buffer.from(
+      process.env.SUPABASE_SERVICE_ROLE_KEY.split(".")[1],
+      "base64"
+    ).toString()
+  );
+
+  console.log("JWT ROLE:", payload.role);
+}
+
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -31,6 +45,12 @@ console.log(
   hora,
   notas,
 } = req.body;
+
+const { data: roleData, error: roleError } = await supabase.rpc(
+  "get_current_role"
+);
+
+console.log(roleData, roleError);
 
 const { data, error: selectError } = await supabase
   .from("reservas")
