@@ -288,17 +288,120 @@ ai-engineering-company-project-monorepo/
 
 ---
 
-## Enlaces
 
-- [4Geeks Academy — Ingeniería de IA](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia)
-- [Cómo empezar un proyecto de código](https://4geeks.com/lesson/how-to-start-a-project)
+# Brasaland — Web pública (landing + reservas)
 
----
+Sitio estático: HTML, CSS y JS separados (sin framework), con Tailwind CSS
+para el diseño. Dos páginas: la landing (`index.html`) y el formulario de
+reserva, fuera de la landing (`reserva.html`).
 
-## Contribuidores
+## Estructura
 
-Esta plantilla fue creada como parte del Programa de Carrera de Ingeniería de IA de 4Geeks Academy por [@marcogonzalo](https://www.linkedin.com/in/marcogonzalo) y [@alezanchezr](https://x.com/alesanchezr), junto a otros muchos colaboradores. Descubre más sobre nuestro [Curso de Ingeniería de IA](https://4geeksacademy.com/es/programas-de-carrera/ingenieria-ia) y sobre [otros cursos](https://4geeksacademy.com/es/comparar-programas).
+```
+index.html          -> landing: header, hero, qué hacemos, experiencia
+                        hotelera, contacto, footer
+reserva.html         -> formulario de reserva (página aparte)
+css/
+  input.css           -> fuente de Tailwind (directivas + componentes)
+  styles.css           -> CSS ya compilado, lo que cargan los .html
+js/
+  main.js             -> menú móvil accesible + año dinámico del footer
+  reserva.js           -> validación completa del formulario + envío
+tailwind.config.js
+package.json
+```
 
-Puedes encontrar otras plantillas y recursos similares en la [página de GitHub de 4Geeks Academy](https://github.com/4geeksacademy).
+## Cómo levantarlo
 
-_Esta plantilla la mantiene 4Geeks Academy para el track de Ingeniería de IA. Uso exclusivo del programa._
+No necesito servidor backend para ver la web — son archivos estáticos.
+Solo Node para compilar el CSS de Tailwind:
+
+```bash
+npm install
+npm run build:css
+```
+
+Esto genera `css/styles.css`. 
+
+Clases de Tailwind, correr en paralelo:
+
+```bash
+npm run watch:css
+```
+
+para que se recompile automáticamente.
+
+## Qué incluye
+
+- **Header con navegación clara** — enlaces a cada sección + botón de
+  "Reservar mesa" siempre visible, con menú hamburguesa accesible en móvil
+  (maneja `aria-expanded`, se cierra con Escape, foco visible).
+- **Hero** explicando qué hacemos y por qué reservar.
+- **Sección "Qué hacemos"** con los diferenciadores del servicio.
+- **Sección de experiencia en hostelería** con métricas.
+- **Contacto** con dirección, teléfono, email, horario y mapa embebido.
+- **Footer profesional** con navegación, legal y redes.
+- **Formulario de reserva** (`reserva.html`, fuera de la landing) con los
+  campos: nombre, apellidos, email, teléfono, número de personas,
+  día y hora.
+- **Validación 100% en JS antes de enviar** (`js/reserva.js`): formato de
+  email, teléfono, rango de personas (1-20), fecha no pasada, no lunes
+  (cerrado), hora dentro del horario de servicio según el día. Cada campo
+  muestra su propio mensaje de error, más un resumen accesible
+  (`aria-live`) para lectores de pantalla.
+- **SEO**: `<title>` y `<meta description>` únicos por página, Open Graph,
+  `rel="canonical"`, y marcado **schema.org `Restaurant`** en JSON-LD con
+  dirección, teléfono, horario y rango de precio.
+- **Accesibilidad**: enlace "saltar al contenido", landmarks semánticos
+  (`header`, `nav`, `main`, `footer`), labels asociados a cada input,
+  `aria-invalid`/`aria-describedby` en errores de formulario, contraste
+  cuidado, y foco visible en todos los elementos interactivos.
+
+## Pendiente para conectar de verdad el envío de reservas
+
+Ahora mismo `js/reserva.js` simula el envío porque todavía no hay backend conectado. El punto exacto a
+modificar es la función `enviarReserva()` al final de ese archivo:
+
+1. **Opción elegida:** un `fetch` a la API
+   central del panel operativo (`POST /api/crm/orders` o un endpoint
+   nuevo tipo `/api/reservas`), y desde ahí el backend dispara el email al
+   cliente y la notificación interna (con Nodemailer, Resend, Postmark...).
+
+
+Solución a los pedidos online:
+
+Se conecta Git > vercel > Supabase > Resend 
+
+Web pública (Brasaland)
+   └─ botón "Pedir online" → App de pedido (cliente)
+                                   │
+                                   ▼
+                    API CENTRAL 
+                    ── Menú por local
+                    ── Pedidos (ya existe el modelo Order)
+                    ── Estado del pedido en tiempo real (WebSockets,
+                       igual que con las recetas de cocina)
+                                   │
+                    ┌──────────────┴──────────────┐
+                    ▼                              ▼
+            App de POS (empleados)          Dashboard BI (ya existe)
+            Colombia y EE.UU.                ve ventas de ambos
+            ven los pedidos entrantes         locales en vivo
+            de su propio local en vivo
+
+
+INFORMACIÓN SOLICITADA POR LA EMPRESA:
+Tu departamento y el problema que debes resolver
+Trabajas en Brasaland Digital, el equipo interno creado por la CEO Mariana Restrepo para liderar la transformación digital de la empresa, y reportas directamente al CTO Nicolás Park. El sitio web corporativo actual de Brasaland es de 2019, no permite pedidos en línea, y solo muestra el menú. No refleja que la empresa opera en dos países ni presenta adecuadamente la experiencia de marca. Camila Ospina (Gerente de Marketing) necesita un sitio web renovado que presente la marca profesionalmente, muestre las ubicaciones en ambos países, y capture información de personas interesadas en formar parte del programa de fidelización digital.
+
+Tu stakeholder
+
+Camila Ospina, Gerente de Marketing
+
+Hola,
+
+Necesitamos relanzar nuestro sitio web corporativo. Debe presentar Brasaland como lo que somos: una cadena seria de restaurantes a la brasa con presencia en Colombia y Estados Unidos. Quiero una landing page que explique nuestra propuesta de valor, muestre nuestras ubicaciones en ambos países, y presente nuestro nuevo programa de fidelización digital "Brasa Points". También necesito una página con un formulario para que las personas puedan registrarse en el programa de fidelización. Actualmente usamos tarjetas físicas que se pierden y no generan datos. Quiero capturar: nombre, email, teléfono, país, ciudad, ubicación favorita, preferencias alimentarias, y cómo nos conocieron. El sitio debe ser responsive, accesible, y optimizado para SEO. El soporte multiidioma (español e inglés) es opcional pero altamente recomendado; empieza con un idioma base. Usa Tailwind y asegúrate de que las validaciones funcionen perfectamente.
+
+
+Falta brasapoints 
+Falta preguntar por pais, ciudad, ubicacion favorita dentro del restaurante, añadir preferencias dentro de notas y como nos conocieron 

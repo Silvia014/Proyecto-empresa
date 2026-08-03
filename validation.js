@@ -171,8 +171,10 @@ function setupForm() {
       limpiarFormularioCompleto(form);
       tocados.clear();
     } catch (err) {
+      console.error("Error completo:", err);
+
       mostrarResumenErrores(
-        { general: t("reserva.errors.general"), "data-i18n": "reserva.errors.general" },
+        { general: err.message },
         resumen,
         listaErrores
       );
@@ -259,18 +261,19 @@ function ocultar(el) {
 }
 
 async function enviarReserva(datos) {
-  console.log("Reserva a enviar (todavía sin backend conectado):", datos);
-  return new Promise((resolve) => setTimeout(resolve, 600));
-}
-
-// Conectamos Supabase Functions para enviar la reserva al backend y que este se encargue de enviar el email de confirmación y la notificación interna al restaurante.
-await fetch(
-  "https://restaurant-platform.functions.supabase.co/reserva",
-  {
+  const respuesta = await fetch("/api/reservas", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(datos)
+    body: JSON.stringify(datos),
+  });
+
+  if (!respuesta.ok) {
+    const error = await respuesta.json();
+    throw new Error(error.error || "Error al enviar la reserva");
   }
-);
+
+  return await respuesta.json();
+}
+
