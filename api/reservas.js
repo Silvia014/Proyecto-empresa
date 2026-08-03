@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SECRET_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 console.log("URL:", process.env.SUPABASE_URL);
@@ -33,11 +33,6 @@ console.log("KEY:", !!process.env.SUPABASE_SECRET_KEY);
   hora,
   notas,
 } = req.body;
-
-const { data: userData, error: userError } = await supabase.auth.getUser();
-
-console.log("Usuario:", userData);
-console.log("Error auth:", userError);
 
 const { error } = await supabase
   .from("reservas")
