@@ -362,8 +362,9 @@ const translations = {
 };
 
 function setLanguage(lang) {
-
   document.documentElement.lang = lang;
+
+  localStorage.setItem("language", lang);
 
   document.querySelectorAll("[data-i18n]").forEach(element => {
 
