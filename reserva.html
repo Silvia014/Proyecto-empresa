@@ -77,8 +77,20 @@
 
       <div>
         <label for="telefono" class="field-label" data-i18n="reserva.labels.telefono">Teléfono <span aria-hidden="true">*</span></label>
-        <input type="tel" id="telefono" name="telefono" class="field-input" autocomplete="tel" placeholder="600 000 000" required aria-required="true" aria-describedby="error-telefono" />
+        <input type="tel" id="telefono" name="telefono" class="field-input" autocomplete="tel" data-i18n-placeholder="reserva.placeholders.telefono" required aria-required="true" aria-describedby="error-telefono" />
         <p id="error-telefono" class="field-error hidden"></p>
+      </div>
+
+      <div>
+        <label for="pais" class="field-label" data-i18n="reserva.labels.pais">País</label>
+        <input type="text" id="pais" name="pais" class="field-input" autocomplete="country-name" />
+        <p id="error-pais" class="field-error hidden"></p>
+      </div>
+
+      <div>
+        <label for="ciudad" class="field-label" data-i18n="reserva.labels.ciudad">Ciudad</label>
+        <input type="text" id="ciudad" name="ciudad" class="field-input" autocomplete="address-level2" />
+        <p id="error-ciudad" class="field-error hidden"></p>
       </div>
 
       <div>
@@ -100,10 +112,97 @@
         <p class="mt-1 text-xs text-walnut/50" data-i18n="reserva.hoursNote">Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.</p>
       </div>
 
+      <div>
+      <label for="ubicacion" class="field-label" data-i18n="reserva.labels.ubicacion">
+        Preferencia de ubicación
+      </label>
+
+      <select id="ubicacion" name="ubicacion" class="field-input">
+        <option value="sin_preferencia" data-i18n="reserva.options.noPreference">
+          Sin preferencia
+        </option>
+
+        <option value="terraza" data-i18n="reserva.options.terrace">
+          Terraza
+        </option>
+
+        <option value="interior" data-i18n="reserva.options.interior">
+          Interior
+        </option>
+
+        <option value="patio" data-i18n="reserva.options.patio">
+          Patio
+        </option>
+      </select>
+
+      <p id="error-ubicacion" class="field-error hidden"></p>
+     </div>
+
       <div class="sm:col-span-2">
-        <label for="notas" class="field-label" data-i18n="reserva.labels.notas">Notas (alergias, celebraciones...)</label>
-        <textarea id="notas" name="notas" rows="3" class="field-input"></textarea>
+       <label for="preferencias" class="field-label" data-i18n="reserva.labels.preferencias">
+        Preferencias
+       </label>
+
+       <textarea
+        id="preferencias"
+        name="preferencias"
+        rows="3"
+        class="field-input"
+        data-i18n-placeholder="reserva.placeholders.preferencias"
+       ></textarea>
       </div>
+
+      <div class="sm:col-span-2">
+  <label
+    for="como_nos_conociste"
+    class="field-label"
+    data-i18n="reserva.labels.comoNosConociste"
+  >
+    ¿Cómo nos conociste?
+  </label>
+
+  <select
+    id="como_nos_conociste"
+    name="como_nos_conociste"
+    class="field-input"
+  >
+    <option value="" data-i18n="reserva.options.selectOne">
+      Selecciona una opción
+    </option>
+
+        <option value="google" data-i18n="reserva.options.google">
+          Google
+        </option>
+
+        <option value="instagram" data-i18n="reserva.options.instagram">
+          Instagram
+        </option>
+
+        <option value="facebook" data-i18n="reserva.options.facebook">
+          Facebook
+        </option>
+
+        <option value="tiktok" data-i18n="reserva.options.tiktok">
+          TikTok
+        </option>
+
+        <option value="tripadvisor" data-i18n="reserva.options.tripadvisor">
+          TripAdvisor
+        </option>
+
+        <option value="recomendacion" data-i18n="reserva.options.recommendation">
+          Recomendación de amigos o familiares
+        </option>
+
+        <option value="pasando" data-i18n="reserva.options.passingBy">
+          Pasando por la zona
+        </option>
+
+        <option value="otro" data-i18n="reserva.options.other">
+          Otro
+        </option>
+      </select>
+    </div>
 
       <div class="sm:col-span-2 mt-2 flex flex-wrap gap-3">
         <button type="submit" id="btn-enviar" class="btn-primary" data-i18n="reserva.buttons.submit">
