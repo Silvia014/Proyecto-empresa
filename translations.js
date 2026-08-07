@@ -129,10 +129,35 @@ const translations = {
         apellidos: "Apellidos",
         email: "Email",
         telefono: "Teléfono",
+        pais: "País",
+        ciudad: "Ciudad",
         personas: "Número de comensales",
         dia: "Día de la reserva",
         hora: "Hora de la reserva",
-        notas: "Notas (alergias, celebraciones...)"
+        ubicacion: "Preferencia de ubicación",
+        preferencias: "Preferencias",
+        comoNosConociste: "¿Cómo nos conociste?"
+      },
+
+      options: {
+        noPreference: "Sin preferencia",
+        terrace: "Terraza",
+        interior: "Interior",
+        patio: "Patio",
+        selectOne: "Selecciona una opción",
+        google: "Google",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        tripadvisor: "TripAdvisor",
+        recommendation: "Recomendación de amigos o familiares",
+        passingBy: "Pasando por la zona",
+        other: "Otro"
+      },
+
+      placeholders: {
+      telefono: "+57 601 234 5678",
+      preferencias: "Alergias, celebraciones, preferencias alimentarias..."
       },
 
       hoursNote: "Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.",
@@ -311,11 +336,36 @@ const translations = {
         apellidos: "Last name",
         email: "Email",
         telefono: "Phone",
+        pais: "Country",
+        ciudad: "City",
         personas: "Number of guests",
         dia: "Reservation date",
         hora: "Reservation time",
-        notas: "Notes (allergies, celebrations...)"
+        ubicacion: "Seating preference",
+        preferencias: "Preferences",
+        comoNosConociste: "How did you hear about us?"
       },
+
+      options: {
+        noPreference: "No preference",
+        terrace: "Terrace",
+        interior: "Indoor",
+        patio: "Patio",
+        selectOne: "Select an option",
+        google: "Google",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        tripadvisor: "TripAdvisor",
+        recommendation: "Friend or family recommendation",
+        passingBy: "Passing by",
+        other: "Other"
+      },
+
+      placeholders: {
+        telefono: "+1 123 456 7890",
+        preferencias: "Allergies, celebrations, dietary preferences..."
+        },
 
       hoursNote: "We serve from 1:00 PM to 11:00 PM (until midnight Friday and Saturday). Closed Mondays.",
 
@@ -366,8 +416,8 @@ function setLanguage(lang) {
 
   localStorage.setItem("language", lang);
 
+  // Translate normal elements using data-i18n
   document.querySelectorAll("[data-i18n]").forEach(element => {
-
     const keys = element.dataset.i18n.split(".");
 
     let value = translations[lang];
@@ -380,26 +430,51 @@ function setLanguage(lang) {
       element.innerHTML = value;
     }
 
-    if (element.tagName === "A" && element.dataset.i18n === "contacto.email") {
+    // Special case for email links
+    if (
+      element.tagName === "A" &&
+      element.dataset.i18n === "contacto.email"
+    ) {
       element.href = `mailto:${value}`;
     }
   });
 
+  // Translate placeholders using data-i18n-placeholder
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+    const keys = element.dataset.i18nPlaceholder.split(".");
+
+    let value = translations[lang];
+
+    keys.forEach(key => {
+      value = value?.[key];
+    });
+
+    if (value !== undefined) {
+      element.placeholder = value;
+    }
+  });
+
+  // Update page title
   document.title =
     lang === "es"
       ? "Brasaland — Restaurante en Colombia y Florida"
       : "Brasaland — Grill Restaurant in Colombia and Florida";
 
-  document
-    .querySelector('meta[name="description"]')
-    .setAttribute(
+  // Update meta description
+  const metaDescription = document.querySelector(
+    'meta[name="description"]'
+  );
+
+  if (metaDescription) {
+    metaDescription.setAttribute(
       "content",
       lang === "es"
         ? "Brasaland: cocina de temporada..."
         : "Brasaland: seasonal cuisine..."
     );
-
+  }
 }
+
 const selector = document.getElementById("language-selector");
 
 const idiomaGuardado = localStorage.getItem("language") || "es";
