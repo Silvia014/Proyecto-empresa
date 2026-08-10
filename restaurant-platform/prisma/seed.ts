@@ -2,6 +2,11 @@ import "dotenv/config";
 import { PrismaClient, ModuleName, PermissionAction } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+declare const process: {
+  env: Record<string, string | undefined>;
+  exit: (code?: number) => never;
+};
+
 const prisma = new PrismaClient();
 
 const ALL_MODULES: ModuleName[] = ["INVENTORY", "CRM", "HR", "KITCHEN", "BI", "ADMIN", "ORDERS"];
@@ -22,13 +27,13 @@ const ROLE_DEFINITIONS: {
   {
     key: "ADMIN",
     name: "Admin (CEO / CTO)",
-    description: "Acceso total operativo, igual que superadmin salvo matices que se definan más adelante",
+    description: "Acceso total operativo",
     permissions: ALL_MODULES.flatMap((m) => ALL_ACTIONS.map((a) => ({ module: m, action: a }))),
   },
   {
     key: "RRHH",
     name: "RRHH",
-    description: "Solo acceso al módulo de RRHH (vacaciones, ausencias, KPIs)",
+    description: "Solo acceso al módulo de RRHH",
     permissions: [
       { module: "HR", action: "READ" },
       { module: "HR", action: "WRITE" },
@@ -46,7 +51,7 @@ const ROLE_DEFINITIONS: {
   {
     key: "DIRECTOR_COCINA",
     name: "Director de cocina",
-    description: "Recetas y normas del restaurante, lectura de inventario, y gestión de pedidos entrantes (cambia el estado a en preparación/listo)",
+    description: "Recetas y normas, lectura de inventario, y gestión de pedidos entrantes",
     permissions: [
       { module: "KITCHEN", action: "READ" },
       { module: "KITCHEN", action: "WRITE" },
@@ -58,7 +63,7 @@ const ROLE_DEFINITIONS: {
   {
     key: "RESPONSABLE_FORMACION",
     name: "Responsable de formación",
-    description: "Lectura de recetas/normas (para formar al equipo) y lectura de RRHH",
+    description: "Lectura de recetas/normas y lectura de RRHH",
     permissions: [
       { module: "KITCHEN", action: "READ" },
       { module: "HR", action: "READ" },
@@ -67,7 +72,7 @@ const ROLE_DEFINITIONS: {
   {
     key: "POS_SALA",
     name: "Personal de sala / POS",
-    description: "Ve y gestiona los pedidos entrantes (online y de mostrador) en tiempo real",
+    description: "Ve y gestiona los pedidos entrantes en tiempo real",
     permissions: [
       { module: "ORDERS", action: "READ" },
       { module: "ORDERS", action: "WRITE" },
@@ -102,9 +107,18 @@ async function main() {
     }
   }
 
-  console.log("Creando carta de ejemplo...");
+  console.log("Creando proveedor y carta de ejemplo...");
   const bogota = await prisma.location.findFirst({ where: { name: "Brasaland Bogotá" } });
   const miami = await prisma.location.findFirst({ where: { name: "Brasaland Miami" } });
+
+  let supplierBogota = bogota ? await prisma.supplier.findFirst({ where: { locationId: bogota.id } }) : null;
+  if (bogota && !supplierBogota) {
+    supplierBogota = await prisma.supplier.create({ data: { name: "Proveedor Local Bogotá", locationId: bogota.id } });
+  }
+  let supplierMiami = miami ? await prisma.supplier.findFirst({ where: { locationId: miami.id } }) : null;
+  if (miami && !supplierMiami) {
+    supplierMiami = await prisma.supplier.create({ data: { name: "Local Supplier Miami", locationId: miami.id } });
+  }
 
   const menuSeed = [
     ...(bogota
@@ -130,6 +144,28 @@ async function main() {
     }
   }
 
+  const inventorySeed = [
+    ...(bogota && supplierBogota
+      ? [
+          { name: "Carne de res", category: "Carnes", unit: "kg", currentStock: 12, minStock: 15, price: 38000, currency: "COP", locationId: bogota.id, supplierId: supplierBogota.id },
+          { name: "Yuca", category: "Verduras", unit: "kg", currentStock: 30, minStock: 10, price: 4500, currency: "COP", locationId: bogota.id, supplierId: supplierBogota.id },
+        ]
+      : []),
+    ...(miami && supplierMiami
+      ? [
+          { name: "Beef churrasco", category: "Carnes", unit: "kg", currentStock: 8, minStock: 10, price: 22, currency: "USD", locationId: miami.id, supplierId: supplierMiami.id },
+          { name: "Sparkling water", category: "Bebidas", unit: "unidad", currentStock: 50, minStock: 20, price: 0.8, currency: "USD", locationId: miami.id, supplierId: supplierMiami.id },
+        ]
+      : []),
+  ];
+
+  for (const item of inventorySeed) {
+    const existing = await prisma.inventoryItem.findFirst({ where: { name: item.name, locationId: item.locationId } });
+    if (!existing) {
+      await prisma.inventoryItem.create({ data: item });
+    }
+  }
+
   console.log("Creando usuario superadmin...");
   const superadminRole = await prisma.role.findUniqueOrThrow({ where: { key: "SUPERADMIN" } });
   const email = process.env.SUPERADMIN_EMAIL || "superadmin@turestaurante.com";
@@ -139,13 +175,7 @@ async function main() {
   await prisma.user.upsert({
     where: { email },
     update: {},
-    create: {
-      email,
-      name: "Superadmin",
-      passwordHash,
-      roleId: superadminRole.id,
-      locationId: null,
-    },
+    create: { email, name: "Superadmin", passwordHash, roleId: superadminRole.id, locationId: null },
   });
 
   console.log("Seed completado.");

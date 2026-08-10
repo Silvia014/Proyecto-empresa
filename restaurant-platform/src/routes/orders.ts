@@ -3,6 +3,7 @@ import type { Server as SocketIOServer } from "socket.io";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 import { requirePermission, locationFilter } from "../middleware/permissions";
+import { validateOrderLines } from "../lib/shared-utils/validations";
 
 export function ordersRouter(io: SocketIOServer) {
   const router = Router();
@@ -39,8 +40,18 @@ export function ordersRouter(io: SocketIOServer) {
     res.json(order);
   });
 
+  // Antes esta ruta no validaba nada de las líneas del pedido creado
+  // manualmente desde el POS. Ahora usa `validateOrderLines` (trasladada
+  // de brasaland-utils): al menos un artículo, cantidades > 0, precios
+  // unitarios no negativos.
   router.post("/", requirePermission("ORDERS", "WRITE"), async (req, res) => {
     const { customerId, locationId, items, totalUsd, totalCop, fulfillment } = req.body;
+
+    const validation = validateOrderLines(items);
+    if (!validation.valid) {
+      return res.status(400).json({ error: "Líneas de pedido inválidas", details: validation.errors });
+    }
+
     const order = await prisma.order.create({
       data: {
         customerId,
