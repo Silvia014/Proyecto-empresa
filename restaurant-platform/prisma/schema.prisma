@@ -1,7 +1,7 @@
 // ==========================================================
 // SCHEMA CENTRAL - Plataforma de gestión de restaurantes
 // Locales, usuarios/roles/permisos, inventario, pedidos/clientes,
-// RRHH, recetas de cocina y ventas para BI.
+// RRHH, recetas de cocina, menú/pedido online y ventas para BI.
 // ==========================================================
 
 generator client {
@@ -21,7 +21,7 @@ model Location {
   name      String
   city      String
   country   String
-  currency  String   // moneda "nativa" del local, ej. USD o COP
+  currency  String
   createdAt DateTime @default(now())
 
   users        User[]
@@ -40,13 +40,13 @@ model Location {
 // USUARIOS Y ROLES / PERMISOS (RBAC)
 // -----------------------------
 enum ModuleName {
-  INVENTORY // inventario, compras, proveedores
-  CRM       // pedidos y clientes
-  HR        // RRHH
-  KITCHEN   // recetas y normas
-  BI        // dashboard de negocio
-  ADMIN     // gestión de usuarios/roles
-  ORDERS    // pedidos online + POS en tiempo real
+  INVENTORY
+  CRM
+  HR
+  KITCHEN
+  BI
+  ADMIN
+  ORDERS
 }
 
 enum PermissionAction {
@@ -104,6 +104,7 @@ model Supplier {
 model InventoryItem {
   id           String   @id @default(uuid())
   name         String
+  category     String   @default("Otros") // ej. "Carnes", "Verduras", "Bebidas", "Otros"
   unit         String
   currentStock Float    @default(0)
   minStock     Float    @default(0)
@@ -132,7 +133,7 @@ model Purchase {
 }
 
 // -----------------------------
-// PEDIDOS / CLIENTES (CRM + IA de sugerencias)
+// PEDIDOS / CLIENTES
 // -----------------------------
 model Customer {
   id          String   @id @default(uuid())
