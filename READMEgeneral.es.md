@@ -418,4 +418,3 @@ Transformaciones y agregaciones: Implementa funciones que tomen colecciones de o
 Validaciones de negocio: Crea funciones que validen que los datos cumplan con las reglas específicas de tu empresa antes de ser procesados o almacenados. Por ejemplo, verificar que un elemento tenga todos los campos obligatorios, que los valores numéricos estén dentro de rangos permitidos, o que las fechas sean coherentes.
 
 
-Falta brasapoints 
