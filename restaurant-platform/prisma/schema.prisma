@@ -1,7 +1,7 @@
 // ==========================================================
 // SCHEMA CENTRAL - Plataforma de gestión de restaurantes
 // Locales, usuarios/roles/permisos, inventario, pedidos/clientes,
-// RRHH, recetas de cocina y ventas para BI.
+// RRHH, recetas de cocina, menú/pedido online y ventas para BI.
 // ==========================================================
 
 generator client {
@@ -16,12 +16,13 @@ datasource db {
 // -----------------------------
 // LOCALES
 // -----------------------------
+
 model Location {
   id        String   @id @default(uuid())
   name      String
   city      String
   country   String
-  currency  String   // moneda "nativa" del local, ej. USD o COP
+  currency  String
   createdAt DateTime @default(now())
 
   users        User[]
@@ -34,19 +35,21 @@ model Location {
   timeOffs     TimeOff[]
   serviceStats ServiceStat[]
   menuItems    MenuItem[]
+
+  brasapointsRules BrasapointsRule[]
 }
 
 // -----------------------------
 // USUARIOS Y ROLES / PERMISOS (RBAC)
 // -----------------------------
 enum ModuleName {
-  INVENTORY // inventario, compras, proveedores
-  CRM       // pedidos y clientes
-  HR        // RRHH
-  KITCHEN   // recetas y normas
-  BI        // dashboard de negocio
-  ADMIN     // gestión de usuarios/roles
-  ORDERS    // pedidos online + POS en tiempo real
+  INVENTORY
+  CRM
+  HR
+  KITCHEN
+  BI
+  ADMIN
+  ORDERS
 }
 
 enum PermissionAction {
@@ -55,8 +58,8 @@ enum PermissionAction {
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  key         String   @unique
+  id          String  @id @default(uuid())
+  key         String  @unique
   name        String
   description String?
 
@@ -65,26 +68,26 @@ model Role {
 }
 
 model RolePermission {
-  id       String            @id @default(uuid())
-  roleId   String
-  module   ModuleName
-  action   PermissionAction
-  role     Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id     String           @id @default(uuid())
+  roleId String
+  module ModuleName
+  action PermissionAction
+  role   Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, module, action])
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   passwordHash String
   name         String
-  active       Boolean  @default(true)
+  active       Boolean   @default(true)
   roleId       String
-  role         Role     @relation(fields: [roleId], references: [id])
+  role         Role      @relation(fields: [roleId], references: [id])
   locationId   String?
   location     Location? @relation(fields: [locationId], references: [id])
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 }
 
 // -----------------------------
@@ -97,18 +100,19 @@ model Supplier {
   locationId String
   location   Location @relation(fields: [locationId], references: [id])
 
-  items      InventoryItem[]
-  purchases  Purchase[]
+  items     InventoryItem[]
+  purchases Purchase[]
 }
 
 model InventoryItem {
   id           String   @id @default(uuid())
   name         String
+  category     String   @default("Otros") // ej. "Carnes", "Verduras", "Bebidas", "Otros"
   unit         String
   currentStock Float    @default(0)
   minStock     Float    @default(0)
   price        Float
-  currency     String   @default("USD")
+  currency     String
   supplierId   String
   supplier     Supplier @relation(fields: [supplierId], references: [id])
   locationId   String
@@ -132,17 +136,24 @@ model Purchase {
 }
 
 // -----------------------------
-// PEDIDOS / CLIENTES (CRM + IA de sugerencias)
+// PEDIDOS / CLIENTES
 // -----------------------------
 model Customer {
   id          String   @id @default(uuid())
   name        String
   email       String?
   phone       String?
+  country     String?
+  city        String?
   preferences String?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  orders Order[]
+  orders             Order[]
+  brasapointsAccount BrasapointsAccount?
+
+  @@index([email])
+  @@index([phone])
 }
 
 enum OrderStatus {
@@ -168,65 +179,158 @@ enum PaymentStatus {
 }
 
 model Order {
-  id         String   @id @default(uuid())
+  id String @id @default(uuid())
+
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
+
   locationId String
   location   Location @relation(fields: [locationId], references: [id])
-  items      OrderItem[]
-  totalUsd   Float
-  totalCop   Float?
-  createdAt  DateTime @default(now())
 
-  status        OrderStatus   @default(RECEIVED)
-  source        OrderSource   @default(ONLINE)
-  fulfillment   String        @default("pickup")
+  items OrderItem[]
+
+  // -----------------------------
+  // PRECIOS
+  // -----------------------------
+  currency String
+
+  subtotal Float
+  discount Float @default(0)
+  total    Float
+
+  // -----------------------------
+  // BRASAPOINTS
+  // -----------------------------
+  brasapointsDiscount Float @default(0)
+  brasapointsUsed     Int   @default(0)
+  brasapointsEarned   Int   @default(0)
+
+  brasapointsTransactions BrasapointsTransaction[]
+
+  // -----------------------------
+  // PEDIDO
+  // -----------------------------
+  status          OrderStatus @default(RECEIVED)
+  source          OrderSource @default(ONLINE)
+  fulfillment     String      @default("pickup")
   deliveryAddress String?
 
-  paymentStatus      PaymentStatus @default(PENDING)
-  stripeSessionId    String?       @unique
+  // -----------------------------
+  // PAGO
+  // -----------------------------
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripeSessionId       String?       @unique
   stripePaymentIntentId String?
-  updatedAt          DateTime      @updatedAt
+
+  // -----------------------------
+  // FECHAS
+  // -----------------------------
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([locationId, status])
+  @@index([customerId, createdAt])
 }
 
 model OrderItem {
-  id        String @id @default(uuid())
-  orderId   String
-  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   dishName  String
   quantity  Int
   unitPrice Float
+  subtotal  Float
+
   menuItemId String?
 }
 
 model MenuItem {
-  id           String   @id @default(uuid())
-  name         String
-  nameEn       String?
-  description  String?
-  category     String
-  price        Float
-  currency     String   @default("USD")
-  imageUrl     String?
-  available    Boolean  @default(true)
-  locationId   String
-  location     Location @relation(fields: [locationId], references: [id])
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  nameEn      String?
+  description String?
+  category    String
+  price       Float
+  currency    String
+  imageUrl    String?
+  available   Boolean  @default(true)
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id])
+  updatedAt   DateTime @updatedAt
 
   @@index([locationId, available])
+}
+
+// -----------------------------
+// BRASAPOINTS
+// -----------------------------
+
+enum BrasapointsTransactionType {
+  WELCOME
+  ORDER_REWARD
+  REDEMPTION
+  MANUAL_ADJUSTMENT
+}
+
+model BrasapointsAccount {
+  id         String   @id @default(uuid())
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  balance Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions BrasapointsTransaction[]
+}
+
+model BrasapointsTransaction {
+  id        String             @id @default(uuid())
+  accountId String
+  account   BrasapointsAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  type   BrasapointsTransactionType
+  points Int
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([orderId])
+}
+
+model BrasapointsRule {
+  id String @id @default(uuid())
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  minimumOrderAmount Float?
+  points             Int
+  pointValue         Float
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId, active])
 }
 
 // -----------------------------
 // RRHH
 // -----------------------------
 model Employee {
-  id          String   @id @default(uuid())
-  name        String
-  position    String
-  email       String   @unique
-  active      Boolean  @default(true)
+  id       String  @id @default(uuid())
+  name     String
+  position String
+  email    String  @unique
+  active   Boolean @default(true)
 
   timeOffs TimeOff[]
   shifts   Shift[]
@@ -269,14 +373,14 @@ model ServiceStat {
 // COCINA
 // -----------------------------
 model Recipe {
-  id           String   @id @default(uuid())
-  nameEs       String
-  nameEn       String
+  id             String    @id @default(uuid())
+  nameEs         String
+  nameEn         String
   instructionsEs String
   instructionsEn String
-  rulesEs      String?
-  rulesEn      String?
-  locationId   String?
-  location     Location? @relation(fields: [locationId], references: [id])
-  updatedAt    DateTime @updatedAt
+  rulesEs        String?
+  rulesEn        String?
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id])
+  updatedAt      DateTime  @updatedAt
 }
