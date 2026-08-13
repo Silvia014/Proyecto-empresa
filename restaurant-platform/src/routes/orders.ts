@@ -1,9 +1,11 @@
 import { Router } from "express";
 import type { Server as SocketIOServer } from "socket.io";
-import { prisma } from "../lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { requireAuth } from "../middleware/auth";
 import { requirePermission, locationFilter } from "../middleware/permissions";
 import { validateOrderLines } from "../lib/shared-utils/validations";
+
+const prisma = new PrismaClient();
 
 export function ordersRouter(io: SocketIOServer) {
   const router = Router();
@@ -45,31 +47,97 @@ export function ordersRouter(io: SocketIOServer) {
   // de brasaland-utils): al menos un artículo, cantidades > 0, precios
   // unitarios no negativos.
   router.post("/", requirePermission("ORDERS", "WRITE"), async (req, res) => {
-    const { customerId, locationId, items, totalUsd, totalCop, fulfillment } = req.body;
+  try {
+    const {
+      customerId,
+      locationId,
+      items,
+      fulfillment,
+    } = req.body;
+
+    // ---------------------------------------
+    // VALIDAR LÍNEAS DEL PEDIDO
+    // ---------------------------------------
 
     const validation = validateOrderLines(items);
+
     if (!validation.valid) {
-      return res.status(400).json({ error: "Líneas de pedido inválidas", details: validation.errors });
+      return res.status(400).json({
+        error: "Líneas de pedido inválidas",
+        details: validation.errors,
+      });
     }
+
+    // ---------------------------------------
+    // CALCULAR SUBTOTAL EN EL SERVIDOR
+    // ---------------------------------------
+
+    const subtotal = items.reduce(
+      (sum: number, item: { quantity: number; unitPrice: number }) =>
+        sum + item.quantity * item.unitPrice,
+      0
+    );
+
+    // ---------------------------------------
+    // CREAR PEDIDO
+    // ---------------------------------------
 
     const order = await prisma.order.create({
       data: {
         customerId,
         locationId,
-        totalUsd,
-        totalCop,
+
+        currency: "USD",
+
+        subtotal,
+        discount: 0,
+        total: subtotal,
+
+        brasapointsDiscount: 0,
+        brasapointsUsed: 0,
+        brasapointsEarned: 0,
+
         source: "POS",
         status: "RECEIVED",
         paymentStatus: "NOT_APPLICABLE",
+
         fulfillment: fulfillment || "pickup",
-        items: { create: items },
+
+        items: {
+          create: items.map(
+            (item: {
+              dishName: string;
+              quantity: number;
+              unitPrice: number;
+              menuItemId?: string;
+            }) => ({
+              dishName: item.dishName,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              subtotal: item.quantity * item.unitPrice,
+              menuItemId: item.menuItemId,
+            })
+          ),
+        },
       },
-      include: { items: true },
+
+      include: {
+        items: true,
+        customer: true,
+        location: true,
+      },
     });
 
     io.emit("order:created", order);
-    res.status(201).json(order);
-  });
 
+    return res.status(201).json(order);
+  } catch (error) {
+    console.error("Error creando pedido:", error);
+
+    return res.status(500).json({
+      error: "No se pudo crear el pedido",
+    });
+  }
+});
   return router;
 }
