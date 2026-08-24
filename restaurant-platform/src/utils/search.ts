@@ -3,7 +3,7 @@ import type { Customer, MenuItem } from "../types/models";
 /**
  * Búsqueda lineal.
  * Recorre el array desde el principio hasta encontrar
- * un elemento que cumpla la condición.
+ * un elemento que cumpla la condición
  */
 export function linearSearch<T>(
   items: T[],
@@ -23,7 +23,7 @@ export function linearSearch<T>(
  *
  * IMPORTANTE:
  * El array debe estar previamente ordenado según el valor
- * que devuelve getValue.
+ * que devuelve getValue
  */
 export function binarySearch<T, K>(
   items: T[],
@@ -56,7 +56,7 @@ export function binarySearch<T, K>(
 
 /**
  * Busca un cliente por ID en un array que no necesita
- * estar ordenado.
+ * estar ordenado
  */
 export function findCustomerById(
   customers: Customer[],
@@ -69,7 +69,7 @@ export function findCustomerById(
  * Busca un plato por precio utilizando búsqueda binaria.
  *
  * El array debe estar ordenado previamente por precio
- * de menor a mayor.
+ * de menor a mayor
  */
 export function findMenuItemByPrice(
   menuItems: MenuItem[],

@@ -1,0 +1,328 @@
+/* =====================================================
+   CANDIDATURAS
+   Estilos específicos de la sección de RRHH
+   ===================================================== */
+
+
+/* -----------------------------------------------------
+   INPUTS Y SELECTS
+   ----------------------------------------------------- */
+
+.candidate-input {
+  width: 100%;
+  height: 44px;
+
+  border: 1px solid rgba(73, 47, 35, 0.15);
+  border-radius: 0.5rem;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  padding: 0 0.75rem;
+
+  color: inherit;
+
+  font-size: 0.875rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.candidate-input:focus {
+  border-color: rgba(122, 32, 48, 0.6);
+
+  background: white;
+
+  box-shadow:
+    0 0 0 3px rgba(122, 32, 48, 0.08);
+}
+
+.candidate-input::placeholder {
+  color: rgba(73, 47, 35, 0.45);
+}
+
+
+/* -----------------------------------------------------
+   BOTÓN SECUNDARIO
+   ----------------------------------------------------- */
+
+.candidate-secondary-button {
+  height: 44px;
+
+  padding: 0 1rem;
+
+  border: 1px solid rgba(73, 47, 35, 0.15);
+  border-radius: 0.5rem;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.candidate-secondary-button:hover {
+  background: rgba(255, 255, 255, 0.7);
+
+  border-color: rgba(122, 32, 48, 0.3);
+
+  color: var(--color-wine, #7a2030);
+}
+
+
+/* -----------------------------------------------------
+   TABLA
+   ----------------------------------------------------- */
+
+.candidate-table-card {
+  overflow: hidden;
+
+  border: 1px solid rgba(73, 47, 35, 0.12);
+  border-radius: 0.75rem;
+
+  background: rgba(255, 255, 255, 0.7);
+
+  box-shadow:
+    0 1px 3px rgba(73, 47, 35, 0.04);
+}
+
+.candidate-table {
+  width: 100%;
+
+  min-width: 760px;
+
+  border-collapse: collapse;
+}
+
+.candidate-table thead {
+  background: rgba(73, 47, 35, 0.035);
+}
+
+.candidate-table th {
+  padding: 0.9rem 1.25rem;
+
+  border-bottom: 1px solid rgba(73, 47, 35, 0.1);
+
+  color: rgba(73, 47, 35, 0.65);
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.candidate-table td {
+  padding: 1.1rem 1.25rem;
+
+  border-bottom: 1px solid rgba(73, 47, 35, 0.08);
+
+  color: inherit;
+
+  font-size: 0.875rem;
+}
+
+.candidate-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.candidate-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.candidate-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+/* -----------------------------------------------------
+   CANDIDATO
+   ----------------------------------------------------- */
+
+.candidate-name {
+  color: var(--color-wine, #7a2030);
+
+  font-weight: 600;
+}
+
+.candidate-email {
+  margin-top: 0.25rem;
+
+  color: rgba(73, 47, 35, 0.55);
+
+  font-size: 0.75rem;
+}
+
+.candidate-job {
+  color: rgba(73, 47, 35, 0.8);
+}
+
+
+/* -----------------------------------------------------
+   BADGES
+   ----------------------------------------------------- */
+
+.candidate-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 28px;
+
+  padding: 0.25rem 0.65rem;
+
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.candidate-badge-status {
+  background: rgba(122, 32, 48, 0.09);
+
+  color: var(--color-wine, #7a2030);
+}
+
+.candidate-badge-stage {
+  background: rgba(73, 47, 35, 0.08);
+
+  color: rgba(73, 47, 35, 0.8);
+}
+
+
+/* -----------------------------------------------------
+   ENLACE DE DETALLE
+   ----------------------------------------------------- */
+
+.candidate-view-link {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.45rem 0.7rem;
+
+  border: 1px solid rgba(122, 32, 48, 0.18);
+  border-radius: 0.4rem;
+
+  color: var(--color-wine, #7a2030);
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.candidate-view-link:hover {
+  background: var(--color-wine, #7a2030);
+
+  border-color: var(--color-wine, #7a2030);
+
+  color: white;
+}
+
+
+/* -----------------------------------------------------
+   ESTADOS
+   ----------------------------------------------------- */
+
+.candidate-state {
+  padding: 4rem 2rem;
+
+  border: 1px solid rgba(73, 47, 35, 0.1);
+  border-radius: 0.75rem;
+
+  background: rgba(255, 255, 255, 0.65);
+
+  text-align: center;
+}
+
+.candidate-state p {
+  max-width: 500px;
+
+  margin: 0.6rem auto 0;
+
+  color: rgba(73, 47, 35, 0.6);
+
+  font-size: 0.875rem;
+}
+
+.candidate-error {
+  border-color: rgba(122, 32, 48, 0.2);
+}
+
+.candidate-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  margin: 0 auto 1rem;
+
+  border-radius: 50%;
+
+  background: rgba(122, 32, 48, 0.08);
+
+  color: var(--color-wine, #7a2030);
+
+  font-weight: 700;
+}
+
+
+/* -----------------------------------------------------
+   LOADING
+   ----------------------------------------------------- */
+
+.candidate-spinner {
+  width: 34px;
+  height: 34px;
+
+  margin: 0 auto 1.25rem;
+
+  border: 3px solid rgba(122, 32, 48, 0.12);
+
+  border-top-color: var(--color-wine, #7a2030);
+
+  border-radius: 50%;
+
+  animation: candidate-spin 0.8s linear infinite;
+}
+
+@keyframes candidate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* -----------------------------------------------------
+   RESPONSIVE
+   ----------------------------------------------------- */
+
+@media (max-width: 640px) {
+
+  .candidate-table {
+    min-width: 680px;
+  }
+
+  .candidate-state {
+    padding: 3rem 1.25rem;
+  }
+
+}
