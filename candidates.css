@@ -311,21 +311,6 @@
 }
 
 
-/* -----------------------------------------------------
-   RESPONSIVE
-   ----------------------------------------------------- */
-
-@media (max-width: 640px) {
-
-  .candidate-table {
-    min-width: 680px;
-  }
-
-  .candidate-state {
-    padding: 3rem 1.25rem;
-  }
-
-}
 
 /* =====================================================
    DETALLE DE CANDIDATURA
@@ -434,4 +419,246 @@
   opacity: 0.65;
 
   pointer-events: none;
+}
+
+/* =====================================================
+   RESPONSIVE — CANDIDATURAS
+   ===================================================== */
+
+/* ---------------------------------------------
+   MÓVIL
+   --------------------------------------------- */
+
+@media (max-width: 767px) {
+
+  /* Contenido general */
+
+  main {
+    overflow-x: hidden;
+  }
+
+  .candidates-header {
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
+  .candidates-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+
+  /* Filtros */
+
+  .candidates-filters {
+    grid-template-columns: 1fr !important;
+  }
+
+  .candidate-secondary-button {
+    width: 100%;
+  }
+
+
+  /* Tabla → tarjetas */
+
+  .candidate-table-card {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .candidate-table-wrapper {
+    overflow: visible !important;
+  }
+
+  .candidate-table {
+    min-width: 0;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .candidate-table thead {
+    display: none;
+  }
+
+  .candidate-table tbody {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .candidate-table tbody tr {
+    display: block;
+
+    padding: 1rem;
+
+    border: 1px solid rgba(73, 47, 35, 0.12);
+    border-radius: 0.75rem;
+
+    background: rgba(255, 255, 255, 0.72);
+
+    box-shadow:
+      0 1px 3px rgba(73, 47, 35, 0.04);
+  }
+
+  .candidate-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .candidate-table tbody td {
+    display: block;
+
+    width: 100%;
+
+    padding: 0.35rem 0;
+
+    border: 0;
+
+    text-align: left !important;
+  }
+
+
+  /* Nombre */
+
+  .candidate-table tbody td:first-child {
+    padding-bottom: 0.75rem;
+  }
+
+  .candidate-table tbody td:first-child .candidate-name {
+    font-size: 1rem;
+  }
+
+
+  /* Puesto */
+
+  .candidate-table tbody td:nth-child(2)::before {
+    content: "Puesto";
+
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: rgba(73, 47, 35, 0.5);
+
+    font-size: 0.65rem;
+    font-weight: 600;
+
+    letter-spacing: 0.06em;
+
+    text-transform: uppercase;
+  }
+
+
+  /* Estado */
+
+  .candidate-table tbody td:nth-child(3)::before {
+    content: "Estado";
+
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: rgba(73, 47, 35, 0.5);
+
+    font-size: 0.65rem;
+    font-weight: 600;
+
+    letter-spacing: 0.06em;
+
+    text-transform: uppercase;
+  }
+
+
+  /* Etapa */
+
+  .candidate-table tbody td:nth-child(4)::before {
+    content: "Etapa";
+
+    display: block;
+
+    margin-bottom: 0.2rem;
+
+    color: rgba(73, 47, 35, 0.5);
+
+    font-size: 0.65rem;
+    font-weight: 600;
+
+    letter-spacing: 0.06em;
+
+    text-transform: uppercase;
+  }
+
+
+  /* Acción */
+
+  .candidate-table tbody td:last-child {
+    padding-top: 0.9rem;
+  }
+
+  .candidate-view-link {
+    display: flex;
+
+    width: 100%;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.65rem 0.8rem;
+
+    border-radius: 0.5rem;
+
+    background: transparent;
+
+    color: var(--color-wine, #7a2030);
+  }
+
+  .candidate-view-link:hover {
+    background: var(--color-wine, #7a2030);
+    color: white;
+  }
+
+
+  /* Estados */
+
+  .candidate-state {
+    padding: 3rem 1.25rem;
+  }
+
+  .candidate-state h2 {
+    font-size: 1.5rem;
+  }
+
+
+  /* Resumen */
+
+  #results-count,
+  #results-description {
+    display: block;
+    margin-left: 0;
+  }
+
+  #results-description {
+    margin-top: 0.2rem;
+  }
+
+}
+
+
+/* ---------------------------------------------
+   TABLET
+   --------------------------------------------- */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+
+  .candidate-table {
+    min-width: 700px;
+  }
+
+  .candidate-table th,
+  .candidate-table td {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
 }

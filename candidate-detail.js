@@ -104,9 +104,40 @@ async function loadCandidate() {
 
     if (!response.ok) {
 
-      throw new Error(
-        `La API ha respondido con ${response.status}.`
-      );
+      let message = `La API ha respondido con ${response.status}.`;
+      const responseText = await response.text();
+
+      try {
+        const data = JSON.parse(responseText);
+
+        if (data.details) {
+          message = Object.entries(data.details)
+            .map(([field, error]) => `${field}: ${error}`)
+            .join(" | ");
+        } else if (Array.isArray(data.detail)) {
+          message = data.detail
+            .map((error) => {
+              const field = Array.isArray(error.loc)
+                ? error.loc.join(".")
+                : "campo";
+
+              return `${field}: ${error.msg}`;
+            })
+            .join(" | ");
+        } else if (typeof data.detail === "string") {
+          message = data.detail;
+        } else if (data.message) {
+          message = data.message;
+        } else if (data.error) {
+          message = data.error;
+        }
+      } catch {
+        if (responseText) {
+          message = responseText;
+        }
+      }
+
+      throw new Error(message);
     }
 
 
@@ -228,47 +259,72 @@ function renderCandidate(candidate) {
 // =====================================================
 
 async function updateCandidate(fields) {
-
   setSaving(true);
-
   hideUpdateMessage();
 
+  console.log("PATCH /records/" + candidateId);
+  console.log("BODY ENVIADO:", fields);
 
   try {
+    const response = await fetch(
+      `${API_URL}/records/${encodeURIComponent(candidateId)}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fields),
+      }
+    );
 
-    const response =
-      await fetch(
-        `${API_URL}/records/${encodeURIComponent(candidateId)}`,
-        {
-          method: "PATCH",
+    const responseText = await response.text();
 
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify(fields)
-        }
-      );
-
+    console.log("STATUS API:", response.status);
+    console.log("RESPUESTA API:", responseText);
 
     if (!response.ok) {
+      let message = `La API ha respondido con ${response.status}.`;
 
-      const message =
-        await getApiError(response);
+      try {
+        const data = JSON.parse(responseText);
+
+        if (data.details) {
+          message = Object.entries(data.details)
+            .map(([field, error]) => `${field}: ${error}`)
+            .join(" | ");
+        } else if (Array.isArray(data.detail)) {
+          message = data.detail
+            .map((error) => {
+              const field = Array.isArray(error.loc)
+                ? error.loc.join(".")
+                : "campo";
+
+              return `${field}: ${error.msg}`;
+            })
+            .join(" | ");
+        } else if (typeof data.detail === "string") {
+          message = data.detail;
+        } else if (data.message) {
+          message = data.message;
+        } else if (data.error) {
+          message = data.error;
+        }
+      } catch {
+        if (responseText) {
+          message = responseText;
+        }
+      }
 
       throw new Error(message);
     }
-
 
     showUpdateMessage(
       "Cambios guardados correctamente.",
       "success"
     );
 
-
   } catch (err) {
-
-    console.error(err);
+    console.error("ERROR PATCH:", err);
 
     showUpdateMessage(
       err.message ||
@@ -277,35 +333,25 @@ async function updateCandidate(fields) {
     );
 
   } finally {
-
     setSaving(false);
   }
 }
 
+// =====================================================
+// CAMBIAR ESTADO / ETAPA
+// =====================================================
 
-statusSelect.addEventListener(
-  "change",
-  () => {
+statusSelect.addEventListener("change", async () => {
+  await updateCandidate({
+    status: statusSelect.value
+  });
+});
 
-    updateCandidate({
-      status: statusSelect.value
-    });
-
-  }
-);
-
-
-stageSelect.addEventListener(
-  "change",
-  () => {
-
-    updateCandidate({
-      stage: stageSelect.value
-    });
-
-  }
-);
-
+stageSelect.addEventListener("change", async () => {
+  await updateCandidate({
+    stage: stageSelect.value
+  });
+});
 
 // =====================================================
 // NOTAS
