@@ -418,3 +418,19 @@ Transformaciones y agregaciones: Implementa funciones que tomen colecciones de o
 Validaciones de negocio: Crea funciones que validen que los datos cumplan con las reglas específicas de tu empresa antes de ser procesados o almacenados. Por ejemplo, verificar que un elemento tenga todos los campos obligatorios, que los valores numéricos estén dentro de rangos permitidos, o que las fechas sean coherentes.
 
 
+HITO 3
+
+El departamento de People & Talent de tu empresa está en medio de una campaña de selección activa. La posición abierta ha recibido más de 100 candidaturas en menos de dos semanas y el equipo está desbordado: llevan el seguimiento de los candidatos en una hoja de cálculo compartida, escriben las notas de las entrevistas en documentos separados y actualizan los estados manualmente por hilos de correo. El proceso se está desmoronando.
+
+El equipo de Tecnología ya ha construido y expuesto una API REST para gestionar el pipeline de candidaturas. Tu trabajo es construir el frontend que el equipo de People empezará a usar el lunes. El sistema debe permitir ver todas las candidaturas de un vistazo, filtrarlas por estado y por etapa, y acceder al detalle de cada una sin perder el contexto del listado.
+
+La responsable de People ha compartido lo que necesitan con urgencia:
+
+Lo que la herramienta debe hacer
+Mostrar todas las candidaturas en un listado — nombre, puesto, estado actual y etapa actual de un vistazo.
+Permitir filtrar por estado y por etapa, y buscar por nombre o email sin recargar la página.
+Abrir la vista de detalle de un candidato y, desde ahí, cambiar su estado o etapa con una sola interacción.
+Añadir notas internas a una candidatura y eliminarlas cuando ya no sean relevantes.
+Registrar nuevas candidaturas directamente desde la interfaz y editar los datos de una cuando haya que corregir algo.
+La API ya está lista y está documentada en https://playground.4geeks.com/tracker/api/v1/docs. Todas las peticiones deben gestionarse de forma asíncrona — la interfaz debe comunicar los estados de carga y manejar los errores con claridad. El equipo no puede permitirse una herramienta que falle en silencio o que deje al usuario sin saber qué está pasando.
+
