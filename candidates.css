@@ -326,3 +326,112 @@
   }
 
 }
+
+/* =====================================================
+   DETALLE DE CANDIDATURA
+   ===================================================== */
+
+.candidate-detail-card {
+  padding: 1.5rem;
+
+  border: 1px solid rgba(73, 47, 35, 0.12);
+  border-radius: 0.75rem;
+
+  background: rgba(255, 255, 255, 0.7);
+
+  box-shadow:
+    0 1px 3px rgba(73, 47, 35, 0.04);
+}
+
+.candidate-detail-label {
+  display: block;
+
+  margin-bottom: 0.45rem;
+
+  color: rgba(73, 47, 35, 0.58);
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.candidate-textarea {
+  width: 100%;
+
+  resize: vertical;
+
+  min-height: 110px;
+
+  padding: 0.75rem;
+
+  border: 1px solid rgba(73, 47, 35, 0.15);
+  border-radius: 0.5rem;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  color: inherit;
+
+  font-size: 0.875rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.candidate-textarea:focus {
+  border-color: rgba(122, 32, 48, 0.6);
+
+  background: white;
+
+  box-shadow:
+    0 0 0 3px rgba(122, 32, 48, 0.08);
+}
+
+.candidate-note {
+  padding: 1rem;
+
+  border: 1px solid rgba(73, 47, 35, 0.1);
+  border-radius: 0.6rem;
+
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.candidate-note-content {
+  white-space: pre-wrap;
+
+  color: rgba(73, 47, 35, 0.85);
+
+  font-size: 0.875rem;
+
+  line-height: 1.6;
+}
+
+.candidate-note-date {
+  color: rgba(73, 47, 35, 0.5);
+
+  font-size: 0.75rem;
+}
+
+.candidate-note-delete {
+  color: var(--color-wine, #7a2030);
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.candidate-note-delete:hover {
+  text-decoration: underline;
+}
+
+.candidate-saving {
+  opacity: 0.65;
+
+  pointer-events: none;
+}
