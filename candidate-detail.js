@@ -286,11 +286,10 @@ async function updateCandidate(fields) {
 statusSelect.addEventListener(
   "change",
   () => {
-
     updateCandidate({
-      status: statusSelect.value
+      status: statusSelect.value,
+      stage: stageSelect.value
     });
-
   }
 );
 
@@ -298,14 +297,12 @@ statusSelect.addEventListener(
 stageSelect.addEventListener(
   "change",
   () => {
-
     updateCandidate({
+      status: statusSelect.value,
       stage: stageSelect.value
     });
-
   }
 );
-
 
 // =====================================================
 // NOTAS
