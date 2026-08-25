@@ -368,7 +368,7 @@ function renderCandidates() {
       `Mostrando ${candidates.length} de ${state.candidates.length}.`;
   }
 
-
+  console.log("tableBody:", tableBody);
   tableBody.innerHTML = "";
 
 
@@ -438,6 +438,7 @@ function renderCandidates() {
         <a
           class="candidate-view-link"
           href="candidate-detail.html?id=${encodeURIComponent(candidate.id)}"
+          data-i18n="candidateDetail.viewDetail"
         >
           Ver detalle →
         </a>
