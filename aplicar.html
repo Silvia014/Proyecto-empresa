@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Trabaja con nosotros | Brasaland</title>
+  <meta name="description" content="Únete al equipo de Brasaland. Envíanos tu candidatura y te contactaremos si encaja con una posición abierta." />
+  <meta name="robots" content="noindex, follow" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="candidates.css" />
+
+  <!-- Mantén aquí los mismos imports de Tailwind / fuentes
+       que ya utilizas en index.html -->
+</head>
+
+<body class="bg-cream text-walnut">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+
+      <a href="index.html" class="font-display text-2xl font-semibold text-wine">
+        Brasaland
+      </a>
+
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="nav-link">
+          ← Volver a la web
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- CONTENIDO -->
+  <main class="min-h-screen">
+
+    <section class="mx-auto max-w-3xl px-6 py-10 lg:px-8 lg:py-14">
+
+      <p class="section-eyebrow">Empleo</p>
+
+      <h1 class="mt-3 font-display text-4xl font-semibold text-wine sm:text-5xl">
+        Trabaja con nosotros
+      </h1>
+
+      <p class="mt-3 text-walnut/70">
+        Cuéntanos quién eres y qué puesto te interesa. Revisamos todas las candidaturas
+        y te contactaremos si encaja con una posición abierta.
+      </p>
+
+
+      <!-- ÉXITO -->
+      <section id="success-state" class="candidate-state hidden">
+
+        <div class="candidate-state-icon">✓</div>
+
+        <h2 class="font-display text-2xl text-wine">
+          ¡Candidatura enviada!
+        </h2>
+
+        <p>
+          Gracias por tu interés en Brasaland. Nuestro equipo revisará tu perfil
+          y te contactaremos por email si tu candidatura avanza en el proceso.
+        </p>
+
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <a href="index.html" class="btn-primary">
+            Volver a la web
+          </a>
+        </div>
+
+      </section>
+
+
+      <!-- ERROR -->
+      <section id="submit-error-state" class="candidate-state candidate-error hidden">
+
+        <div class="candidate-state-icon">!</div>
+
+        <h2 class="font-display text-2xl text-wine">
+          No se pudo enviar tu candidatura
+        </h2>
+
+        <p id="submit-error-message">
+          Ha ocurrido un error. Inténtalo de nuevo en unos minutos.
+        </p>
+
+        <button id="submit-retry-button" type="button" class="btn-primary mt-5">
+          Intentar de nuevo
+        </button>
+
+      </section>
+
+
+      <!-- FORMULARIO -->
+      <form id="application-form" class="mt-10 grid gap-6 sm:grid-cols-2" novalidate>
+
+        <div class="sm:col-span-2">
+          <label for="full_name" class="mb-2 block text-sm font-medium text-walnut">
+            Nombre completo <span aria-hidden="true">*</span>
+          </label>
+          <input id="full_name" name="full_name" type="text" class="candidate-input" required aria-describedby="error-full_name" />
+          <p id="error-full_name" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div>
+          <label for="email" class="mb-2 block text-sm font-medium text-walnut">
+            Email <span aria-hidden="true">*</span>
+          </label>
+          <input id="email" name="email" type="email" class="candidate-input" required aria-describedby="error-email" />
+          <p id="error-email" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div>
+          <label for="phone" class="mb-2 block text-sm font-medium text-walnut">
+            Teléfono <span aria-hidden="true">*</span>
+          </label>
+          <input id="phone" name="phone" type="tel" class="candidate-input" required aria-describedby="error-phone" />
+          <p id="error-phone" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="position" class="mb-2 block text-sm font-medium text-walnut">
+            Puesto al que aplicas <span aria-hidden="true">*</span>
+          </label>
+          <input id="position" name="position" type="text" placeholder="Ej. Camarero, Cocinero, Encargado de sala..." class="candidate-input" required aria-describedby="error-position" />
+          <p id="error-position" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div>
+          <label for="linkedin_url" class="mb-2 block text-sm font-medium text-walnut">
+            LinkedIn (opcional)
+          </label>
+          <input id="linkedin_url" name="linkedin_url" type="text" placeholder="linkedin.com/..." class="candidate-input" />
+        </div>
+
+        <div>
+          <label for="cv_url" class="mb-2 block text-sm font-medium text-walnut">
+            Enlace a tu CV <span aria-hidden="true">*</span>
+          </label>
+          <input id="cv_url" name="cv_url" type="text" placeholder="Enlace a Drive, Dropbox..." class="candidate-input" required aria-describedby="error-cv_url" />
+          <p id="error-cv_url" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div>
+          <label for="experience_years" class="mb-2 block text-sm font-medium text-walnut">
+            Años de experiencia
+          </label>
+          <input id="experience_years" name="experience_years" type="number" min="0" step="1" class="candidate-input" aria-describedby="error-experience_years" />
+          <p id="error-experience_years" class="candidate-field-error hidden"></p>
+        </div>
+
+        <div class="sm:col-span-2 mt-2">
+          <button id="submit-button" type="submit" class="btn-primary w-full sm:w-auto">
+            Enviar candidatura
+          </button>
+        </div>
+
+      </form>
+
+    </section>
+
+  </main>
+
+
+  <script src="aplicar.js"></script>
+
+</body>
+
+</html>

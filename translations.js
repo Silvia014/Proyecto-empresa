@@ -6,6 +6,7 @@ const translations = {
       about: "Qué hacemos",
       experience: "Nuestra experiencia",
       contact: "Contacto",
+      careers: "Trabaja con nosotros",
       reserve: "Reservar mesa",
       order: "Pedir online"
     },
@@ -210,6 +211,7 @@ const translations = {
       about: "What We Do",
       experience: "Our Experience",
       contact: "Contact",
+      careers: "Careers",
       reserve: "Book a Table",
       order: "Order Online"
     },
