@@ -200,6 +200,189 @@ const translations = {
         horaRange: "La hora debe estar entre {abre} y {cierra}.",
         
         general: "No se pudo enviar la reserva. Inténtalo de nuevo o llámanos por teléfono."
+      },
+
+          candidates: {
+          title: "Candidaturas",
+          subtitle: "Consulta y gestiona las candidaturas del proceso de selección.",
+          newCandidate: "+ Nueva candidatura",
+
+          filters: {
+            ariaLabel: "Filtros de candidaturas",
+            search: "Buscar",
+            searchPlaceholder: "Nombre o email...",
+            status: "Estado",
+            allStatuses: "Todos los estados",
+            stage: "Etapa",
+            allStages: "Todas las etapas",
+            clear: "Limpiar filtros"
+          },
+
+          results: {
+            count: "Candidaturas",
+            loading: "Cargando..."
+          },
+
+          loading: {
+            title: "Cargando candidaturas",
+            message: "Estamos obteniendo los datos del proceso de selección..."
+          },
+
+          error: {
+            title: "No hemos podido cargar las candidaturas",
+            message: "Ha ocurrido un error al consultar la API.",
+            retry: "Intentar de nuevo"
+          },
+
+          empty: {
+            title: "No hay candidaturas",
+            message: "No encontramos candidaturas que coincidan con los filtros."
+          },
+
+          table: {
+            candidate: "Candidato",
+            position: "Puesto",
+            status: "Estado",
+            stage: "Etapa",
+            action: "Acción",
+            view: "Ver detalle →"
+          }
+        },
+
+          candidateNew: {
+              title: "Nueva candidatura",
+              description: "Registra manualmente una candidatura nueva en el proceso de selección.",
+
+              successTitle: "Candidatura registrada",
+              successMessage: "La candidatura se ha creado correctamente.",
+              viewList: "Ver listado",
+              addAnother: "Añadir otra candidatura",
+
+              errorTitle: "No se pudo crear la candidatura",
+              errorMessage: "Ha ocurrido un error al consultar la API.",
+              retry: "Intentar de nuevo",
+
+              form: {
+                fullName: "Nombre completo",
+                fullNamePlaceholder: "Nombre y apellidos",
+
+                email: "Email",
+                emailPlaceholder: "correo@ejemplo.com",
+
+                phone: "Teléfono",
+                phonePlaceholder: "+34 600 000 000",
+
+                position: "Puesto",
+                positionPlaceholder: "Ej. Camarero",
+
+                linkedin: "LinkedIn",
+                linkedinPlaceholder: "linkedin.com/...",
+
+                cv: "Enlace al CV",
+                cvPlaceholder: "storage.com/...",
+
+                experienceYears: "Años de experiencia",
+                experienceYearsPlaceholder: "Ej. 5",
+
+                submit: "Guardar candidatura",
+                cancel: "Cancelar"
+              }
+            },
+
+          candidateDetail: {
+                loading: {
+                  title: "Loading application",
+                  message: "We're retrieving the candidate's information..."
+                },
+
+                error: {
+                  title: "We couldn't load the application",
+                  back: "Back to applications"
+                },
+
+                back: "← Back to applications",
+
+                application: "Application",
+
+                edit: "Edit application",
+
+                status: "Status",
+
+                statusOptions: {
+                  received: "Received",
+                  in_progress: "In progress",
+                  selected: "Selected",
+                  discarded: "Discarded"
+                },
+
+                stage: "Stage",
+
+                stageOptions: {
+                  pending: "Pending",
+                  review: "Review",
+                  technical_interview: "Technical interview",
+                  personal_interview: "Personal interview",
+                  offer_presented: "Offer presented"
+                },
+
+                personalInfo: "Candidate information",
+
+                email: "Email",
+                phone: "Phone",
+                linkedin: "LinkedIn",
+                cv: "CV",
+                experience: "Experience",
+                appliedDate: "Application date",
+
+                viewCV: "View CV →",
+
+                notes: {
+                  title: "Internal notes",
+                  description: "Private information for the recruitment team.",
+                  count: "0 notes",
+                  add: "Add note",
+                  placeholder: "Write an internal note...",
+                  addButton: "Add note"
+                }
+              },
+
+          aplicar: {
+            title: "Trabaja con nosotros",
+            eyebrow: "Empleo",
+            description: "Cuéntanos quién eres y qué puesto te interesa. Revisamos todas las candidaturas y te contactaremos si encaja con una posición abierta.",
+
+            successTitle: "¡Candidatura enviada!",
+            successMessage: "Gracias por tu interés en Brasaland. Nuestro equipo revisará tu perfil y te contactaremos por email si tu candidatura avanza en el proceso.",
+            backToWebsite: "Volver a la web",
+
+            errorTitle: "No se pudo enviar tu candidatura",
+            errorMessage: "Ha ocurrido un error. Inténtalo de nuevo en unos minutos.",
+            retry: "Intentar de nuevo",
+
+            form: {
+              fullName: "Nombre completo",
+              fullNamePlaceholder: "Nombre y apellidos",
+
+              email: "Email",
+              emailPlaceholder: "correo@ejemplo.com",
+
+              phone: "Teléfono",
+              phonePlaceholder: "+34 600 000 000",
+
+              position: "Puesto al que aplicas",
+              positionPlaceholder: "Ej. Camarero, Cocinero, Encargado de sala...",
+
+              linkedin: "LinkedIn (opcional)",
+              linkedinPlaceholder: "linkedin.com/...",
+
+              cv: "Enlace a tu CV",
+              cvPlaceholder: "Enlace a Drive, Dropbox...",
+
+              experienceYears: "Años de experiencia",
+              experienceYearsPlaceholder: "Ej. 3",
+
+              submit: "Enviar candidatura"
+            }
       }
     }
   },
@@ -408,10 +591,194 @@ const translations = {
         horaRange: "That day we serve from {abre} to {cierra}.",
 
         general: "The reservation couldn't be sent. Please try again or call us."
+        },
+        candidates: {
+      
+          title: "Applications",
+          subtitle: "View and manage applications in the recruitment process.",
+          newCandidate: "+ New application",
+
+          filters: {
+            ariaLabel: "Application filters",
+            search: "Search",
+            searchPlaceholder: "Name or email...",
+            status: "Status",
+            allStatuses: "All statuses",
+            stage: "Stage",
+            allStages: "All stages",
+            clear: "Clear filters"
+          },
+
+          results: {
+            count: "Applications",
+            loading: "Loading..."
+          },
+
+          loading: {
+            title: "Loading applications",
+            message: "We are retrieving the recruitment process data..."
+          },
+
+          error: {
+            title: "We couldn't load the applications",
+            message: "An error occurred while contacting the API.",
+            retry: "Try again"
+          },
+
+          empty: {
+            title: "No applications",
+            message: "We couldn't find any applications matching the selected filters."
+          },
+
+          table: {
+            candidate: "Candidate",
+            position: "Position",
+            status: "Status",
+            stage: "Stage",
+            action: "Action",
+            view: "View details →"
+          }
+        },
+
+    candidateNew: {
+        title: "New application",
+        description: "Manually register a new candidate in the recruitment process.",
+
+        successTitle: "Application registered",
+        successMessage: "The application has been created successfully.",
+        viewList: "View candidates",
+        addAnother: "Add another candidate",
+
+        errorTitle: "Could not create application",
+        errorMessage: "An error occurred while contacting the API.",
+        retry: "Try again",
+
+        form: {
+          fullName: "Full name",
+          fullNamePlaceholder: "First and last name",
+
+          email: "Email",
+          emailPlaceholder: "email@example.com",
+
+          phone: "Phone",
+          phonePlaceholder: "+34 600 000 000",
+
+          position: "Position",
+          positionPlaceholder: "e.g. Waiter",
+
+          linkedin: "LinkedIn",
+          linkedinPlaceholder: "linkedin.com/...",
+
+          cv: "CV link",
+          cvPlaceholder: "storage.com/...",
+
+          experienceYears: "Years of experience",
+          experienceYearsPlaceholder: "e.g. 5",
+
+          submit: "Save application",
+          cancel: "Cancel"
+        }
+      },
+
+    candidateDetail: {
+            loading: {
+              title: "Loading application",
+              message: "We're retrieving the candidate's information..."
+            },
+
+            error: {
+              title: "We couldn't load the application",
+              back: "Back to applications"
+            },
+
+            back: "← Back to applications",
+
+            application: "Application",
+
+            edit: "Edit application",
+
+            status: "Status",
+
+            statusOptions: {
+              received: "Received",
+              in_progress: "In progress",
+              selected: "Selected",
+              discarded: "Discarded"
+            },
+
+            stage: "Stage",
+
+            stageOptions: {
+              pending: "Pending",
+              review: "Review",
+              technical_interview: "Technical interview",
+              personal_interview: "Personal interview",
+              offer_presented: "Offer presented"
+            },
+
+            personalInfo: "Candidate information",
+
+            email: "Email",
+            phone: "Phone",
+            linkedin: "LinkedIn",
+            cv: "CV",
+            experience: "Experience",
+            appliedDate: "Application date",
+
+            viewCV: "View CV →",
+
+            notes: {
+              title: "Internal notes",
+              description: "Private information for the recruitment team.",
+              count: "0 notes",
+              add: "Add note",
+              placeholder: "Write an internal note...",
+              addButton: "Add note"
+            }
+          }
+},
+
+    aplicar: {
+        title: "Work with us",
+        eyebrow: "Careers",
+        description: "Tell us who you are and which position you're interested in. We review every application and will contact you if your profile matches an open position.",
+
+        successTitle: "Application submitted!",
+        successMessage: "Thank you for your interest in Brasaland. Our team will review your profile and contact you by email if your application moves forward.",
+        backToWebsite: "Back to the website",
+
+        errorTitle: "Could not submit your application",
+        errorMessage: "Something went wrong. Please try again in a few minutes.",
+        retry: "Try again",
+
+        form: {
+          fullName: "Full name",
+          fullNamePlaceholder: "First and last name",
+
+          email: "Email",
+          emailPlaceholder: "email@example.com",
+
+          phone: "Phone",
+          phonePlaceholder: "+34 600 000 000",
+
+          position: "Position you're applying for",
+          positionPlaceholder: "e.g. Waiter, Chef, Restaurant Manager...",
+
+          linkedin: "LinkedIn (optional)",
+          linkedinPlaceholder: "linkedin.com/...",
+
+          cv: "CV link",
+          cvPlaceholder: "Link to Drive, Dropbox...",
+
+          experienceYears: "Years of experience",
+          experienceYearsPlaceholder: "e.g. 3",
+
+          submit: "Submit application"
+        }
       }
     }
   }
-};
+
 
 function setLanguage(lang) {
   document.documentElement.lang = lang;

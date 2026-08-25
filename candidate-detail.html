@@ -14,31 +14,84 @@
 <body class="bg-cream text-walnut">
 
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-
-      <a
-        href="index.html"
-        class="font-display text-2xl font-semibold text-wine"
-      >
-        Brasaland
-      </a>
-
-      <div class="flex items-center gap-4">
-
-        <a href="candidates.html" class="nav-link">
-          ← Candidaturas
-        </a>
-
-        <span class="hidden h-5 w-px bg-walnut/20 sm:block"></span>
-
-        <span class="hidden text-sm font-medium text-walnut sm:block">
-          Recursos humanos
-        </span>
-
+      <div class="ml-12 flex items-center gap-2">
+      <span class="text-wine"></span>
+      <select
+        id="language-selector"
+        class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine".>
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+      </select>
       </div>
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand">
+            Brasaland
+          </a>
 
-    </div>
-  </header>
+          <!-- Navegación de escritorio -->
+          <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+            <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+            <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+            <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+            <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+            <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+            <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+            <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener" data-i18n="nav.order">Pedir online</a>
+          </nav>
+
+          <!-- Botón de menú móvil -->
+          <button
+            id="menu-toggle"
+            type="button"
+            class="inline-flex items-center justify-center rounded-md p-2 text-walnut lg:hidden"
+            aria-expanded="false"
+            aria-controls="menu-movil"
+            aria-label="Abrir menú de navegación"
+          >
+            <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+            </svg>
+            <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Menú móvil -->
+        <nav
+          id="menu-movil"
+          aria-label="Navegación móvil"
+          class="hidden flex-col gap-1 border-t border-walnut/10 bg-cream px-6 py-4 lg:hidden"
+        >
+          <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+
+            <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+            Qué hacemos
+            </a>
+
+            <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">
+            Nuestra experiencia
+            </a>
+
+            <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">
+            Contacto
+            </a>
+
+            <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+
+            <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
+            Reservar mesa
+            </a>
+
+            <a href="http://localhost:5174"
+              class="btn-secondary"
+              target="_blank"
+              rel="noopener"
+              data-i18n="nav.order">
+            Pedir online
+            </a>
+        </nav>
+    </header>
 
 
   <main class="min-h-screen">
@@ -54,11 +107,11 @@
 
         <div class="candidate-spinner"></div>
 
-        <h1 class="font-display text-2xl text-wine">
-          Cargando candidatura
+        <h1 class="font-display text-2xl text-wine" data-i18n="candidateDetail.loading">
+          Cargando candidatura...
         </h1>
 
-        <p>
+        <p data-i18n="candidateDetail.loading.message">
           Estamos obteniendo la información del candidato...
         </p>
 
@@ -76,19 +129,19 @@
           !
         </div>
 
-        <h1 class="font-display text-2xl text-wine">
+        <h1 class="font-display text-2xl text-wine" data-i18n="candidateDetail.error.title">
           No hemos podido cargar la candidatura
         </h1>
 
         <p id="detail-error-message">
-          Ha ocurrido un error.
+          <span data-i18n="candidateDetail.error.message">Ha ocurrido un error.</span>
         </p>
 
         <a
           href="candidates.html"
           class="btn-primary mt-5 inline-block"
         >
-          Volver a candidaturas
+          <span data-i18n="candidateDetail.error.retry">Volver a candidaturas</span>
         </a>
 
       </section>
@@ -104,7 +157,7 @@
 
           <a
             href="candidates.html"
-            class="mb-5 inline-flex text-sm font-medium text-wine hover:underline"
+            class="mb-5 inline-flex text-sm font-medium text-wine hover:underline" data-i18n="candidateDetail.back"
           >
             ← Volver a candidaturas
           </a>
@@ -113,7 +166,7 @@
 
             <div>
 
-              <p class="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-wine">
+              <p class="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-wine" data-i18n="candidateDetail.title">
                 Candidatura
               </p>
 
@@ -136,7 +189,7 @@
             <a
               id="edit-candidate-link"
               href="#"
-              class="candidate-secondary-button inline-flex items-center justify-center"
+              class="candidate-secondary-button inline-flex items-center justify-center" data-i18n="candidateDetail.edit"
             >
               Editar candidatura
             </a>
@@ -154,7 +207,7 @@
 
             <label
               for="candidate-status"
-              class="candidate-detail-label"
+              class="candidate-detail-label" data-i18n="candidateDetail.status"
             >
               Estado
             </label>
@@ -163,10 +216,10 @@
               id="candidate-status"
               class="candidate-input"
               >
-              <option value="received">Recibida</option>
-              <option value="in_progress">En proceso</option>
-              <option value="selected">Seleccionada</option>
-              <option value="discarded">Descartada</option>
+              <option value="received" data-i18n="candidateDetail.status.received">Recibida</option>
+              <option value="in_progress" data-i18n="candidateDetail.status.in_progress">En proceso</option>
+              <option value="selected" data-i18n="candidateDetail.status.selected">Seleccionada</option>
+              <option value="discarded" data-i18n="candidateDetail.status.discarded">Descartada</option>
             </select>
           </div>
 
@@ -175,7 +228,7 @@
 
             <label
               for="candidate-stage"
-              class="candidate-detail-label"
+              class="candidate-detail-label" data-i18n="candidateDetail.stage"
             >
               Etapa
             </label>
@@ -184,11 +237,11 @@
               id="candidate-stage"
               class="candidate-input"
             >
-              <option value="pending">Pendiente</option>
-              <option value="review">Revisión</option>
-              <option value="technical_interview">Entrevista técnica</option>
-              <option value="personal_interview">Entrevista personal</option>
-              <option value="offer_presented">Oferta presentada</option>
+              <option value="pending" data-i18n="candidateDetail.stage.pending">Pendiente</option>
+              <option value="review" data-i18n="candidateDetail.stage.review">Revisión</option>
+              <option value="technical_interview" data-i18n="candidateDetail.stage.technical_interview">Entrevista técnica</option>
+              <option value="personal_interview" data-i18n="candidateDetail.stage.personal_interview">Entrevista personal</option>
+              <option value="offer_presented" data-i18n="candidateDetail.stage.offer_presented">Oferta presentada</option>
             </select>
 
           </div>
@@ -211,7 +264,7 @@
 
           <div class="mb-6">
 
-            <p class="text-sm font-medium uppercase tracking-[0.14em] text-wine">
+            <p class="text-sm font-medium uppercase tracking-[0.14em] text-wine" data-i18n="candidateDetail.info">
               Información del candidato
             </p>
 
@@ -220,7 +273,7 @@
           <div class="grid gap-6 sm:grid-cols-2">
 
             <div>
-              <p class="candidate-detail-label">Email</p>
+              <p class="candidate-detail-label" data-i18n="candidateDetail.email">Email</p>
               <a
                 id="candidate-email"
                 href="#"
@@ -231,7 +284,7 @@
             </div>
 
             <div>
-              <p class="candidate-detail-label">Teléfono</p>
+              <p class="candidate-detail-label" data-i18n="candidateDetail.phone">Teléfono</p>
               <a
                 id="candidate-phone"
                 href="#"
@@ -242,7 +295,7 @@
             </div>
 
             <div>
-              <p class="candidate-detail-label">LinkedIn</p>
+              <p class="candidate-detail-label" data-i18n="candidateDetail.linkedin">LinkedIn</p>
               <a
                 id="candidate-linkedin"
                 href="#"
@@ -255,7 +308,7 @@
             </div>
 
             <div>
-              <p class="candidate-detail-label">CV</p>
+              <p class="candidate-detail-label" data-i18n="candidateDetail.cv">CV</p>
               <a
                 id="candidate-cv"
                 href="#"
@@ -268,7 +321,7 @@
             </div>
 
             <div>
-              <p class="candidate-detail-label">
+              <p class="candidate-detail-label" data-i18n="candidateDetail.experience">
                 Experiencia
               </p>
 
@@ -278,7 +331,7 @@
             </div>
 
             <div>
-              <p class="candidate-detail-label">
+              <p class="candidate-detail-label" data-i18n="candidateDetail.applied">
                 Fecha de candidatura
               </p>
 
@@ -300,11 +353,11 @@
 
             <div>
 
-              <p class="text-sm font-medium uppercase tracking-[0.14em] text-wine">
+              <p class="text-sm font-medium uppercase tracking-[0.14em] text-wine" data-i18n="candidateDetail.notes">
                 Notas internas
               </p>
 
-              <p class="mt-1 text-sm text-walnut/60">
+              <p class="mt-1 text-sm text-walnut/60" data-i18n="candidateDetail.notes.description">
                 Información privada para el equipo de selección.
               </p>
 
@@ -313,6 +366,7 @@
             <span
               id="notes-count"
               class="text-sm text-walnut/60"
+              data-i18n="candidateDetail.notes.count"
             >
               0 notas
             </span>
@@ -326,14 +380,14 @@
               for="note-content"
               class="mb-2 block text-sm font-medium text-walnut"
             >
-              Añadir nota
+              <span data-i18n="candidateDetail.notes.add">Añadir nota</span>
             </label>
 
             <textarea
               id="note-content"
               rows="4"
               required
-              placeholder="Escribe una nota interna..."
+              placeholder="Escribe una nota interna..." data-i18n-placeholder="candidateDetail.notes.placeholder"
               class="candidate-textarea"
             ></textarea>
 
@@ -343,6 +397,7 @@
                 id="add-note-button"
                 type="submit"
                 class="btn-primary"
+                data-i18n="candidateDetail.notes.addButton"
               >
                 Añadir nota
               </button>
@@ -365,7 +420,7 @@
 
   </main>
 
-
+  <script src="translations.js"></script>
   <script src="candidate-detail.js"></script>
 
 </body>

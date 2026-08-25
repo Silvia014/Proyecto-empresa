@@ -19,21 +19,85 @@
 <body class="bg-cream text-walnut">
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-
-      <a href="index.html" class="font-display text-2xl font-semibold text-wine">
-        Brasaland
-      </a>
-
-      <div class="flex items-center gap-4">
-        <a href="index.html" class="nav-link">
-          ← Volver a la web
-        </a>
+      <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+      <div class="ml-12 flex items-center gap-2">
+      <span class="text-wine"></span>
+      <select
+        id="language-selector"
+        class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine".>
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+      </select>
       </div>
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+            Brasaland
+          </a>
 
-    </div>
-  </header>
+          <!-- Navegación de escritorio -->
+          <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+            <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+            <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+            <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+            <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+            <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+            <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+            <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener" data-i18n="nav.order">Pedir online</a>
+          </nav>
+
+          <!-- Botón de menú móvil -->
+          <button
+            id="menu-toggle"
+            type="button"
+            class="inline-flex items-center justify-center rounded-md p-2 text-walnut lg:hidden"
+            aria-expanded="false"
+            aria-controls="menu-movil"
+            aria-label="Abrir menú de navegación"
+          >
+            <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+            </svg>
+            <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Menú móvil -->
+        <nav
+          id="menu-movil"
+          aria-label="Navegación móvil"
+          class="hidden flex-col gap-1 border-t border-walnut/10 bg-cream px-6 py-4 lg:hidden"
+        >
+          <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+
+    <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+    Qué hacemos
+    </a>
+
+    <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">
+    Nuestra experiencia
+    </a>
+
+    <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">
+    Contacto
+    </a>
+
+    <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+
+    <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
+    Reservar mesa
+    </a>
+
+    <a href="http://localhost:5174"
+      class="btn-secondary"
+      target="_blank"
+      rel="noopener"
+      data-i18n="nav.order">
+    Pedir online
+    </a>
+        </nav>
+      </header>
 
 
   <!-- CONTENIDO -->
@@ -41,13 +105,13 @@
 
     <section class="mx-auto max-w-3xl px-6 py-10 lg:px-8 lg:py-14">
 
-      <p class="section-eyebrow">Empleo</p>
+      <p class="section-eyebrow" data-i18n="reserva.aplicar.eyebrow">Empleo</p>
 
-      <h1 class="mt-3 font-display text-4xl font-semibold text-wine sm:text-5xl">
+      <h1 class="mt-3 font-display text-4xl font-semibold text-wine sm:text-5xl" data-i18n="reserva.aplicar.title">
         Trabaja con nosotros
       </h1>
 
-      <p class="mt-3 text-walnut/70">
+      <p class="mt-3 text-walnut/70" data-i18n="reserva.aplicar.description">
         Cuéntanos quién eres y qué puesto te interesa. Revisamos todas las candidaturas
         y te contactaremos si encaja con una posición abierta.
       </p>
@@ -58,17 +122,17 @@
 
         <div class="candidate-state-icon">✓</div>
 
-        <h2 class="font-display text-2xl text-wine">
+        <h2 class="font-display text-2xl text-wine" data-i18n="reserva.aplicar.successTitle">
           ¡Candidatura enviada!
         </h2>
 
-        <p>
+        <p data-i18n="reserva.aplicar.successMessage">
           Gracias por tu interés en Brasaland. Nuestro equipo revisará tu perfil
           y te contactaremos por email si tu candidatura avanza en el proceso.
         </p>
 
         <div class="mt-5 flex flex-wrap justify-center gap-3">
-          <a href="index.html" class="btn-primary">
+          <a href="index.html" class="btn-primary" data-i18n="aplicar.backToWebsite">
             Volver a la web
           </a>
         </div>
@@ -81,15 +145,15 @@
 
         <div class="candidate-state-icon">!</div>
 
-        <h2 class="font-display text-2xl text-wine">
+        <h2 class="font-display text-2xl text-wine" data-i18n="reserva.aplicar.errorTitle">
           No se pudo enviar tu candidatura
         </h2>
 
-        <p id="submit-error-message">
+        <p id="submit-error-message" data-i18n="reserva.aplicar.errorTitle">
           Ha ocurrido un error. Inténtalo de nuevo en unos minutos.
         </p>
 
-        <button id="submit-retry-button" type="button" class="btn-primary mt-5">
+        <button id="submit-retry-button" type="button" class="btn-primary mt-5" data-i18n="reserva.aplicar.retry">
           Intentar de nuevo
         </button>
 
@@ -100,62 +164,62 @@
       <form id="application-form" class="mt-10 grid gap-6 sm:grid-cols-2" novalidate>
 
         <div class="sm:col-span-2">
-          <label for="full_name" class="mb-2 block text-sm font-medium text-walnut">
-            Nombre completo <span aria-hidden="true">*</span>
+          <label for="full_name" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.fullName">
+            Nombre completo</span> <span aria-hidden="true">*</span>
           </label>
-          <input id="full_name" name="full_name" type="text" class="candidate-input" required aria-describedby="error-full_name" />
+          <input id="full_name" name="full_name" type="text" class="candidate-input" required aria-describedby="error-full_name" data-i18n-placeholder="reserva.aplicar.form.fullNamePlaceholder"  />
           <p id="error-full_name" class="candidate-field-error hidden"></p>
         </div>
 
         <div>
-          <label for="email" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="email" class="mb-2 block text-sm font-medium text-walnut"   data-i18n="reserva.aplicar.form.email">
             Email <span aria-hidden="true">*</span>
           </label>
-          <input id="email" name="email" type="email" class="candidate-input" required aria-describedby="error-email" />
+          <input id="email" name="email" type="email" class="candidate-input" required aria-describedby="error-email" data-i18n-placeholder="reserva.aplicar.form.emailPlaceholder" />
           <p id="error-email" class="candidate-field-error hidden"></p>
         </div>
 
         <div>
-          <label for="phone" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="phone" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.phone">
             Teléfono <span aria-hidden="true">*</span>
           </label>
-          <input id="phone" name="phone" type="tel" class="candidate-input" required aria-describedby="error-phone" />
+          <input id="phone" name="phone" type="tel" class="candidate-input" required aria-describedby="error-phone" data-i18n-placeholder="reserva.aplicar.form.phonePlaceholder" />
           <p id="error-phone" class="candidate-field-error hidden"></p>
         </div>
 
         <div class="sm:col-span-2">
-          <label for="position" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="position" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.position">
             Puesto al que aplicas <span aria-hidden="true">*</span>
           </label>
-          <input id="position" name="position" type="text" placeholder="Ej. Camarero, Cocinero, Encargado de sala..." class="candidate-input" required aria-describedby="error-position" />
+          <input id="position" name="position" type="text" class="candidate-input" required aria-describedby="error-position" data-i18n-placeholder="reserva.aplicar.form.positionPlaceholder" />
           <p id="error-position" class="candidate-field-error hidden"></p>
         </div>
 
         <div>
-          <label for="linkedin_url" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="linkedin_url" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.linkedin">
             LinkedIn (opcional)
           </label>
-          <input id="linkedin_url" name="linkedin_url" type="text" placeholder="linkedin.com/..." class="candidate-input" />
+          <input id="linkedin_url" name="linkedin_url" type="text" class="candidate-input" data-i18n-placeholder="reserva.aplicar.form.linkedinPlaceholder" />
         </div>
 
         <div>
-          <label for="cv_url" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="cv_url" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.cv">
             Enlace a tu CV <span aria-hidden="true">*</span>
           </label>
-          <input id="cv_url" name="cv_url" type="text" placeholder="Enlace a Drive, Dropbox..." class="candidate-input" required aria-describedby="error-cv_url" />
+          <input id="cv_url" name="cv_url" type="text" class="candidate-input" required aria-describedby="error-cv_url" data-i18n-placeholder="reserva.aplicar.form.cvPlaceholder" />
           <p id="error-cv_url" class="candidate-field-error hidden"></p>
         </div>
 
         <div>
-          <label for="experience_years" class="mb-2 block text-sm font-medium text-walnut">
+          <label for="experience_years" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.experienceYears">
             Años de experiencia
           </label>
-          <input id="experience_years" name="experience_years" type="number" min="0" step="1" class="candidate-input" aria-describedby="error-experience_years" />
+          <input id="experience_years" name="experience_years" type="number" min="0" step="1" class="candidate-input" aria-describedby="error-experience_years" data-i18n-placeholder="reserva.aplicar.form.experienceYearsPlaceholder" />
           <p id="error-experience_years" class="candidate-field-error hidden"></p>
         </div>
 
         <div class="sm:col-span-2 mt-2">
-          <button id="submit-button" type="submit" class="btn-primary w-full sm:w-auto">
+          <button id="submit-button" type="submit" class="btn-primary w-full sm:w-auto" data-i18n="reserva.aplicar.form.submit">
             Enviar candidatura
           </button>
         </div>
@@ -167,6 +231,7 @@
   </main>
 
 
+  <script src="translations.js"></script>
   <script src="aplicar.js"></script>
 
 </body>
