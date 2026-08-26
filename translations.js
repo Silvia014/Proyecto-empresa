@@ -735,8 +735,7 @@ const translations = {
               placeholder: "Write an internal note...",
               addButton: "Add note"
             }
-          }
-},
+          },
 
     aplicar: {
         title: "Work with us",
@@ -778,6 +777,7 @@ const translations = {
       }
     }
   }
+};
 
 
 function setLanguage(lang) {

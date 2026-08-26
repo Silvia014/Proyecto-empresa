@@ -2,12 +2,6 @@
 // main.js — comportamiento de la landing page (menú móvil, etc.)
 // ==========================================================
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupMobileMenu();
-  setCurrentYear();
-  setupScrollReveal();
-});
-
 function setupMobileMenu() {
   const toggle = document.getElementById("menu-toggle");
   const menu = document.getElementById("menu-movil");
@@ -16,22 +10,34 @@ function setupMobileMenu() {
 
   if (!toggle || !menu) return;
 
+  const backdrop = document.createElement("button");
+  backdrop.type = "button";
+  backdrop.setAttribute("aria-label", "Cerrar menú");
+  backdrop.className = "mobile-menu-backdrop hidden";
+  document.body.appendChild(backdrop);
+
   function openMenu() {
     menu.classList.remove("hidden");
     menu.classList.add("flex");
+    backdrop.classList.remove("hidden");
+    backdrop.classList.add("block");
+    document.body.classList.add("overflow-hidden");
     toggle.setAttribute("aria-expanded", "true");
     toggle.setAttribute("aria-label", "Cerrar menú de navegación");
-    iconOpen.classList.add("hidden");
-    iconClose.classList.remove("hidden");
+    if (iconOpen) iconOpen.classList.add("hidden");
+    if (iconClose) iconClose.classList.remove("hidden");
   }
 
   function closeMenu() {
     menu.classList.add("hidden");
     menu.classList.remove("flex");
+    backdrop.classList.add("hidden");
+    backdrop.classList.remove("block");
+    document.body.classList.remove("overflow-hidden");
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Abrir menú de navegación");
-    iconOpen.classList.remove("hidden");
-    iconClose.classList.add("hidden");
+    if (iconOpen) iconOpen.classList.remove("hidden");
+    if (iconClose) iconClose.classList.add("hidden");
   }
 
   toggle.addEventListener("click", () => {
@@ -43,6 +49,8 @@ function setupMobileMenu() {
   menu.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeMenu);
   });
+
+  backdrop.addEventListener("click", closeMenu);
 
   // Cierra con Escape, por accesibilidad de teclado
   document.addEventListener("keydown", (e) => {
