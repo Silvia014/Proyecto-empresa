@@ -57,6 +57,54 @@
   .field-error {
     @apply mt-1.5 text-sm font-medium text-wine;
   }
+
+  .brasapoints-section {
+    @apply bg-walnut py-20 text-cream;
+  }
+
+  .brasapoints-container {
+    @apply mx-auto max-w-7xl px-6 lg:px-8;
+  }
+
+  .brasapoints-intro {
+    @apply max-w-3xl;
+  }
+
+  .brasapoints-intro h2 {
+    @apply mt-3 text-3xl font-semibold sm:text-4xl;
+  }
+
+  .brasapoints-intro p {
+    @apply mt-5 leading-relaxed text-cream/85;
+  }
+
+  .brasapoints-grid {
+    @apply mt-12 grid gap-6 md:grid-cols-3;
+  }
+
+  .brasapoints-step {
+    @apply rounded-xl border border-cream/15 bg-cream/5 p-6 shadow-sm backdrop-blur-sm;
+  }
+
+  .brasapoints-number {
+    @apply font-display text-3xl font-semibold text-brass;
+  }
+
+  .brasapoints-step h3 {
+    @apply mt-4 text-xl font-semibold text-cream;
+  }
+
+  .brasapoints-step p {
+    @apply mt-3 text-sm leading-relaxed text-cream/80;
+  }
+
+  .brasapoints-actions {
+    @apply mt-10 flex flex-col gap-4 sm:flex-row;
+  }
+
+  .brasapoints-actions .btn-secondary {
+    @apply border-cream/40 text-cream hover:bg-cream/10;
+  }
 }
 .fade-up {
   opacity: 0;
