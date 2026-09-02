@@ -29,16 +29,16 @@
   </select>
   </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+      <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
         Brasaland
       </a>
 
       <!-- Navegación de escritorio -->
       <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
-        <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
-        <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
-        <a href="#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
-        <a href="#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+        <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+        <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
         <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
@@ -106,11 +106,11 @@
           BRASAPOINTS
         </p>
 
-        <h1 data-i18n="account.brasapoints.title">
+        <h1 data-i18n="account.title.text">
           Tu experiencia Brasaland, siempre contigo
         </h1>
 
-        <p data-i18n="account.brasapoints.text">
+        <p data-i18n="account.description.text">
           Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros
           restaurantes como en tus pedidos online.
         </p>
@@ -183,7 +183,7 @@
 
 
          <p class="account-switch">
-            ¿Ya tienes cuenta?
+            <span data-i18n="account.register.switch.text">¿Ya tienes cuenta?</span>
 
             <button
               type="button"
@@ -243,9 +243,9 @@
           </form>
 
 
-          <p class="account-switch" data-i18n="account.login.switch">
+          <p class="account-switch">
 
-            ¿Todavía no tienes cuenta?
+            <span data-i18n="account.login.switch.text">¿Todavía no tienes cuenta?</span>
 
             <button
               type="button"
@@ -265,7 +265,9 @@
 
   </main>
 
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="main.js"></script>
+  <script src="translations.js"></script>
   <script src="account.js"></script>
 
 </body>
