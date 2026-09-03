@@ -6,6 +6,7 @@ const showRegister = document.getElementById("show-register");
 
 const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
+const forgotPassword = document.getElementById("forgot-password");
 
 // ==========================================
 // SWITCH REGISTER / LOGIN
@@ -69,6 +70,44 @@ registerForm?.addEventListener("submit", async (event) => {
 });
 
 // ==========================================
+// PASSWORD RESET
+// ==========================================
+
+forgotPassword?.addEventListener("click", async () => {
+  const email = document.getElementById("login-email").value;
+
+  if (!email) {
+    alert("Please enter your email address first.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/account", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "reset-password",
+        email,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Something went wrong");
+    }
+
+    alert("Password reset email sent! Please check your inbox.");
+
+  } catch (error) {
+    console.error("Password reset error:", error);
+    alert(error.message);
+  }
+});
+
+// ==========================================
 // LOGIN
 // ==========================================
 
@@ -97,9 +136,16 @@ loginForm?.addEventListener("submit", async (event) => {
       throw new Error(result.error || "Incorrect email or password");
     }
 
-    console.log("Login successful:", result);
+      console.log("Login successful:", result);
 
-    alert("Welcome back!");
+      // Save the session locally
+      localStorage.setItem(
+        "brasaland_session",
+        JSON.stringify(result.session)
+      );
+
+      // Go to dashboard
+      window.location.href = "dashboard.html";
 
     // Next step: redirect to customer dashboard
     // window.location.href = "dashboard.html";

@@ -12,6 +12,10 @@
   <title>
     Pedido online | Brasaland</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <!-- ESTILOS GENERALES -->
   <link rel="stylesheet" href="styles.css">
 
@@ -20,30 +24,31 @@
 </head>
 
 
-<body class="bg-cream text-walnut">
+<body class="bg-cream text-walnut antialiased">
 
 <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-  <div class="ml-12 flex items-center gap-2">
-  <span class="text-wine"></span>
-  <select
-    id="language-selector"
-    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine">
-    <option value="es">ES</option>
-    <option value="en">EN</option>
-  </select>
-  </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
-        Brasaland
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+          Brasaland
+        </a>
+        <select
+          id="language-selector"
+          class="rounded-md border border-wine bg-transparent px-3 py-1 text-sm font-medium text-wine focus:border-wine focus:outline-none focus:ring-2 focus:ring-wine"
+          aria-label="Seleccionar idioma"
+        >
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
 
       <!-- Navegación de escritorio -->
       <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
-        <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
-        <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
-        <a href="#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
-        <a href="#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+        <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+        <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
         <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
@@ -73,17 +78,17 @@
       aria-label="Navegación móvil"
       class="hidden fixed right-0 top-0 z-50 h-screen w-72 flex-col gap-2 border-l border-walnut/10 bg-cream px-6 pb-6 pt-24 shadow-2xl lg:hidden"
     >
-      <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
+      <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
 
-      <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+      <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">
       Qué hacemos
       </a>
 
-      <a href="#experiencia" class="nav-link" data-i18n="nav.experience">
+      <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">
       Nuestra experiencia
       </a>
 
-      <a href="#contacto" class="nav-link" data-i18n="nav.contact">
+      <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">
       Contacto
       </a>
 
