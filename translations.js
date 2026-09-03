@@ -12,7 +12,7 @@ const translations = {
     },
 
     hero: {
-      location: "Restaurante en Colombia y Florida",
+      location: "Restaurante en Colombia y Estados Unidos",
       title: "Una mesa con la cuidada hospitalidad de un gran hotel",
       subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en la hostelería de hotel boutique: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
       button: "Reservar mesa",
@@ -120,7 +120,9 @@ const translations = {
       },
 
       reservations: {
-        title: "Reservas"
+        title: "Reservas",
+        bookTable: "Reservar mesa",
+        orderOnline: "Pedir online"
       },
 
       legal: {
@@ -439,6 +441,7 @@ const translations = {
             subtitle: "Inicia sesión para acceder a tus Brasapoints.",
             email: "Email",
             password: "Contraseña",
+            forgotPassword: "¿Olvidaste tu contraseña?",
             submit: "Iniciar sesión",
             switch: {
               text: "¿Todavía no tienes cuenta?",
@@ -460,7 +463,7 @@ const translations = {
     },
 
     hero: {
-      location: "Restaurant in Colombia and Florida",
+      location: "Restaurant in Colombia and USA",
       title: "The warm hospitality of an amazing hotel, at your table",
       subtitle: "At Brasaland we prepare seasonal cuisine and serve every guest with the same high standards of hospitality found in boutique hotels. Booking your table takes less than a minute.",
       button: "Book a Table",
@@ -521,6 +524,7 @@ const translations = {
             subtitle: "Sign in to access your Brasapoints.",
             email: "Email",
             password: "Password",
+            forgotPassword: "Forgot your password?",
             submit: "Sign in",
             switch: {
               text: "Don't have an account yet?",
@@ -607,7 +611,9 @@ const translations = {
       },
 
       reservations: {
-        title: "Reservations"
+        title: "Reservations",
+        bookTable: "Book a Table",
+        orderOnline: "Order Online"
       },
 
       legal: {
