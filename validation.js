@@ -40,6 +40,11 @@ const HORARIO = {
   // 1 = lunes: cerrado (no aparece en el objeto)
 };
 
+const COUNTRY_CITY_MAP = {
+  colombia: "Bogotá",
+  usa: "Orlando",
+};
+
 // Una función de validación por campo. Cada una devuelve un mensaje de
 // error específico (string) si algo está mal, o null si el valor es válido.
 const VALIDATORS = {
@@ -107,6 +112,8 @@ function setupForm() {
   const form = document.getElementById("form-reserva");
   if (!form) return; // esta página no tiene el formulario, no hacemos nada más
 
+  setupCountryCityAutofill(form);
+
   const resumen = document.getElementById("resumen-errores");
   const listaErrores = document.getElementById("lista-errores");
   const confirmacion = document.getElementById("confirmacion");
@@ -169,6 +176,7 @@ function setupForm() {
       mostrar(confirmacion);
       confirmacion.scrollIntoView({ behavior: "smooth", block: "center" });
       limpiarFormularioCompleto(form);
+      syncCityWithCountry(form);
       tocados.clear();
     } catch (err) {
       console.error("Error completo:", err);
@@ -188,6 +196,7 @@ function setupForm() {
   if (btnLimpiar) {
     btnLimpiar.addEventListener("click", () => {
       limpiarFormularioCompleto(form);
+      syncCityWithCountry(form);
       tocados.clear();
       ocultar(resumen);
       ocultar(confirmacion);
@@ -258,6 +267,26 @@ function mostrar(el) {
 
 function ocultar(el) {
   el?.classList.add("hidden");
+}
+
+function setupCountryCityAutofill(form) {
+  const countryField = form.pais;
+  if (!countryField) return;
+
+  countryField.addEventListener("change", () => {
+    syncCityWithCountry(form);
+  });
+
+  syncCityWithCountry(form);
+}
+
+function syncCityWithCountry(form) {
+  const countryField = form.pais;
+  const cityField = form.ciudad;
+  if (!countryField || !cityField) return;
+
+  const city = COUNTRY_CITY_MAP[countryField.value] || "";
+  cityField.value = city;
 }
 
 async function enviarReserva(datos) {

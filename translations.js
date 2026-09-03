@@ -20,6 +20,28 @@ const translations = {
       order: "Pedir online"
     },
 
+    order: {
+      brasapoints: {
+        eyebrow: "PROGRAMA DE FIDELIDAD",
+        title: "Cada experiencia con Brasaland cuenta",
+        description: "Acumula Brasapoints cuando disfrutas de Brasaland, tanto en nuestros restaurantes como con tus pedidos online.",
+        restaurant: {
+          title: "Come con nosotros",
+          text: "Disfruta de tu experiencia en Brasaland y acumula puntos."
+        },
+        online: {
+          title: "Pide online",
+          text: "Haz tu pedido online y sigue acumulando Brasapoints."
+        },
+        redeem: {
+          title: "Canjea tus puntos",
+          text: "Utiliza tus Brasapoints para conseguir descuentos y recompensas."
+        },
+        reserve: "Reservar mesa",
+        order: "Pedir online"
+      }
+    },
+
     about: {
       title: "Qué hacemos",
       subtitle: "Cocina de temporada, servida sin errores",
@@ -160,6 +182,8 @@ const translations = {
       telefono: "+57 601 234 5678",
       preferencias: "Alergias, celebraciones, preferencias alimentarias..."
       },
+
+
 
       hoursNote: "Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.",
 
@@ -387,6 +411,42 @@ const translations = {
     }
   },
 
+          account: {
+          brasapoints: {
+            eyebrow: "BRASAPOINTS"
+          },
+
+          title: "Tu experiencia Brasaland, siempre contigo",
+
+          description:
+            "Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros restaurantes como en tus pedidos online.",
+
+          register: {
+            title: "Únete a Brasapoints",
+            subtitle: "Crea tu cuenta y empieza a acumular puntos.",
+            name: "Nombre completo",
+            email: "Email",
+            password: "Contraseña",
+            submit: "Crear cuenta",
+            switch: {
+              text: "¿Ya tienes una cuenta?",
+              login: "Inicia sesión"
+            }
+          },
+
+          login: {
+            title: "Bienvenido de nuevo",
+            subtitle: "Inicia sesión para acceder a tus Brasapoints.",
+            email: "Email",
+            password: "Contraseña",
+            submit: "Iniciar sesión",
+            switch: {
+              text: "¿Todavía no tienes cuenta?",
+              create: "Crear cuenta"
+            }
+          }
+        },
+
   en: {
 
     nav: {
@@ -407,6 +467,67 @@ const translations = {
       button2: "Learn More",
       order: "Order Online"
     },
+
+    order: {
+      brasapoints: {
+        eyebrow: "LOYALTY PROGRAM",
+        title: "Every Brasaland experience counts",
+        description: "Earn Brasapoints whenever you enjoy Brasaland, both at our restaurants and through your online orders.",
+        restaurant: {
+          title: "Dine with us",
+          text: "Enjoy your Brasaland experience and earn points."
+        },
+        online: {
+          title: "Order online",
+          text: "Place your order online and keep earning Brasapoints."
+        },
+        redeem: {
+          title: "Redeem your points",
+          text: "Use your Brasapoints to unlock discounts and rewards."
+        },
+        reserve: "Book a table",
+        order: "Order online"
+      }
+    },
+
+    account: {
+          brasapoints: {
+            eyebrow: "BRASAPOINTS"
+          },
+
+          title: {
+            text: "Your Brasaland experience, always with you"
+          },
+
+          description: {
+            text: "Create your account to earn and use Brasapoints both at our restaurants and with your online orders."
+          },
+
+          register: {
+            title: "Join Brasapoints",
+            subtitle: "Create your account and start earning points.",
+            name: "Full name",
+            email: "Email",
+            password: "Password",
+            submit: "Create account",
+            switch: {
+              text: "Already have an account?",
+              login: "Sign in"
+            }
+          },
+
+          login: {
+            title: "Welcome back",
+            subtitle: "Sign in to access your Brasapoints.",
+            email: "Email",
+            password: "Password",
+            submit: "Sign in",
+            switch: {
+              text: "Don't have an account yet?",
+              create: "Create account"
+            }
+          }
+        },
 
     about: {
       title: "What We Do",
@@ -774,10 +895,15 @@ const translations = {
 
           submit: "Submit application"
         }
+        
+        
       }
     }
   }
+  
 };
+
+
 
 
 function setLanguage(lang) {

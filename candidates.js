@@ -187,6 +187,9 @@ function showTableState() {
 
 function populateFilters(candidates) {
 
+  const currentLanguage =
+    localStorage.getItem("language") || "es";
+
   const statuses =
     new Set();
 
@@ -214,13 +217,13 @@ function populateFilters(candidates) {
 
   statusFilter.innerHTML = `
     <option value="">
-      Todos los estados
+      ${currentLanguage === "en" ? "All statuses" : "Todos los estados"}
     </option>
   `;
 
   stageFilter.innerHTML = `
     <option value="">
-      Todas las etapas
+      ${currentLanguage === "en" ? "All stages" : "Todas las etapas"}
     </option>
   `;
 
@@ -328,16 +331,23 @@ function renderCandidates() {
   const candidates =
     state.filteredCandidates;
 
+  const lang =
+    localStorage.getItem("language") || "es";
+
 
   if (candidates.length === 0) {
 
     showEmptyState();
 
     resultsCount.textContent =
-      "0 candidaturas";
+      lang === "en"
+        ? "0 applications"
+        : "0 candidaturas";
 
     resultsDescription.textContent =
-      "No hay resultados para los filtros seleccionados.";
+      lang === "en"
+        ? "No results for the selected filters."
+        : "No hay resultados para los filtros seleccionados.";
 
     return;
   }
@@ -349,8 +359,8 @@ function renderCandidates() {
   resultsCount.textContent =
     `${candidates.length} ${
       candidates.length === 1
-        ? "candidatura"
-        : "candidaturas"
+        ? (lang === "en" ? "application" : "candidatura")
+        : (lang === "en" ? "applications" : "candidaturas")
     }`;
 
 
@@ -360,16 +370,28 @@ function renderCandidates() {
   ) {
 
     resultsDescription.textContent =
-      "Mostrando todas las candidaturas.";
+      lang === "en"
+        ? "Showing all applications."
+        : "Mostrando todas las candidaturas.";
 
   } else {
 
     resultsDescription.textContent =
-      `Mostrando ${candidates.length} de ${state.candidates.length}.`;
+      lang === "en"
+        ? `Showing ${candidates.length} of ${state.candidates.length}.`
+        : `Mostrando ${candidates.length} de ${state.candidates.length}.`;
   }
 
   console.log("tableBody:", tableBody);
   tableBody.innerHTML = "";
+
+  const currentLanguage =
+    localStorage.getItem("language") || "es";
+
+  const viewDetailLabel =
+    currentLanguage === "en"
+      ? "View detail →"
+      : "Ver detalle →";
 
 
   candidates.forEach((candidate) => {
@@ -440,7 +462,7 @@ function renderCandidates() {
           href="candidate-detail.html?id=${encodeURIComponent(candidate.id)}"
           data-i18n="candidateDetail.viewDetail"
         >
-          Ver detalle →
+          ${viewDetailLabel}
         </a>
 
       </td>

@@ -50,6 +50,10 @@
    ----------------------------------------------------- */
 
 .candidate-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   height: 44px;
 
   padding: 0 1rem;
@@ -419,6 +423,20 @@
   opacity: 0.65;
 
   pointer-events: none;
+}
+
+/* -----------------------------------------------------
+   ESPACIADO ENTRE BLOQUES
+   ----------------------------------------------------- */
+
+.candidates-stack > * + * {
+  margin-top: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .candidates-stack > * + * {
+    margin-top: 1.25rem;
+  }
 }
 
 /* =====================================================

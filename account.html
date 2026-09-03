@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Mi cuenta | Brasaland</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="account.css" />
+</head>
+
+<body class="bg-cream text-walnut antialiased">
+
+    <!-- ===================== ENCABEZADO ===================== -->
+  <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+  <div class="ml-12 flex items-center gap-2">
+  <span class="text-wine"></span>
+  <select
+    id="language-selector"
+    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine">
+    <option value="es">ES</option>
+    <option value="en">EN</option>
+  </select>
+  </div>
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+      <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+        Brasaland
+      </a>
+
+      <!-- Navegación de escritorio -->
+      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+        <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+        <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+        <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+        <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+        <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+      </nav>
+
+      <!-- Botón de menú móvil -->
+      <button
+        id="menu-toggle"
+        type="button"
+        class="inline-flex items-center justify-center rounded-md p-2 text-walnut lg:hidden"
+        aria-expanded="false"
+        aria-controls="menu-movil"
+        aria-label="Abrir menú de navegación"
+      >
+        <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+        </svg>
+        <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+        <!-- Menú móvil -->
+        <nav
+          id="menu-movil"
+          aria-label="Navegación móvil"
+          class="hidden fixed right-0 top-0 z-50 h-screen w-72 flex-col gap-2 border-l border-walnut/10 bg-cream px-6 pb-6 pt-24 shadow-2xl lg:hidden"
+        >
+          <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+
+    <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+    Qué hacemos
+    </a>
+
+    <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">
+    Nuestra experiencia
+    </a>
+
+    <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">
+    Contacto
+    </a>
+
+    <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+
+    <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
+    Reservar mesa
+    </a>
+
+    <a href="order.html"
+      class="btn-secondary"
+      data-i18n="nav.order">
+    Pedir online
+    </a>
+        </nav>
+      </header>
+
+  <!-- CONTENIDO -->
+  <main class="account-page">
+
+    <section class="account-container">
+
+      <div class="account-intro">
+        <p class="section-eyebrow" data-i18n="account.brasapoints.eyebrow">
+          BRASAPOINTS
+        </p>
+
+        <h1 data-i18n="account.title.text">
+          Tu experiencia Brasaland, siempre contigo
+        </h1>
+
+        <p data-i18n="account.description.text">
+          Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros
+          restaurantes como en tus pedidos online.
+        </p>
+      </div>
+
+
+      <!-- TARJETA -->
+      <div class="account-card">
+
+        <!-- REGISTRO -->
+        <div id="register-view">
+
+          <h2 data-i18n="account.register.title">Únete a Brasapoints</h2>
+
+          <p class="account-subtitle" data-i18n="account.register.subtitle">
+            Crea tu cuenta y empieza a acumular puntos.
+          </p>
+
+          <form id="register-form">
+
+            <label for="register-name" data-i18n="account.register.name">
+              Nombre completo
+            </label>
+
+            <input
+              type="text"
+              id="register-name"
+              name="name"
+              required
+              autocomplete="name"
+            />
+
+
+            <label for="register-email" data-i18n="account.register.email">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="register-email"
+              name="email"
+              required
+              autocomplete="email"
+            />
+
+
+            <label for="register-password" data-i18n="account.register.password">
+              Contraseña
+            </label>
+
+            <input
+              type="password"
+              id="register-password"
+              name="password"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            />
+
+
+            <button
+              type="submit"
+              class="btn-primary account-submit"
+              data-i18n="account.register.submit"
+            >
+              Crear cuenta
+            </button>
+
+          </form>
+
+
+         <p class="account-switch">
+            <span data-i18n="account.register.switch.text">¿Ya tienes cuenta?</span>
+
+            <button
+              type="button"
+              id="show-login"
+              data-i18n="account.register.switch.login"
+            >
+              Inicia sesión
+            </button>
+
+          </p>
+        </div>
+
+
+        <!-- LOGIN -->
+        <div id="login-view" class="hidden">
+
+          <h2 data-i18n="account.login.title">Bienvenido de nuevo</h2>
+
+          <p class="account-subtitle" data-i18n="account.login.subtitle">
+            Inicia sesión para acceder a tus Brasapoints.
+          </p>
+
+          <form id="login-form">
+
+            <label for="login-email" data-i18n="account.login.email">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="login-email"
+              required
+              autocomplete="email"
+            />
+
+
+            <label for="login-password" data-i18n="account.login.password">
+              Contraseña
+            </label>
+
+            <input
+              type="password"
+              id="login-password"
+              required
+              autocomplete="current-password"
+            />
+
+
+            <button
+              type="submit"
+              class="btn-primary account-submit"
+                data-i18n="account.login.submit"
+            >
+              Iniciar sesión
+            </button>
+
+          </form>
+
+
+          <p class="account-switch">
+
+            <span data-i18n="account.login.switch.text">¿Todavía no tienes cuenta?</span>
+
+            <button
+              type="button"
+              id="show-register" 
+              data-i18n="account.login.switch.create"
+            >
+              Crear cuenta
+            </button>
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="main.js"></script>
+  <script src="translations.js"></script>
+  <script src="account.js"></script>
+
+</body>
+</html>

@@ -69,19 +69,20 @@
 
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-  <div class="ml-12 flex items-center gap-2">
-  <span class="text-wine"></span>
-  <select
-    id="language-selector"
-    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine">
-    <option value="es">ES</option>
-    <option value="en">EN</option>
-  </select>
-  </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
-        Brasaland
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+          Brasaland
+        </a>
+        <select
+          id="language-selector"
+          class="rounded-md border border-wine bg-transparent px-3 py-1 text-sm font-medium text-wine focus:border-wine focus:outline-none focus:ring-2 focus:ring-wine"
+          aria-label="Seleccionar idioma"
+        >
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
 
       <!-- Navegación de escritorio -->
       <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
@@ -91,7 +92,7 @@
         <a href="#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
-        <a href="http://localhost:5174" class="btn-secondary" target="_blank" rel="noopener" data-i18n="nav.order">Pedir online</a>
+        <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
       </nav>
 
       <!-- Botón de menú móvil -->
@@ -112,41 +113,39 @@
       </button>
     </div>
 
-    <!-- Menú móvil -->
-    <nav
-      id="menu-movil"
-      aria-label="Navegación móvil"
-      class="hidden fixed right-0 top-0 z-50 h-screen w-72 flex-col gap-2 border-l border-walnut/10 bg-cream px-6 pb-6 pt-24 shadow-2xl lg:hidden"
-    >
-      <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <!-- Menú móvil -->
+        <nav
+          id="menu-movil"
+          aria-label="Navegación móvil"
+          class="hidden fixed right-0 top-0 z-50 h-screen w-72 flex-col gap-2 border-l border-walnut/10 bg-cream px-6 pb-6 pt-24 shadow-2xl lg:hidden"
+        >
+          <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
 
-<a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">
-Qué hacemos
-</a>
+    <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">
+    Qué hacemos
+    </a>
 
-<a href="#experiencia" class="nav-link" data-i18n="nav.experience">
-Nuestra experiencia
-</a>
+    <a href="#experiencia" class="nav-link" data-i18n="nav.experience">
+    Nuestra experiencia
+    </a>
 
-<a href="#contacto" class="nav-link" data-i18n="nav.contact">
-Contacto
-</a>
+    <a href="#contacto" class="nav-link" data-i18n="nav.contact">
+    Contacto
+    </a>
 
-<a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+    <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
 
-<a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
-Reservar mesa
-</a>
+    <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">
+    Reservar mesa
+    </a>
 
-<a href="http://localhost:5174"
-   class="btn-secondary"
-   target="_blank"
-   rel="noopener"
-   data-i18n="nav.order">
-Pedir online
-</a>
-    </nav>
-  </header>
+    <a href="order.html"
+      class="btn-secondary"
+      data-i18n="nav.order">
+    Pedir online
+    </a>
+        </nav>
+      </header>
 
   <main id="contenido">
     <!-- ===================== HERO ===================== -->
@@ -179,7 +178,7 @@ Pedir online
           <a href="#sobre-nosotros" class="btn-secondary border-cream/40 text-cream hover:bg-cream/10" data-i18n="hero.button2">
             Conócenos
           </a>
-          <a href="http://localhost:5174" class="btn-primary" target="_blank" rel="noopener">
+          <a href="order.html" class="btn-primary" target="_blank" rel="noopener">
             <span data-i18n="hero.order">Pedir online</span>
           </a>
         </div>
@@ -261,80 +260,83 @@ Pedir online
     </section>
 
   
-<!-- ===================== CLUB BRASALAND ===================== -->
-<section hidden id="brasapuntos" class="mx-auto max-w-7xl px-6 py-24 lg:px-8" data-i18n="brasapuntos.section">
+<!-- ===================== BRASAPOINTS ===================== -->
+    <section id="brasapoints" class="fade-up brasapoints-section">
+      <div class="brasapoints-container">
 
-  <div class="mx-auto max-w-3xl text-center">
+        <div class="brasapoints-intro">
+          <p class="section-eyebrow" data-i18n="order.brasapoints.eyebrow">
+            PROGRAMA DE FIDELIDAD
+          </p>
 
-    <h2 class="text-3xl font-semibold sm:text-4xl" data-i18n="brasapuntos.title">
-      Tu fidelidad tiene recompensa
-    </h2>
+          <h2 data-i18n="order.brasapoints.title">
+            Cada experiencia con Brasaland cuenta
+          </h2>
 
-    <p class="mt-6 text-lg leading-8 text-walnut/70">
-      Acumula <span class="font-semibold text-brass" data-i18n="brasapuntos.points">Brasapuntos</span>
-      con cada visita y canjéalos por deliciosas recompensas.
-    </p>
+          <p data-i18n="order.brasapoints.description">
+            Acumula Brasapoints cuando disfrutas de Brasaland,
+            tanto en nuestros restaurantes como con tus pedidos online.
+          </p>
+        </div>
 
-  </div>
+        <div class="brasapoints-grid">
 
-  <div class="mt-16 grid grid-cols-3 gap-8">
+          <div class="brasapoints-step">
+            <span class="brasapoints-number">01</span>
 
-  <!-- Tarjeta 1 -->
-  <article class="rounded-xl bg-white p-8 shadow-sm ring-1 ring-walnut/5">
-    <div class="text-5xl">🍽️</div>
+            <h3 data-i18n="order.brasapoints.restaurant.title">
+              Come con nosotros
+            </h3>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card1.points">
-      +50
-    </p>
+            <p data-i18n="order.brasapoints.restaurant.text">
+              Disfruta de tu experiencia en Brasaland y acumula puntos.
+            </p>
+          </div>
 
-    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card1.title">
-      Brasapuntos
-    </h3>
+          <div class="brasapoints-step">
+            <span class="brasapoints-number">02</span>
 
-    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card1.description">
-      Por cada consumo superior a
-      <strong>50 €</strong>.
-    </p>
-  </article>
+            <h3 data-i18n="order.brasapoints.online.title">
+              Pide online
+            </h3>
 
-  <!-- Tarjeta 2 -->
-  <article class="rounded-xl bg-white p-8 shadow-sm ring-1 ring-walnut/5">
-    <div class="text-5xl">⭐</div>
+            <p data-i18n="order.brasapoints.online.text">
+              Haz tu pedido online y sigue acumulando Brasapoints.
+            </p>
+          </div>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card2.points">
-      +20
-    </p>
+          <div class="brasapoints-step">
+            <span class="brasapoints-number">03</span>
 
-    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card2.title">
-      Brasapuntos
-    </h3>
+            <h3 data-i18n="order.brasapoints.redeem.title">
+              Canjea tus puntos
+            </h3>
 
-    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card2.description">
-      Comparte una reseña positiva después de tu visita.
-    </p>
-  </article>
+            <p data-i18n="order.brasapoints.redeem.text">
+              Utiliza tus Brasapoints para conseguir descuentos y recompensas.
+            </p>
+          </div>
 
-  <!-- Tarjeta 3 -->
-  <article class="rounded-xl bg-brass/5 p-8 shadow-sm ring-1 ring-brass/20">
-    <div class="text-5xl">🎁</div>
+        </div>
 
-    <p class="mt-6 font-display text-5xl font-semibold text-brass" data-i18n="brasapuntos.card3.points">
-      300
-    </p>
+        <div class="brasapoints-actions">
 
-    <h3 class="mt-3 text-xl font-semibold" data-i18n="brasapuntos.card3.title">
-      Brasapuntos
-    </h3>
+          <a href="reserva.html"
+            class="btn-secondary"
+            data-i18n="order.brasapoints.reserve">
+            Reservar mesa
+          </a>
 
-    <p class="mt-4 text-walnut/70" data-i18n="brasapuntos.card3.description">
-      Canjéalos por
-      <strong>cualquier postre de nuestra carta.</strong>
-    </p>
-  </article>
+          <a href="order.html"
+            class="btn-primary"
+            data-i18n="order.brasapoints.order">
+            Pedir online
+          </a>
 
-</div>
+        </div>
 
-</section>
+      </div>
+    </section>
 
     <!-- ===================== CONTACTO ===================== -->
     <section id="contacto" class="fade-up mx-auto max-w-7xl px-6 py-20 lg:px-8">
@@ -464,7 +466,7 @@ function cambiarMapa(url) {
   </main>
 
   <!-- ===================== PIE DE PÁGINA ===================== -->
-  <footer class="bg-walnut text-cream/80">
+  <footer class="mt-12 bg-walnut text-cream/80 lg:mt-16">
     <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
@@ -485,8 +487,8 @@ function cambiarMapa(url) {
         <div>
           <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.reservations.title">Reservas</p>
           <ul class="mt-3 space-y-2 text-sm text-cream/60">
-            <li><a href="reserva.html" class="hover:text-cream">Reservar mesa</a></li>
-            <li><a href="http://localhost:5174" class="hover:text-cream" target="_blank" rel="noopener">Pedir online</a></li>
+            <li><a href="reserva.html" class="hover:text-cream" data-i18n="footer.reservations.bookTable">Reservar mesa</a></li>
+            <li><a href="order.html" class="hover:text-cream" target="_blank" rel="noopener" data-i18n="footer.reservations.orderOnline">Pedir online</a></li>
             <li><a href="tel:+576012345678" class="hover:text-cream">+57 601 234 5678</a></li>
             <li><a href="tel:+13051234567" class="hover:text-cream">+1 305 123 4567</a></li>
             <li><a href="mailto:roldansilvi@gmail.com" class="hover:text-cream">bookings@brasaland.com</a></li>
