@@ -20,6 +20,28 @@ const translations = {
       order: "Pedir online"
     },
 
+    order: {
+      brasapoints: {
+        eyebrow: "PROGRAMA DE FIDELIDAD",
+        title: "Cada experiencia con Brasaland cuenta",
+        description: "Acumula Brasapoints cuando disfrutas de Brasaland, tanto en nuestros restaurantes como con tus pedidos online.",
+        restaurant: {
+          title: "Come con nosotros",
+          text: "Disfruta de tu experiencia en Brasaland y acumula puntos."
+        },
+        online: {
+          title: "Pide online",
+          text: "Haz tu pedido online y sigue acumulando Brasapoints."
+        },
+        redeem: {
+          title: "Canjea tus puntos",
+          text: "Utiliza tus Brasapoints para conseguir descuentos y recompensas."
+        },
+        reserve: "Reservar mesa",
+        order: "Pedir online"
+      }
+    },
+
     about: {
       title: "Qué hacemos",
       subtitle: "Cocina de temporada, servida sin errores",
@@ -444,6 +466,28 @@ const translations = {
       button: "Book a Table",
       button2: "Learn More",
       order: "Order Online"
+    },
+
+    order: {
+      brasapoints: {
+        eyebrow: "LOYALTY PROGRAM",
+        title: "Every Brasaland experience counts",
+        description: "Earn Brasapoints whenever you enjoy Brasaland, both at our restaurants and through your online orders.",
+        restaurant: {
+          title: "Dine with us",
+          text: "Enjoy your Brasaland experience and earn points."
+        },
+        online: {
+          title: "Order online",
+          text: "Place your order online and keep earning Brasapoints."
+        },
+        redeem: {
+          title: "Redeem your points",
+          text: "Use your Brasapoints to unlock discounts and rewards."
+        },
+        reserve: "Book a table",
+        order: "Order online"
+      }
     },
 
     account: {

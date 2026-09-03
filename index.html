@@ -69,19 +69,20 @@
 
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-  <div class="ml-12 flex items-center gap-2">
-  <span class="text-wine"></span>
-  <select
-    id="language-selector"
-    class="bg-transparent border border-wine rounded-md px-3 py-1 text-sm text-wine font-medium focus:outline-none focus:ring-2 focus:ring-wine focus:border-wine">
-    <option value="es">ES</option>
-    <option value="en">EN</option>
-  </select>
-  </div>
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
-        Brasaland
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
+          Brasaland
+        </a>
+        <select
+          id="language-selector"
+          class="rounded-md border border-wine bg-transparent px-3 py-1 text-sm font-medium text-wine focus:border-wine focus:outline-none focus:ring-2 focus:ring-wine"
+          aria-label="Seleccionar idioma"
+        >
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
 
       <!-- Navegación de escritorio -->
       <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">

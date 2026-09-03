@@ -23,23 +23,37 @@ module.exports = async function handler(req, res) {
 
     // REGISTER
     if (action === "register") {
-      const { data, error } =
-        await supabase.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: {
-            full_name: name,
-          },
-        });
+  // 1. Create user in Supabase Authentication
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: name,
+    },
+  });
 
-      if (error) throw error;
+  if (error) throw error;
 
-      return res.status(200).json({
-        ok: true,
-        user: data.user,
-      });
-    }
+  // 2. Create Brasapoints profile
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .insert([
+      {
+        id: data.user.id,
+        full_name: name,
+        email: email,
+        brasapoints: 0,
+      },
+    ]);
+
+  if (profileError) throw profileError;
+
+  return res.status(200).json({
+    ok: true,
+    user: data.user,
+  });
+}
 
     // LOGIN
     if (action === "login") {
