@@ -64,7 +64,6 @@
 /* ---------------------------------------------------------
    CATEGORÍAS
 --------------------------------------------------------- */
-
 .order-categories {
   display: flex;
   flex-wrap: wrap;
@@ -429,21 +428,35 @@
   padding: 0.95rem 1.2rem;
 }
 
+.clear-cart-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.65rem;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(66, 45, 32, 0.38);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.78;
+}
+
+.clear-cart-button:hover {
+  color: rgba(66, 45, 32, 0.55);
+  opacity: 1;
+}
+
 .order-secure-text {
   margin-top: 0.9rem;
   text-align: center;
   font-size: 0.75rem;
   line-height: 1.5;
   color: rgba(66, 45, 32, 0.45);
-}
-
-
-/* ---------------------------------------------------------
-   UTILIDADES
---------------------------------------------------------- */
-
-.hidden {
-  display: none !important;
 }
 
 
@@ -494,4 +507,38 @@
     gap: 2rem;
   }
 
+}
+
+/* CLEAR CART - secondary action */
+
+.clear-cart-button {
+  display: block;
+  width: auto;
+
+  margin: 24px auto 0;
+  padding: 4px 8px;
+
+  background: transparent;
+  border: none;
+
+  color: rgba(66, 45, 32, 0.4);
+
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.clear-cart-button:hover {
+  color: rgba(66, 45, 32, 0.7);
+  text-decoration: underline;
+}
+
+.clear-cart-button:active {
+  opacity: 0.6;
 }

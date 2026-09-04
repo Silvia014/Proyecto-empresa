@@ -51,13 +51,13 @@ const VALIDATORS = {
   nombre: (value) => {
     if (!value.trim()) return t ("reserva.errors.nombreRequired");
     if (value.trim().length < 2) return t("reserva.errors.nombreShort");
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.nombreInvalid");
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.nombreLetters");
     return null;
   },
   apellidos: (value) => {
     if (!value.trim()) return t("reserva.errors.apellidosRequired");
     if (value.trim().length < 2) return t("reserva.errors.apellidosShort");
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.apellidosInvalid");
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/.test(value)) return t("reserva.errors.apellidosLetters");
     return null;
   },
   email: (value) => {
@@ -165,11 +165,13 @@ function setupForm() {
       personas: Number(form.personas.value),
       dia: form.dia.value,
       hora: form.hora.value,
-      notas: form.notas.value.trim(),
+      notas: form.preferencias?.value.trim() || "",
+      ubicacion: form.ubicacion?.value || "sin_preferencia",
+      comoNosConociste: form.como_nos_conociste?.value || "",
     };
 
     btnEnviar.disabled = true;
-    btnEnviar.textContent = "Enviando...";
+    btnEnviar.textContent = t("reserva.buttons.submitting") || "Enviando...";
 
     try {
       await enviarReserva(datos);
@@ -188,7 +190,7 @@ function setupForm() {
       );
     } finally {
       btnEnviar.disabled = false;
-      btnEnviar.textContent = "Confirmar reserva";
+      btnEnviar.textContent = t("reserva.buttons.submit") || "Confirmar reserva";
     }
   });
 
@@ -290,6 +292,12 @@ function syncCityWithCountry(form) {
 }
 
 async function enviarReserva(datos) {
+  // Permite probar el flujo en local abriendo el HTML directamente (file://)
+  // cuando no hay backend disponible en /api/reservas.
+  if (window.location.protocol === "file:") {
+    return { ok: true, local: true, reserva: datos };
+  }
+
   const respuesta = await fetch("/api/reservas", {
     method: "POST",
     headers: {

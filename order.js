@@ -102,7 +102,16 @@ const products = [
 
 let selectedCategory = "all";
 
-let cart = [];
+let cart = JSON.parse(
+  localStorage.getItem("brasalandCart")
+) || [];
+
+function saveCart() {
+  localStorage.setItem(
+    "brasalandCart",
+    JSON.stringify(cart)
+  );
+}
 
 
 // ==========================================================
@@ -138,6 +147,9 @@ const cartTotal =
 
 const checkoutButton =
   document.getElementById("checkout-button");
+
+const clearCartButton =
+document.getElementById("clear-cart-button");
 
 
 // ==========================================================
@@ -301,6 +313,36 @@ function formatCategory(category) {
 
 }
 
+// ===============================
+// CLEAR CART
+// ===============================
+
+if (clearCartButton) {
+  clearCartButton.addEventListener("click", () => {
+
+    if (cart.length === 0) {
+      return;
+    }
+
+    const confirmed = confirm(
+      getOrderTranslation(
+        "clearCartConfirm",
+        "Are you sure you want to remove all items from your cart?"
+      )
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    cart = [];
+
+    localStorage.removeItem("brasalandCart");
+
+    renderCart();
+  });
+}
+
 
 // ==========================================================
 // AÑADIR AL CARRITO
@@ -339,8 +381,8 @@ function addToCart(productId) {
   }
 
 
-  renderCart();
-
+    saveCart();
+   renderCart();
 }
 
 
@@ -374,7 +416,7 @@ function changeQuantity(
 
   }
 
-
+  saveCart();
   renderCart();
 
 }
@@ -393,6 +435,7 @@ function removeFromCart(productId) {
     );
 
 
+  saveCart();
   renderCart();
 
 }
@@ -575,7 +618,7 @@ function renderCart() {
                 type="button"
                 data-remove-id="${item.id}"
               >
-                Eliminar
+                ${getOrderTranslation("remove", "Eliminar")}
               </button>
 
 
@@ -764,52 +807,26 @@ categoryButtons.forEach(
 // CHECKOUT
 // ==========================================================
 
-if (checkoutButton) {
+checkoutButton.addEventListener("click", () => {
+  if (cart.length === 0) {
+    alert(
+      getOrderTranslation(
+        "checkoutEmpty",
+        "Your cart is empty."
+      )
+    );
+    return;
+  }
 
-  checkoutButton.addEventListener(
-    "click",
-    () => {
-
-      if (cart.length === 0) {
-
-        alert(
-          getOrderTranslation(
-            "emptyAlert",
-            "Añade al menos un producto antes de continuar."
-          )
-        );
-
-        return;
-
-      }
-
-
-      /*
-       * Aquí conectaremos posteriormente:
-       *
-       * - Supabase
-       * - creación del pedido
-       * - Stripe Checkout
-       * - página de confirmación
-       */
-
-      console.log(
-        "Pedido preparado:",
-        cart
-      );
-
-
-      alert(
-        getOrderTranslation(
-          "readyAlert",
-          "Tu pedido está listo para continuar al pago."
-        )
-      );
-
-    }
+  // Save the cart temporarily in the browser
+  localStorage.setItem(
+    "brasalandCart",
+    JSON.stringify(cart)
   );
 
-}
+  // Go to checkout page
+  window.location.href = "checkout.html";
+});
 
 
 // ==========================================================

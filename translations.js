@@ -21,6 +21,95 @@ const translations = {
     },
 
     order: {
+      title: "Pide online",
+      subtitle: "Elige tus platos favoritos, añádelos al carrito y disfruta de Brasaland donde quieras.",
+      categories: {
+        all: "Todos",
+        entrantes: "Entrantes",
+        carnes: "Carnes",
+        hamburguesas: "Hamburguesas",
+        acompanamientos: "Acompañamientos",
+        postres: "Postres",
+        bebidas: "Bebidas"
+      },
+      menu: {
+        eyebrow: "NUESTRA CARTA",
+        title: "Elige tus favoritos"
+      },
+      cart: {
+        label: "Tu pedido",
+        eyebrow: "TU PEDIDO",
+        title: "Carrito",
+        product: "producto",
+        products: "productos"
+      },
+      empty: {
+        title: "Tu carrito está vacío",
+        text: "Añade productos para comenzar tu pedido."
+      },
+      summary: {
+        subtotal: "Subtotal",
+        total: "Total"
+      },
+      checkout: "Continuar al pago",
+      secure: "Podrás revisar tus datos antes de realizar el pago.",
+      add: "+ Añadir",
+      unit: "unidad",
+      units: "unidades",
+      remove: "Eliminar",
+      clearCart: "Limpiar carrito",
+      clearCartConfirm: "¿Seguro que quieres vaciar tu carrito?",
+      checkoutEmpty: "Tu carrito está vacío.",
+      products: {
+        1: {
+          name: "Provoleta Brasaland",
+          description: "Queso provolone fundido, tomate seco y un toque de orégano."
+        },
+        2: {
+          name: "Empanadas Argentinas",
+          description: "Selección de empanadas artesanales recién horneadas."
+        },
+        3: {
+          name: "Entraña a la Parrilla",
+          description: "Entraña seleccionada a la brasa, acompañada de chimichurri."
+        },
+        4: {
+          name: "Bife de Chorizo",
+          description: "Corte argentino premium preparado a la parrilla."
+        },
+        5: {
+          name: "Burger Brasaland",
+          description: "Carne a la parrilla, queso, cebolla caramelizada y salsa especial."
+        },
+        6: {
+          name: "Burger Clásica",
+          description: "Carne de vacuno, queso, lechuga, tomate y nuestra salsa de la casa."
+        },
+        7: {
+          name: "Patatas Bravas",
+          description: "Patatas crujientes con salsa brava casera."
+        },
+        8: {
+          name: "Verduras a la Brasa",
+          description: "Selección de verduras de temporada cocinadas a la parrilla."
+        },
+        9: {
+          name: "Brownie",
+          description: "Brownie de chocolate servido templado."
+        },
+        10: {
+          name: "Tarta de Queso",
+          description: "Tarta cremosa de queso con base crujiente."
+        },
+        11: {
+          name: "Coca-Cola",
+          description: "Refresco frío."
+        },
+        12: {
+          name: "Agua Mineral",
+          description: "Agua mineral natural."
+        }
+      },
       brasapoints: {
         eyebrow: "PROGRAMA DE FIDELIDAD",
         title: "Cada experiencia con Brasaland cuenta",
@@ -37,8 +126,9 @@ const translations = {
           title: "Canjea tus puntos",
           text: "Utiliza tus Brasapoints para conseguir descuentos y recompensas."
         },
-        reserve: "Reservar mesa",
-        order: "Pedir online"
+        reserve: "Reservar y sumar",
+        order: "Pedir y acumular",
+        club: "Únete a Brasaclub"
       }
     },
 
@@ -415,16 +505,19 @@ const translations = {
 
           account: {
           brasapoints: {
-            eyebrow: "BRASAPOINTS"
+            eyebrow: "BRASACLUB"
           },
 
-          title: "Tu experiencia Brasaland, siempre contigo",
+          title: {
+            text: "Tu experiencia Brasaland, siempre contigo"
+          },
 
-          description:
-            "Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros restaurantes como en tus pedidos online.",
+          description: {
+            text: "Crea tu cuenta para acumular y utilizar Brasaclub tanto en nuestros restaurantes como en tus pedidos online."
+          },
 
           register: {
-            title: "Únete a Brasapoints",
+            title: "Únete a Brasaclub",
             subtitle: "Crea tu cuenta y empieza a acumular puntos.",
             name: "Nombre completo",
             email: "Email",
@@ -438,7 +531,7 @@ const translations = {
 
           login: {
             title: "Bienvenido de nuevo",
-            subtitle: "Inicia sesión para acceder a tus Brasapoints.",
+            subtitle: "Inicia sesión para acceder a tu Brasaclub.",
             email: "Email",
             password: "Contraseña",
             forgotPassword: "¿Olvidaste tu contraseña?",
@@ -472,6 +565,95 @@ const translations = {
     },
 
     order: {
+      title: "Order online",
+      subtitle: "Choose your favorite dishes, add them to your cart, and enjoy Brasaland wherever you are.",
+      categories: {
+        all: "All",
+        entrantes: "Starters",
+        carnes: "Grill",
+        hamburguesas: "Burgers",
+        acompanamientos: "Sides",
+        postres: "Desserts",
+        bebidas: "Drinks"
+      },
+      menu: {
+        eyebrow: "OUR MENU",
+        title: "Choose your favorites"
+      },
+      cart: {
+        label: "Your order",
+        eyebrow: "YOUR ORDER",
+        title: "Cart",
+        product: "item",
+        products: "items"
+      },
+      empty: {
+        title: "Your cart is empty",
+        text: "Add products to start your order."
+      },
+      summary: {
+        subtotal: "Subtotal",
+        total: "Total"
+      },
+      checkout: "Continue to checkout",
+      secure: "You'll be able to review your details before completing payment.",
+      add: "+ Add",
+      unit: "unit",
+      units: "units",
+      remove: "Remove",
+      clearCart: "Clear cart",
+      clearCartConfirm: "Are you sure you want to remove all items from your cart?",
+      checkoutEmpty: "Your cart is empty.",
+      products: {
+        1: {
+          name: "Brasaland Provoleta",
+          description: "Melted provolone cheese with sun-dried tomato and a touch of oregano."
+        },
+        2: {
+          name: "Argentinian Empanadas",
+          description: "Selection of freshly baked artisanal empanadas."
+        },
+        3: {
+          name: "Grilled Skirt Steak",
+          description: "Selected skirt steak grilled over fire and served with chimichurri."
+        },
+        4: {
+          name: "Sirloin Steak",
+          description: "Premium Argentinian cut prepared on the grill."
+        },
+        5: {
+          name: "Brasaland Burger",
+          description: "Grilled beef, cheese, caramelized onion, and signature sauce."
+        },
+        6: {
+          name: "Classic Burger",
+          description: "Beef patty, cheese, lettuce, tomato, and our house sauce."
+        },
+        7: {
+          name: "Patatas Bravas",
+          description: "Crispy potatoes with homemade brava sauce."
+        },
+        8: {
+          name: "Grilled Vegetables",
+          description: "Seasonal vegetables cooked over the grill."
+        },
+        9: {
+          name: "Brownie",
+          description: "Warm served chocolate brownie."
+        },
+        10: {
+          name: "Cheesecake",
+          description: "Creamy cheesecake with a crisp base."
+        },
+        11: {
+          name: "Coca-Cola",
+          description: "Cold soft drink."
+        },
+        12: {
+          name: "Mineral Water",
+          description: "Natural mineral water."
+        }
+      },
       brasapoints: {
         eyebrow: "LOYALTY PROGRAM",
         title: "Every Brasaland experience counts",
@@ -488,14 +670,15 @@ const translations = {
           title: "Redeem your points",
           text: "Use your Brasapoints to unlock discounts and rewards."
         },
-        reserve: "Book a table",
-        order: "Order online"
+        reserve: "Book and earn",
+        order: "Order and collect",
+        club: "Join Brasaclub"
       }
     },
 
     account: {
           brasapoints: {
-            eyebrow: "BRASAPOINTS"
+            eyebrow: "BRASACLUB"
           },
 
           title: {
@@ -503,11 +686,11 @@ const translations = {
           },
 
           description: {
-            text: "Create your account to earn and use Brasapoints both at our restaurants and with your online orders."
+            text: "Create your account to earn and use Brasaclub both at our restaurants and with your online orders."
           },
 
           register: {
-            title: "Join Brasapoints",
+            title: "Join Brasaclub",
             subtitle: "Create your account and start earning points.",
             name: "Full name",
             email: "Email",
@@ -521,7 +704,7 @@ const translations = {
 
           login: {
             title: "Welcome back",
-            subtitle: "Sign in to access your Brasapoints.",
+            subtitle: "Sign in to access your Brasaclub.",
             email: "Email",
             password: "Password",
             forgotPassword: "Forgot your password?",
@@ -974,6 +1157,8 @@ function setLanguage(lang) {
         : "Brasaland: seasonal cuisine..."
     );
   }
+
+  document.dispatchEvent(new Event("languagechange"));
 }
 
 const selector = document.getElementById("language-selector");
