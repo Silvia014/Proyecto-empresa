@@ -64,6 +64,67 @@
   }
   </script>
 </head>
+<!-- ==========================================
+     BRASALAND AI ASSISTANT
+========================================== -->
+
+<button
+  id="chat-toggle"
+  class="chat-toggle"
+  aria-label="Open Brasaland Assistant"
+>
+  💬
+</button>
+
+<div id="chat-window" class="chat-window hidden">
+
+  <div class="chat-header">
+
+    <div>
+      <strong>Brasaland Assistant</strong>
+
+      <span>How can I help you?</span>
+    </div>
+
+    <button
+      id="chat-close"
+      class="chat-close"
+      aria-label="Close chat"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <div id="chat-messages" class="chat-messages">
+
+    <div class="chat-message assistant">
+      👋 Hi! I'm the Brasaland Assistant. How can I help you today?
+    </div>
+
+  </div>
+
+
+  <form id="chat-form" class="chat-form">
+
+    <input
+      type="text"
+      id="chat-input"
+      placeholder="Ask me anything..."
+      autocomplete="off"
+      required
+    />
+
+    <button type="submit">
+      Send
+    </button>
+
+  </form>
+
+</div>
+
+<script src="chat.js"></script>
 <body class="antialiased">
   <a href="#contenido" class="skip-link">Saltar al contenido principal</a>
 

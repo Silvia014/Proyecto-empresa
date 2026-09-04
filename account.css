@@ -137,6 +137,27 @@
   justify-content: center;
 }
 
+.forgot-password {
+  margin-top: 18px;
+
+  display: block;
+
+  border: none;
+  background: transparent;
+
+  color: rgba(59, 29, 29, 0.65);
+
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-align: center;
+
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  opacity: 0.75;
+}
+
 
 /* ---------------------------------------------------------
    CAMBIO REGISTRO / LOGIN

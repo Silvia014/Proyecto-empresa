@@ -418,10 +418,13 @@ const translations = {
             eyebrow: "BRASAPOINTS"
           },
 
-          title: "Tu experiencia Brasaland, siempre contigo",
+          title: {
+            text: "Tu experiencia Brasaland, siempre contigo"
+          },
 
-          description:
-            "Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros restaurantes como en tus pedidos online.",
+          description: {
+            text: "Crea tu cuenta para acumular y utilizar Brasapoints tanto en nuestros restaurantes como en tus pedidos online."
+          },
 
           register: {
             title: "Únete a Brasapoints",
