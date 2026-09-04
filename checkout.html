@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Checkout | Brasaland</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="checkout.css">
+</head>
+
+<body>
+
+  <main class="checkout-page">
+
+    <section class="checkout-container">
+
+      <!-- HEADER -->
+
+      <div class="checkout-header">
+        <a href="order.html" class="back-to-menu">
+         ← Back to menu
+         </a>
+        
+        <h1>Complete your order</h1>
+
+        <p>
+          Enter your details and review your order before confirming it.
+        </p>
+
+      </div>
+
+
+      <div class="checkout-grid">
+
+        <!-- CUSTOMER DETAILS -->
+
+        <section class="checkout-details">
+
+          <h2>Your details</h2>
+
+          <form id="checkout-form">
+
+            <label for="customer-name">
+              Full name
+            </label>
+
+            <input
+              type="text"
+              id="customer-name"
+              required
+            >
+
+
+            <label for="customer-email">
+              Email
+            </label>
+
+            <input
+              type="email"
+              id="customer-email"
+              required
+            >
+
+
+            <label for="customer-phone">
+              Phone number
+            </label>
+
+            <input
+              type="tel"
+              id="customer-phone"
+              required
+            >
+
+
+            <!-- ORDER TYPE -->
+
+            <h3>How would you like to receive your order?</h3>
+
+            <div class="order-type">
+
+              <label>
+                <input
+                  type="radio"
+                  name="order-type"
+                  value="pickup"
+                  checked
+                >
+
+                Pick up at the restaurant
+              </label>
+
+
+              <label>
+                <input
+                  type="radio"
+                  name="order-type"
+                  value="delivery"
+                >
+
+                Delivery
+              </label>
+
+            </div>
+
+
+            <!-- DELIVERY ADDRESS -->
+
+            <div
+              id="delivery-address"
+              class="hidden"
+            >
+
+              <label for="address">
+                Delivery address
+              </label>
+
+              <input
+                type="text"
+                id="address"
+                placeholder="Street, number, city"
+              >
+
+            </div>
+
+
+            <label for="order-notes">
+              Special instructions
+            </label>
+
+            <textarea
+              id="order-notes"
+              rows="4"
+              placeholder="Allergies, special requests..."
+            ></textarea>
+
+          </form>
+
+        </section>
+
+
+        <!-- ORDER SUMMARY -->
+
+        <aside class="order-summary">
+
+          <h2>Your order</h2>
+
+          <div id="checkout-items"></div>
+
+          <div class="checkout-total">
+
+            <span>Total</span>
+
+            <strong id="checkout-total">
+              €0.00
+            </strong>
+
+          </div>
+
+
+          <button
+            type="submit"
+            form="checkout-form"
+            class="checkout-button"
+          >
+            Confirm order
+          </button>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="checkout.js"></script>
+
+</body>
+
+</html>

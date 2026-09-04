@@ -1,0 +1,280 @@
+/* ==========================================
+   CHECKOUT PAGE
+========================================== */
+
+.checkout-page {
+  min-height: 100vh;
+  padding: 80px 20px;
+  background: #f5f1eb;
+}
+
+.checkout-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.checkout-header {
+  margin-bottom: 40px;
+}
+
+.checkout-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.checkout-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+
+/* ==========================================
+   LAYOUT
+========================================== */
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+
+/* ==========================================
+   CUSTOMER DETAILS
+========================================== */
+
+.checkout-details,
+.order-summary {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.checkout-details h2,
+.order-summary h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+}
+
+.checkout-details h3 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+
+/* ==========================================
+   FORM
+========================================== */
+
+.checkout-details label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.checkout-details input,
+.checkout-details textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 13px 15px;
+  margin-bottom: 20px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.checkout-details input:focus,
+.checkout-details textarea:focus {
+  outline: none;
+  border-color: #7c4a2d;
+}
+
+.checkout-details textarea {
+  resize: vertical;
+}
+
+
+/* ==========================================
+   PICKUP / DELIVERY
+========================================== */
+
+.order-type {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.order-type label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.order-type input {
+  width: auto;
+  margin: 0;
+}
+
+
+/* ==========================================
+   HIDDEN ELEMENTS
+========================================== */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ==========================================
+   ORDER SUMMARY
+========================================== */
+
+.order-summary {
+  position: sticky;
+  top: 30px;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.checkout-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.checkout-item span {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+
+/* ==========================================
+   TOTAL
+========================================== */
+
+.checkout-total {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 25px;
+  padding-top: 20px;
+
+  font-size: 1.2rem;
+  border-top: 2px solid #ddd;
+}
+
+
+/* ==========================================
+   BUTTON
+========================================== */
+
+.checkout-button {
+  display: block;
+  width: 100%;
+
+  margin-top: 25px;
+  padding: 15px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #7c4a2d;
+  color: white;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  text-align: center;
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.checkout-button:hover {
+  opacity: 0.9;
+}
+
+
+/* ==========================================
+   SUCCESS SCREEN
+========================================== */
+
+.order-success {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 50px;
+
+  text-align: center;
+
+  background: white;
+  border-radius: 16px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.order-success h1 {
+  margin-top: 0;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+
+  .checkout-page {
+    padding: 40px 15px;
+  }
+
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary {
+    position: static;
+  }
+
+  .order-type {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .checkout-header h1 {
+    font-size: 2rem;
+  }
+
+}
+
+.back-to-menu {
+  display: inline-block;
+  margin-bottom: 20px;
+
+  color: #7c4a2d;
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.back-to-menu:hover {
+  text-decoration: underline;
+}

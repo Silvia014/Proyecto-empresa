@@ -126,44 +126,45 @@ function setupForm() {
       apellidos: form.apellidos.value.trim(),
       email: form.email.value.trim(),
       telefono: form.telefono.value.trim(),
+      pais: form.pais.value,
+      ciudad: form.ciudad.value,
       personas: Number(form.personas.value),
       dia: form.dia.value,
       hora: form.hora.value,
-      notas: form.notas.value.trim(),
+      ubicacion: form.ubicacion.value,
+      preferencias: form.preferencias.value.trim(),
+      como_nos_conociste: form.como_nos_conociste.value,
     };
 
     btnEnviar.disabled = true;
     btnEnviar.textContent = "Enviando...";
 
-    try {
+  try {
       await enviarReserva(datos);
 
-// Rellenar el resumen
-document.getElementById("nombre-cliente").textContent = datos.nombre;
-document.getElementById("res-nombre").textContent =
-  `${datos.nombre} ${datos.apellidos}`;
-document.getElementById("res-fecha").textContent = datos.dia;
-document.getElementById("res-hora").textContent = datos.hora;
-document.getElementById("res-personas").textContent =
-  `${datos.personas} persona${datos.personas > 1 ? "s" : ""}`;
+      // Ocultar el formulario
+      form.classList.add("hidden");
 
-// Ocultar el formulario
-form.classList.add("hidden");
+      // Mostrar el mensaje de éxito
+      confirmacion.classList.remove("hidden");
 
-// Mostrar el mensaje
-confirmacion.classList.remove("hidden");
-confirmacion.scrollIntoView({
-  behavior: "smooth",
-  block: "center",
-});
+      confirmacion.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
 
       form.reset();
+
     } catch (err) {
+      console.error("Reservation error:", err);
+
       mostrarResumenErrores(
-        { general: "No se pudo enviar la reserva. Inténtalo de nuevo o llámanos por teléfono." },
+        {
+          general: "No se pudo enviar la reserva. Inténtalo de nuevo o llámanos por teléfono."
+        },
         resumen,
         listaErrores
-      );
+        );
     } finally {
       btnEnviar.disabled = false;
       btnEnviar.textContent = "Confirmar reserva";
