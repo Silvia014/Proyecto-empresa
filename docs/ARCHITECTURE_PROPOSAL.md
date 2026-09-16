@@ -11,11 +11,7 @@ This document defines an initial proposal for structuring the Brasaland backend 
 
 The proposal is based on the characteristics already identified in the project: a public website for customers, reservation and ordering flows, checkout, user accounts and password recovery, as well as internal functionality related to candidate management. The repository is a monorepo where the frontend and backend should be able to evolve independently while maintaining clear communication contracts.
 
-The main objectives are to:
-
-clearly separate business domains;
-
-avoid putting all business logic into a single file or router;
+The main objectives are to: clearly separate business domains; avoid putting all business logic into a single file or router;
 
 allow the backend to grow without becoming difficult to maintain;
 
@@ -27,7 +23,7 @@ make it possible to add new functionality without unnecessarily affecting existi
 
 Decision
 
-I propose using a modular monolith organized by business domains with internal layer separation.
+I propose using a modular monolith organized by business domains with internal layer separation. (one backend application, organizing its code into separate sections according to what each part of the business does)
 
 I do not recommend starting with microservices. The system can initially be deployed and evolved as a single backend application while keeping its business domains clearly separated so that future growth does not result in an unstructured monolith.
 
@@ -45,19 +41,7 @@ Models: representation of persisted entities.
 
 Why this fits Brasaland
 
-The application is not only an informational website. It contains several related but distinguishable business flows:
-
-customers who browse information and make reservations;
-
-customers who place orders and complete checkout;
-
-users who manage their accounts;
-
-internal operations that need to consult or manage information;
-
-recruitment and candidate-management processes;
-
-future functionality related to loyalty, inventory, and operations.
+The application is not only an informational website. It contains several related but distinguishable business flows: customers who browse information and make reservations;customers who place orders and complete checkout;users who manage their accounts;internal operations that need to consult or manage information;recruitment and candidate-management processes;future functionality related to loyalty, inventory, and operations.
 
 These flows share users, configuration, and data, so separating them into microservices immediately would introduce additional communication, deployment, and operational complexity before there is a clear business need.
 
@@ -69,17 +53,9 @@ Microservices could become appropriate if individual domains require independent
 
 At the current stage, separating the domains prematurely would introduce additional concerns such as:
 
-communication between services;
+communication between services;distributed error handling;deployment and configuration of multiple services;service-to-service authentication;
 
-distributed error handling;
-
-deployment and configuration of multiple services;
-
-service-to-service authentication;
-
-distributed observability;
-
-data consistency across services.
+distributed observability;data consistency across services.
 
 Therefore, the initial proposal is to keep one backend application while preserving domain boundaries. If a particular domain later needs independent scaling or deployment, it can be evaluated for extraction into a separate service.
 
@@ -139,17 +115,9 @@ domains/
     ├── repository.py
     └── models.py
 
-Not every domain needs every file from the first day.
+Not every domain needs every file from the first day. The goal is to avoid two extremes:putting the entire domain inside router.py;creating excessive fragmentation for functionality that is still very small.
 
-The goal is to avoid two extremes:
-
-putting the entire domain inside router.py;
-
-creating excessive fragmentation for functionality that is still very small.
-
-The router should mainly handle HTTP concerns: receiving parameters, using dependencies, calling the appropriate use case, and returning a response.
-
-Business rules should not depend directly on FastAPI. This makes them easier to test and potentially reuse from other entry points.
+The router should mainly handle HTTP concerns: receiving parameters, using dependencies, calling the appropriate use case, and returning a response.Business rules should not depend directly on FastAPI. This makes them easier to test and potentially reuse from other entry points.
 
 5. Main Business Domains
 
@@ -347,33 +315,11 @@ The frontend and backend are separate systems even though they are located in th
 
 Frontend responsibilities
 
-The frontend is responsible for:
-
-user interface;
-
-navigation;
-
-presentation state;
-
-forms;
-
-HTTP requests to the API.
+The frontend is responsible for: user interface;navigation;presentation state;forms;HTTP requests to the API.
 
 Backend responsibilities
 
-The backend is responsible for:
-
-business rules;
-
-authentication and authorization;
-
-data validation;
-
-persistence;
-
-transactional operations;
-
-external service integrations;
+The backend is responsible for:business rules;authentication and authorization;data validation;persistence;transactional operations;external service integrations;
 
 API responses.
 
@@ -395,7 +341,7 @@ In production, allowed origins should be explicit, for example:
 https://www.brasaland.example
 https://admin.brasaland.example
 
-Using allow_origins=["*"] should not be the default production configuration when credentials or authorization headers are involved.
+Using allow_origins=["*"] (meaning allow requests for any website or domain) should not be the default production configuration when credentials or authorization headers are involved.
 
 FastAPI documents the use of CORSMiddleware and explicit origin configuration for cross-origin requests.
 
@@ -451,19 +397,7 @@ It also makes it easier to test business logic without requiring every unit test
 
 11. Authentication and Authorization
 
-Authentication should be treated as a cross-cutting concern.
-
-The backend should distinguish between:
-
-unauthenticated users;
-
-authenticated users;
-
-customer-level permissions;
-
-internal or administrative permissions.
-
-FastAPI dependencies can be used to centralize checks that need to be reused across multiple endpoints.
+Authentication should be treated as a cross-cutting concern. The backend should distinguish between:unauthenticated users;authenticated users;customer-level permissions;internal or administrative permissions.FastAPI dependencies can be used to centralize checks that need to be reused across multiple endpoints.
 
 Conceptually:
 
@@ -483,21 +417,7 @@ FastAPI's dependency system is designed to support reusable dependencies for con
 
 The frontend should not depend on backend implementation details.
 
-The API contract should define:
-
-HTTP method;
-
-route;
-
-parameters;
-
-request body;
-
-response body;
-
-error codes and structure;
-
-authentication requirements.
+The API contract should define: HTTP method;route;parameters;request body;response body;error codes and structure;authentication requirements.
 
 Example:
 
@@ -626,25 +546,7 @@ Mitigation: preserve domain boundaries from the beginning and review dependencie
 
 This proposal does not attempt to close decisions for which the requirements are not yet sufficiently defined.
 
-The following should be resolved during subsequent development phases:
-
-final authentication strategy;
-
-exact permission model;
-
-final database schema;
-
-transaction strategy;
-
-definitive payment provider and payment flow;
-
-deployment strategy;
-
-logging and observability;
-
-API versioning and deprecation policy;
-
-integration and end-to-end testing strategy.
+The following should be resolved during subsequent development phases: final authentication strategy;exact permission model;final database schema;transaction strategy;definitive payment provider and payment flow;deployment strategy;logging and observability;API versioning and deprecation policy;integration and end-to-end testing strategy.
 
 These decisions should be made when their technical and business requirements are clear, avoiding unnecessary complexity at this stage.
 
