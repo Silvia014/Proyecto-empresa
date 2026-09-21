@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Brasaland — Incident Analysis</title>
+
+    <link rel="stylesheet" href="styles.css?v=2">
+</head>
+
+<body>
+
+    <header class="header">
+    <div>
+        <h1>Brasaland</h1>
+        <p>Digital Operations · Incident Analysis</p>
+    </div>
+
+        <span id="api-status" class="status">
+            API: checking...
+        </span>
+    </header>
+
+
+    <main class="container">
+
+        <section class="upload-card">
+
+            <h2>Analyze incident CSV</h2>
+
+            <p>
+                Upload a Brasaland incident CSV file to analyze
+                its quality, categories, statuses and satisfaction.
+            </p>
+
+            <form id="upload-form">
+
+                <label for="csv-file">
+                    CSV file
+                </label>
+
+                <input
+                    type="file"
+                    id="csv-file"
+                    name="file"
+                    accept=".csv"
+                    required
+                >
+
+                <button type="submit" id="analyze-button">
+                    Analyze incidents
+                </button>
+
+            </form>
+
+            <p id="message" class="message"></p>
+
+        </section>
+
+
+        <section id="results" class="results hidden">
+
+            <div class="section-header">
+                <div>
+                    <h2>Analysis results</h2>
+                    <p>Overview of the uploaded incident data.</p>
+                </div>
+
+                <button id="download-button" class="secondary-button">
+                    Download CSV
+                </button>
+            </div>
+
+
+            <div class="cards">
+
+                <article class="metric-card">
+                    <span>Total records</span>
+                    <strong id="total-records">0</strong>
+                </article>
+
+                <article class="metric-card">
+                    <span>Valid records</span>
+                    <strong id="valid-records">0</strong>
+                </article>
+
+                <article class="metric-card">
+                    <span>Invalid records</span>
+                    <strong id="invalid-records">0</strong>
+                </article>
+
+                <article class="metric-card">
+                    <span>Average satisfaction</span>
+                    <strong id="satisfaction-average">0.00</strong>
+                </article>
+
+            </div>
+
+
+            <div class="grid">
+
+                <article class="panel">
+
+                    <h3>Categories</h3>
+
+                    <div id="categories"></div>
+
+                </article>
+
+
+                <article class="panel">
+
+                    <h3>Statuses</h3>
+
+                    <div id="statuses"></div>
+
+                </article>
+
+
+                <article class="panel">
+
+                    <h3>Invalid records</h3>
+
+                    <div id="invalid-breakdown"></div>
+
+                </article>
+
+
+                <article class="panel">
+
+                    <h3>Satisfaction scores</h3>
+
+                    <div id="satisfaction-scores"></div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="app.js"></script>
+
+</body>
+</html>
