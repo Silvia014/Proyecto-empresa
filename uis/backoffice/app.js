@@ -1,160 +1,449 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-const uploadForm = document.getElementById("upload-form");
-const csvFile = document.getElementById("csv-file");
-const analyzeButton = document.getElementById("analyze-button");
-
-const message = document.getElementById("message");
-const resultsSection = document.getElementById("results");
-
+const table = document.getElementById("suppliers-table");
+const message = document.getElementById("form-message");
 const apiStatus = document.getElementById("api-status");
 
-const totalRecords = document.getElementById("total-records");
-const validRecords = document.getElementById("valid-records");
-const invalidRecords = document.getElementById("invalid-records");
-const satisfactionAverage = document.getElementById(
-    "satisfaction-average"
-);
+const countryFilter = document.getElementById("country-filter");
+const categoryFilter = document.getElementById("category-filter");
 
-const categoriesContainer = document.getElementById("categories");
-const statusesContainer = document.getElementById("statuses");
-const invalidBreakdownContainer = document.getElementById(
-    "invalid-breakdown"
-);
-const satisfactionScoresContainer = document.getElementById(
-    "satisfaction-scores"
-);
-
-const downloadButton = document.getElementById("download-button");
+const refreshButton = document.getElementById("refresh-button");
+const supplierForm = document.getElementById("supplier-form");
 
 
 async function checkApi() {
     try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+        const response = await fetch(`${API_BASE_URL}/`);
 
         if (!response.ok) {
-            throw new Error("API unavailable");
+            throw new Error();
         }
 
         apiStatus.textContent = "API: online";
-    } catch (error) {
+        apiStatus.classList.add("online");
+    } catch {
         apiStatus.textContent = "API: offline";
+        apiStatus.classList.remove("online");
     }
 }
 
 
-function renderRows(container, data) {
-    container.innerHTML = "";
+function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
 
-    Object.entries(data).forEach(([key, value]) => {
 
-        const row = document.createElement("div");
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString();
+}
 
-        row.className = "result-row";
+
+function createStatusBadge(status) {
+    const badge = document.createElement("span");
+
+    badge.className = `status-badge ${status}`;
+    badge.textContent = status;
+
+    return badge;
+}
+
+
+function createCategories(categories) {
+    const container = document.createElement("div");
+
+    container.className = "categories";
+
+    categories.forEach(category => {
+        const badge = document.createElement("span");
+
+        badge.className = "category-badge";
+        badge.textContent = category;
+
+        container.appendChild(badge);
+    });
+
+    return container;
+}
+
+
+function renderSuppliers(suppliers) {
+    table.innerHTML = "";
+
+    if (suppliers.length === 0) {
+        const row = document.createElement("tr");
 
         row.innerHTML = `
-            <span>${key.replaceAll("_", " ")}</span>
-            <span class="result-value">${value}</span>
+            <td colspan="7">
+                No suppliers found.
+            </td>
         `;
 
-        container.appendChild(row);
+        table.appendChild(row);
+
+        return;
+    }
+
+
+    suppliers.forEach(supplier => {
+
+        const row = document.createElement("tr");
+
+        const supplierCell = document.createElement("td");
+        supplierCell.innerHTML = `
+            <strong>${supplier.name}</strong>
+            <small>${supplier.contact_email || ""}</small>
+        `;
+
+
+        const countryCell = document.createElement("td");
+        countryCell.textContent = supplier.country;
+
+
+        const categoriesCell = document.createElement("td");
+        categoriesCell.appendChild(
+            createCategories(supplier.categories)
+        );
+
+
+        const rateCell = document.createElement("td");
+        rateCell.textContent =
+            `${supplier.rate_per_unit} ${supplier.currency}`;
+
+
+        const statusCell = document.createElement("td");
+        statusCell.appendChild(
+            createStatusBadge(supplier.status)
+        );
+
+
+        const updatedCell = document.createElement("td");
+        updatedCell.textContent =
+            formatDate(supplier.updated_at);
+
+
+        const actionsCell = document.createElement("td");
+
+        actionsCell.className = "actions";
+
+        const rateButton = document.createElement("button");
+
+        rateButton.textContent = "Update rate";
+        rateButton.className = "small-button";
+
+        rateButton.addEventListener("click", () => {
+            updateRate(supplier);
+        });
+
+
+        const statusButton = document.createElement("button");
+
+        statusButton.textContent =
+            supplier.status === "active"
+                ? "Suspend"
+                : "Activate";
+
+        statusButton.className = "small-button";
+
+        statusButton.addEventListener("click", () => {
+            updateStatus(supplier);
+        });
+
+
+        actionsCell.appendChild(rateButton);
+        actionsCell.appendChild(statusButton);
+
+
+        row.appendChild(supplierCell);
+        row.appendChild(countryCell);
+        row.appendChild(categoriesCell);
+        row.appendChild(rateCell);
+        row.appendChild(statusCell);
+        row.appendChild(updatedCell);
+        row.appendChild(actionsCell);
+
+        table.appendChild(row);
     });
 }
 
 
-function renderResults(data) {
+async function loadSuppliers() {
 
-    totalRecords.textContent = data.total;
-    validRecords.textContent = data.valid;
-    invalidRecords.textContent = data.invalid;
+    const params = new URLSearchParams();
 
-    satisfactionAverage.textContent =
-        Number(data.satisfaction_average).toFixed(2);
+    if (countryFilter.value) {
+        params.set("country", countryFilter.value);
+    }
 
-    renderRows(
-        categoriesContainer,
-        data.categories
-    );
+    if (categoryFilter.value) {
+        params.set("category", categoryFilter.value);
+    }
 
-    renderRows(
-        statusesContainer,
-        data.statuses
-    );
 
-    renderRows(
-        invalidBreakdownContainer,
-        data.invalid_counts
-    );
+    const queryString = params.toString();
 
-    renderRows(
-        satisfactionScoresContainer,
-        data.satisfaction_scores
-    );
+    const url = queryString
+        ? `${API_BASE_URL}/suppliers?${queryString}`
+        : `${API_BASE_URL}/suppliers`;
 
-    resultsSection.classList.remove("hidden");
+
+    try {
+
+        showMessage("Loading suppliers...");
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Could not load suppliers.");
+        }
+
+        const suppliers = await response.json();
+
+        renderSuppliers(suppliers);
+
+        showMessage(
+            `${suppliers.length} supplier(s) found.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
 }
 
 
-uploadForm.addEventListener("submit", async (event) => {
+async function updateRate(supplier) {
 
-    event.preventDefault();
+    const newRate = prompt(
+        `New rate per unit for ${supplier.name}:`,
+        supplier.rate_per_unit
+    );
 
-    const file = csvFile.files[0];
-
-    if (!file) {
-        message.textContent = "Please select a CSV file.";
+    if (newRate === null) {
         return;
     }
 
-    analyzeButton.disabled = true;
-    message.textContent = "Analyzing incidents...";
 
-    const formData = new FormData();
+    const rate = Number(newRate);
 
-    formData.append("file", file);
+    if (!Number.isFinite(rate) || rate <= 0) {
+        showMessage(
+            "Rate must be greater than zero.",
+            "error"
+        );
+
+        return;
+    }
+
 
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}/api/incidents/analyze`,
+            `${API_BASE_URL}/suppliers/${supplier.id}/rate`,
             {
-                method: "POST",
-                body: formData,
+                method: "PATCH",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    rate_per_unit: rate
+                })
             }
         );
 
+
         const data = await response.json();
+
 
         if (!response.ok) {
             throw new Error(
-                data.detail || "Analysis failed."
+                data.detail || "Could not update rate."
             );
         }
 
-        renderResults(data);
 
-        message.textContent =
-            "Analysis completed successfully.";
+        showMessage(
+            "Rate updated successfully.",
+            "success"
+        );
+
+        await loadSuppliers();
 
     } catch (error) {
 
-        message.textContent =
-            `Error: ${error.message}`;
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
 
-    } finally {
 
-        analyzeButton.disabled = false;
+async function updateStatus(supplier) {
+
+    const newStatus =
+        supplier.status === "active"
+            ? "suspended"
+            : "active";
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/suppliers/${supplier.id}/status`,
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail || "Could not update status."
+            );
+        }
+
+
+        showMessage(
+            `Supplier ${newStatus}.`,
+            "success"
+        );
+
+        await loadSuppliers();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+supplierForm.addEventListener("submit", async event => {
+
+    event.preventDefault();
+
+
+    const categories =
+        Array.from(
+            document.getElementById("categories").selectedOptions
+        ).map(option => option.value);
+
+
+    const supplier = {
+        name: document.getElementById("name").value.trim(),
+
+        country:
+            document.getElementById("country").value,
+
+        categories,
+
+        rate_per_unit:
+            Number(
+                document.getElementById("rate_per_unit").value
+            ),
+
+        currency:
+            document.getElementById("currency").value,
+
+        status:
+            document.getElementById("status").value,
+
+        contact_email:
+            document.getElementById("contact_email").value.trim()
+            || null,
+
+        notes:
+            document.getElementById("notes").value.trim()
+            || null
+    };
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/suppliers`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(supplier)
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            const errorMessage =
+                Array.isArray(data.detail)
+                    ? data.detail
+                        .map(error => error.msg)
+                        .join(", ")
+                    : data.detail || "Could not create supplier.";
+
+            throw new Error(errorMessage);
+        }
+
+
+        showMessage(
+            "Supplier registered successfully.",
+            "success"
+        );
+
+        supplierForm.reset();
+
+        await loadSuppliers();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
     }
 });
 
 
-downloadButton.addEventListener("click", () => {
+countryFilter.addEventListener(
+    "change",
+    loadSuppliers
+);
 
-    window.open(
-        `${API_BASE_URL}/api/incidents/results/export`,
-        "_blank"
-    );
-});
+categoryFilter.addEventListener(
+    "change",
+    loadSuppliers
+);
+
+refreshButton.addEventListener(
+    "click",
+    loadSuppliers
+);
 
 
 checkApi();
+loadSuppliers();

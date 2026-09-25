@@ -4,145 +4,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Brasaland — Incident Analysis</title>
+    <title>Brasaland — Supplier Directory</title>
 
-    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <header class="header">
+<header class="header">
     <div>
         <h1>Brasaland</h1>
-        <p>Digital Operations · Incident Analysis</p>
+        <p>Digital Operations · Supplier Directory</p>
     </div>
 
-        <span id="api-status" class="status">
-            API: checking...
-        </span>
-    </header>
+    <span id="api-status" class="status">
+        API: checking...
+    </span>
+</header>
 
 
-    <main class="container">
+<main class="container">
 
-        <section class="upload-card">
+    <section class="panel">
 
-            <h2>Analyze incident CSV</h2>
+        <div class="section-header">
+            <div>
+                <h2>Supplier Directory</h2>
+                <p>Manage Brasaland suppliers across Colombia and USA.</p>
+            </div>
 
-            <p>
-                Upload a Brasaland incident CSV file to analyze
-                its quality, categories, statuses and satisfaction.
-            </p>
-
-            <form id="upload-form">
-
-                <label for="csv-file">
-                    CSV file
-                </label>
-
-                <input
-                    type="file"
-                    id="csv-file"
-                    name="file"
-                    accept=".csv"
-                    required
-                >
-
-                <button type="submit" id="analyze-button">
-                    Analyze incidents
-                </button>
-
-            </form>
-
-            <p id="message" class="message"></p>
-
-        </section>
+            <button id="refresh-button" class="secondary-button">
+                Refresh
+            </button>
+        </div>
 
 
-        <section id="results" class="results hidden">
+        <div class="filters">
 
-            <div class="section-header">
+            <div>
+                <label for="country-filter">Country</label>
+
+                <select id="country-filter">
+                    <option value="">All countries</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="USA">USA</option>
+                </select>
+            </div>
+
+
+            <div>
+                <label for="category-filter">Category</label>
+
+                <select id="category-filter">
+                    <option value="">All categories</option>
+                    <option value="carne">Carne</option>
+                    <option value="verduras_y_hortalizas">
+                        Verduras y hortalizas
+                    </option>
+                    <option value="salsas_y_condimentos">
+                        Salsas y condimentos
+                    </option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="packaging">Packaging</option>
+                    <option value="productos_limpieza">
+                        Productos de limpieza
+                    </option>
+                    <option value="lacteos">Lácteos</option>
+                    <option value="carbon_y_combustible">
+                        Carbón y combustible
+                    </option>
+                </select>
+            </div>
+
+        </div>
+
+
+        <p id="message" class="message"></p>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Country</th>
+                        <th>Categories</th>
+                        <th>Rate</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="suppliers-table">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <section class="panel">
+
+        <h2>Register supplier</h2>
+
+        <form id="supplier-form">
+
+            <div class="form-grid">
+
                 <div>
-                    <h2>Analysis results</h2>
-                    <p>Overview of the uploaded incident data.</p>
+                    <label for="name">Name *</label>
+                    <input id="name" required>
                 </div>
 
-                <button id="download-button" class="secondary-button">
-                    Download CSV
-                </button>
+
+                <div>
+                    <label for="country">Country *</label>
+
+                    <select id="country" required>
+                        <option value="">Select country</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="USA">USA</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="categories">Categories *</label>
+
+                    <select id="categories" multiple required>
+                        <option value="carne">Carne</option>
+                        <option value="verduras_y_hortalizas">
+                            Verduras y hortalizas
+                        </option>
+                        <option value="salsas_y_condimentos">
+                            Salsas y condimentos
+                        </option>
+                        <option value="bebidas">Bebidas</option>
+                        <option value="packaging">Packaging</option>
+                        <option value="productos_limpieza">
+                            Productos de limpieza
+                        </option>
+                        <option value="lacteos">Lácteos</option>
+                        <option value="carbon_y_combustible">
+                            Carbón y combustible
+                        </option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="rate_per_unit">Rate per unit *</label>
+                    <input
+                        id="rate_per_unit"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                    >
+                </div>
+
+
+                <div>
+                    <label for="currency">Currency *</label>
+
+                    <select id="currency" required>
+                        <option value="">Select currency</option>
+                        <option value="COP">COP</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="status">Status *</label>
+
+                    <select id="status" required>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="contact_email">Contact email</label>
+                    <input id="contact_email" type="email">
+                </div>
+
+
+                <div>
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+
             </div>
 
 
-            <div class="cards">
+            <button type="submit">
+                Register supplier
+            </button>
+            <p id="form-message" class="message"></p>
 
-                <article class="metric-card">
-                    <span>Total records</span>
-                    <strong id="total-records">0</strong>
-                </article>
+        </form>
 
-                <article class="metric-card">
-                    <span>Valid records</span>
-                    <strong id="valid-records">0</strong>
-                </article>
+    </section>
 
-                <article class="metric-card">
-                    <span>Invalid records</span>
-                    <strong id="invalid-records">0</strong>
-                </article>
-
-                <article class="metric-card">
-                    <span>Average satisfaction</span>
-                    <strong id="satisfaction-average">0.00</strong>
-                </article>
-
-            </div>
+</main>
 
 
-            <div class="grid">
-
-                <article class="panel">
-
-                    <h3>Categories</h3>
-
-                    <div id="categories"></div>
-
-                </article>
-
-
-                <article class="panel">
-
-                    <h3>Statuses</h3>
-
-                    <div id="statuses"></div>
-
-                </article>
-
-
-                <article class="panel">
-
-                    <h3>Invalid records</h3>
-
-                    <div id="invalid-breakdown"></div>
-
-                </article>
-
-
-                <article class="panel">
-
-                    <h3>Satisfaction scores</h3>
-
-                    <div id="satisfaction-scores"></div>
-
-                </article>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <script src="app.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
