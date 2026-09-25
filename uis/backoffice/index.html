@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Brasaland — Supplier Directory</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div>
+        <h1>Brasaland</h1>
+        <p>Digital Operations · Supplier Directory</p>
+    </div>
+
+    <span id="api-status" class="status">
+        API: checking...
+    </span>
+</header>
+
+
+<main class="container">
+
+    <section class="panel">
+
+        <div class="section-header">
+            <div>
+                <h2>Supplier Directory</h2>
+                <p>Manage Brasaland suppliers across Colombia and USA.</p>
+            </div>
+
+            <button id="refresh-button" class="secondary-button">
+                Refresh
+            </button>
+        </div>
+
+
+        <div class="filters">
+
+            <div>
+                <label for="country-filter">Country</label>
+
+                <select id="country-filter">
+                    <option value="">All countries</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="USA">USA</option>
+                </select>
+            </div>
+
+
+            <div>
+                <label for="category-filter">Category</label>
+
+                <select id="category-filter">
+                    <option value="">All categories</option>
+                    <option value="carne">Carne</option>
+                    <option value="verduras_y_hortalizas">
+                        Verduras y hortalizas
+                    </option>
+                    <option value="salsas_y_condimentos">
+                        Salsas y condimentos
+                    </option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="packaging">Packaging</option>
+                    <option value="productos_limpieza">
+                        Productos de limpieza
+                    </option>
+                    <option value="lacteos">Lácteos</option>
+                    <option value="carbon_y_combustible">
+                        Carbón y combustible
+                    </option>
+                </select>
+            </div>
+
+        </div>
+
+
+        <p id="message" class="message"></p>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Country</th>
+                        <th>Categories</th>
+                        <th>Rate</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="suppliers-table">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <section class="panel">
+
+        <h2>Register supplier</h2>
+
+        <form id="supplier-form">
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="name">Name *</label>
+                    <input id="name" required>
+                </div>
+
+
+                <div>
+                    <label for="country">Country *</label>
+
+                    <select id="country" required>
+                        <option value="">Select country</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="USA">USA</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="categories">Categories *</label>
+
+                    <select id="categories" multiple required>
+                        <option value="carne">Carne</option>
+                        <option value="verduras_y_hortalizas">
+                            Verduras y hortalizas
+                        </option>
+                        <option value="salsas_y_condimentos">
+                            Salsas y condimentos
+                        </option>
+                        <option value="bebidas">Bebidas</option>
+                        <option value="packaging">Packaging</option>
+                        <option value="productos_limpieza">
+                            Productos de limpieza
+                        </option>
+                        <option value="lacteos">Lácteos</option>
+                        <option value="carbon_y_combustible">
+                            Carbón y combustible
+                        </option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="rate_per_unit">Rate per unit *</label>
+                    <input
+                        id="rate_per_unit"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                    >
+                </div>
+
+
+                <div>
+                    <label for="currency">Currency *</label>
+
+                    <select id="currency" required>
+                        <option value="">Select currency</option>
+                        <option value="COP">COP</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="status">Status *</label>
+
+                    <select id="status" required>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="contact_email">Contact email</label>
+                    <input id="contact_email" type="email">
+                </div>
+
+
+                <div>
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+
+            </div>
+
+
+            <button type="submit">
+                Register supplier
+            </button>
+            <p id="form-message" class="message"></p>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
