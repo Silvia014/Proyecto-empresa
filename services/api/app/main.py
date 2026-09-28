@@ -1,6 +1,10 @@
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from .users.routes import router as users_router
+from .profiles.routes import router as profiles_router
+from .auth.routes import router as auth_router
+from .auth.dependencies import get_current_user
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -16,6 +20,9 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 
 app = FastAPI(title="Brasaland Supplier Directory API")
+app.include_router(users_router)
+app.include_router(profiles_router)
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,7 +49,10 @@ def root():
 
 
 @app.post("/suppliers", response_model=Supplier, status_code=201)
-def register_supplier(supplier: SupplierCreate):
+def register_supplier(
+    supplier: SupplierCreate,
+    current_user=Depends(get_current_user),
+):
     return create_supplier(supplier.model_dump())
 
 
@@ -50,12 +60,16 @@ def register_supplier(supplier: SupplierCreate):
 def list_suppliers(
     country: Optional[str] = Query(default=None),
     category: Optional[str] = Query(default=None),
+    current_user=Depends(get_current_user),
 ):
     return get_suppliers(country=country, category=category)
 
 
 @app.get("/suppliers/{supplier_id}", response_model=Supplier)
-def supplier_detail(supplier_id: int):
+def supplier_detail(
+    supplier_id: int,
+    current_user=Depends(get_current_user),
+):
     supplier = get_supplier(supplier_id)
 
     if supplier is None:
@@ -65,7 +79,11 @@ def supplier_detail(supplier_id: int):
 
 
 @app.patch("/suppliers/{supplier_id}/rate", response_model=Supplier)
-def change_supplier_rate(supplier_id: int, data: RateUpdate):
+def change_supplier_rate(
+    supplier_id: int,
+    data: RateUpdate,
+    current_user=Depends(get_current_user),
+):
     supplier = update_supplier_rate(
         supplier_id,
         data.rate_per_unit,
@@ -78,7 +96,11 @@ def change_supplier_rate(supplier_id: int, data: RateUpdate):
 
 
 @app.patch("/suppliers/{supplier_id}/status", response_model=Supplier)
-def change_supplier_status(supplier_id: int, data: StatusUpdate):
+def change_supplier_status(
+    supplier_id: int,
+    data: StatusUpdate,
+    current_user=Depends(get_current_user),
+):
     supplier = update_supplier_status(
         supplier_id,
         data.status.value,
@@ -91,7 +113,10 @@ def change_supplier_status(supplier_id: int, data: StatusUpdate):
 
 
 @app.delete("/suppliers/{supplier_id}", status_code=204)
-def remove_supplier(supplier_id: int):
+def remove_supplier(
+    supplier_id: int,
+    current_user=Depends(get_current_user),
+):
     deleted = delete_supplier(supplier_id)
 
     if not deleted:
