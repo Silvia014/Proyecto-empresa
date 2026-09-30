@@ -1,5 +1,14 @@
 from typing import Optional
+import os
+from pathlib import Path
 
+env_file = Path(__file__).resolve().parents[3] / ".env.local"
+
+if env_file.exists():
+    for line in env_file.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip())
 from .users.routes import router as users_router
 from .profiles.routes import router as profiles_router
 from .auth.routes import router as auth_router
@@ -27,11 +36,11 @@ app.include_router(auth_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-],
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
