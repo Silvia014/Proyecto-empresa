@@ -10,7 +10,6 @@ class Profile(BaseModel):
 
 
 class ProfileCreate(BaseModel):
-    user_id: int
     name: str
     phone: str
     address: str
