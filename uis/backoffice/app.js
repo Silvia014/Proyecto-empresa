@@ -447,3 +447,593 @@ refreshButton.addEventListener(
 
 checkApi();
 loadSuppliers();
+
+// ============================================================
+// INCIDENT MANAGER
+// ============================================================
+
+const incidentsTable = document.getElementById("incidents-table");
+const incidentListMessage =
+    document.getElementById("incident-list-message");
+
+const incidentForm =
+    document.getElementById("incident-form");
+
+const incidentFormMessage =
+    document.getElementById("incident-form-message");
+
+const incidentSubmitButton =
+    document.getElementById("incident-submit-button");
+
+const incidentStatusFilter =
+    document.getElementById("incident-status-filter");
+
+const incidentOriginFilter =
+    document.getElementById("incident-origin-filter");
+
+const incidentBranchFilter =
+    document.getElementById("incident-branch-filter");
+
+const incidentsRefreshButton =
+    document.getElementById("incidents-refresh-button");
+
+const incidentOrigin =
+    document.getElementById("incident-origin");
+
+const incidentBranchField =
+    document.getElementById("incident-branch-field");
+
+const incidentBranch =
+    document.getElementById("incident-branch");
+
+
+const branchLabels = {
+    central: "Central",
+    medellin_centro: "Medellín Centro",
+    medellin_laureles: "Medellín Laureles",
+    medellin_envigado: "Medellín Envigado",
+    medellin_bello: "Medellín Bello",
+    medellin_itagui: "Medellín Itagüí",
+    bogota_chapinero: "Bogotá Chapinero",
+    bogota_usaquen: "Bogotá Usaquén",
+    cali_granada: "Cali Granada",
+    barranquilla_norte: "Barranquilla Norte",
+    miami_doral: "Miami Doral",
+    miami_hialeah: "Miami Hialeah",
+    miami_kendall: "Miami Kendall",
+    orlando_international: "Orlando International Drive",
+    fort_lauderdale: "Fort Lauderdale"
+};
+
+
+function formatIncidentStatus(status) {
+    return status
+        .replace("_", " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+
+function showIncidentMessage(text, type = "") {
+    incidentListMessage.textContent = text;
+    incidentListMessage.className = `message ${type}`;
+}
+
+
+function showIncidentFormMessage(text, type = "") {
+    incidentFormMessage.textContent = text;
+    incidentFormMessage.className = `message ${type}`;
+}
+
+
+function createIncidentStatusSelect(incident) {
+
+    const select = document.createElement("select");
+
+    select.className = "incident-status-select";
+
+    const allowedTransitions = {
+        open: ["in_progress", "discarded"],
+        in_progress: ["resolved", "discarded"],
+        resolved: [],
+        discarded: []
+    };
+
+    const options = [
+        incident.status,
+        ...allowedTransitions[incident.status]
+    ];
+
+    [...new Set(options)].forEach(status => {
+
+        const option = document.createElement("option");
+
+        option.value = status;
+        option.textContent = formatIncidentStatus(status);
+
+        if (status === incident.status) {
+            option.selected = true;
+        }
+
+        select.appendChild(option);
+    });
+
+
+    if (allowedTransitions[incident.status].length === 0) {
+        select.disabled = true;
+    }
+
+
+    select.addEventListener("change", async () => {
+
+        const previousStatus = incident.status;
+        const newStatus = select.value;
+
+        incident.status = newStatus;
+
+        select.disabled = true;
+
+        try {
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/incidents/${incident.id}/status?status=${newStatus}`,
+                {
+                    method: "PATCH"
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail?.message ||
+                    data.detail ||
+                    "Could not update incident status."
+                );
+            }
+
+            showIncidentMessage(
+                "Incident status updated successfully.",
+                "success"
+            );
+
+            await loadIncidents();
+            await loadIncidentSummary();
+
+        } catch (error) {
+
+            incident.status = previousStatus;
+
+            select.value = previousStatus;
+
+            select.disabled = false;
+
+            showIncidentMessage(
+                error.message,
+                "error"
+            );
+        }
+    });
+
+
+    return select;
+}
+
+
+function renderIncidents(incidents) {
+
+    incidentsTable.innerHTML = "";
+
+
+    if (incidents.length === 0) {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td colspan="8">
+                No incidents found.
+            </td>
+        `;
+
+        incidentsTable.appendChild(row);
+
+        return;
+    }
+
+
+    incidents.forEach(incident => {
+
+        const row = document.createElement("tr");
+
+
+        const idCell = document.createElement("td");
+        idCell.textContent = incident.id;
+
+
+        const titleCell = document.createElement("td");
+
+        titleCell.innerHTML = `
+            <strong>${incident.title}</strong>
+            <small>${incident.description}</small>
+        `;
+
+
+        const categoryCell = document.createElement("td");
+        categoryCell.textContent =
+            formatIncidentStatus(incident.category);
+
+
+        const statusCell = document.createElement("td");
+        statusCell.appendChild(
+            createIncidentStatusSelect(incident)
+        );
+
+
+        const originCell = document.createElement("td");
+        originCell.textContent =
+            formatIncidentStatus(incident.origin);
+
+
+        const branchCell = document.createElement("td");
+        branchCell.textContent =
+            branchLabels[incident.branch] || incident.branch;
+
+
+        const createdCell = document.createElement("td");
+        createdCell.textContent =
+            formatDate(incident.created_at);
+
+
+        const actionsCell = document.createElement("td");
+        actionsCell.textContent = "—";
+
+
+        row.appendChild(idCell);
+        row.appendChild(titleCell);
+        row.appendChild(categoryCell);
+        row.appendChild(statusCell);
+        row.appendChild(originCell);
+        row.appendChild(branchCell);
+        row.appendChild(createdCell);
+        row.appendChild(actionsCell);
+
+        incidentsTable.appendChild(row);
+    });
+}
+
+
+async function loadIncidents() {
+
+    const params = new URLSearchParams();
+
+
+    if (incidentStatusFilter.value) {
+        params.set(
+            "status",
+            incidentStatusFilter.value
+        );
+    }
+
+
+    if (incidentOriginFilter.value) {
+        params.set(
+            "origin",
+            incidentOriginFilter.value
+        );
+    }
+
+
+    if (incidentBranchFilter.value) {
+        params.set(
+            "branch",
+            incidentBranchFilter.value
+        );
+    }
+
+
+    const queryString = params.toString();
+
+    const url = queryString
+        ? `${API_BASE_URL}/api/incidents?${queryString}`
+        : `${API_BASE_URL}/api/incidents`;
+
+
+    try {
+
+        showIncidentMessage(
+            "Loading incidents..."
+        );
+
+
+        const response = await fetch(url);
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Could not load incidents."
+            );
+        }
+
+
+        const incidents = await response.json();
+
+        renderIncidents(incidents);
+
+
+        showIncidentMessage(
+            `${incidents.length} incident(s) found.`,
+            "success"
+        );
+
+
+    } catch (error) {
+
+        incidentsTable.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    Could not load incidents.
+                </td>
+            </tr>
+        `;
+
+
+        showIncidentMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+async function loadIncidentSummary() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/incidents/summary`
+        );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Could not load summary."
+            );
+        }
+
+
+        const summary = await response.json();
+
+
+        document.getElementById(
+            "incident-total"
+        ).textContent = summary.total;
+
+
+        document.getElementById(
+            "incident-open"
+        ).textContent =
+            summary.by_status.open || 0;
+
+
+        document.getElementById(
+            "incident-in-progress"
+        ).textContent =
+            summary.by_status.in_progress || 0;
+
+
+        document.getElementById(
+            "incident-resolved"
+        ).textContent =
+            summary.by_status.resolved || 0;
+
+
+        document.getElementById(
+            "incident-discarded"
+        ).textContent =
+            summary.by_status.discarded || 0;
+
+
+    } catch {
+
+        document.getElementById(
+            "incident-total"
+        ).textContent = "—";
+
+
+        document.getElementById(
+            "incident-open"
+        ).textContent = "—";
+
+
+        document.getElementById(
+            "incident-in-progress"
+        ).textContent = "—";
+
+
+        document.getElementById(
+            "incident-resolved"
+        ).textContent = "—";
+
+
+        document.getElementById(
+            "incident-discarded"
+        ).textContent = "—";
+    }
+}
+
+
+incidentOrigin.addEventListener(
+    "change",
+    () => {
+
+        incidentBranchField.classList.toggle(
+            "branch-highlight",
+            incidentOrigin.value === "branch"
+        );
+
+        incidentBranchField.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+    }
+);
+
+
+incidentForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        incidentSubmitButton.disabled = true;
+
+        incidentSubmitButton.textContent =
+            "Registering...";
+
+
+        showIncidentFormMessage(
+            "Registering incident..."
+        );
+
+
+        const incident = {
+
+            title:
+                document.getElementById(
+                    "incident-title"
+                ).value.trim(),
+
+            description:
+                document.getElementById(
+                    "incident-description"
+                ).value.trim(),
+
+            category:
+                document.getElementById(
+                    "incident-category"
+                ).value,
+
+            origin:
+                document.getElementById(
+                    "incident-origin"
+                ).value,
+
+            branch:
+                document.getElementById(
+                    "incident-branch"
+                ).value
+        };
+
+
+        try {
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/incidents`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(incident)
+                }
+            );
+
+
+            const data = await response.json();
+
+
+            if (!response.ok) {
+
+                let errorMessage =
+                    "Could not register incident.";
+
+
+                if (data.errors) {
+
+                    errorMessage =
+                        data.errors
+                            .map(error =>
+                                `${error.field}: ${error.message}`
+                            )
+                            .join(" | ");
+
+                } else if (data.detail) {
+
+                    errorMessage =
+                        typeof data.detail === "string"
+                            ? data.detail
+                            : data.detail.message ||
+                              "Could not register incident.";
+                }
+
+
+                throw new Error(errorMessage);
+            }
+
+
+            showIncidentFormMessage(
+                "Incident registered successfully.",
+                "success"
+            );
+
+
+            incidentForm.reset();
+
+
+            incidentBranchField.classList.remove(
+                "branch-highlight"
+            );
+
+
+            await loadIncidents();
+            await loadIncidentSummary();
+
+
+        } catch (error) {
+
+            showIncidentFormMessage(
+                error.message,
+                "error"
+            );
+
+
+        } finally {
+
+            incidentSubmitButton.disabled = false;
+
+            incidentSubmitButton.textContent =
+                "Register incident";
+        }
+    }
+);
+
+
+incidentStatusFilter.addEventListener(
+    "change",
+    loadIncidents
+);
+
+incidentOriginFilter.addEventListener(
+    "change",
+    loadIncidents
+);
+
+incidentBranchFilter.addEventListener(
+    "change",
+    loadIncidents
+);
+
+incidentsRefreshButton.addEventListener(
+    "click",
+    async () => {
+        await loadIncidents();
+        await loadIncidentSummary();
+    }
+);
+
+
+loadIncidents();
+loadIncidentSummary();

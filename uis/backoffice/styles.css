@@ -329,3 +329,97 @@ tbody tr:hover {
         flex-direction: column;
     }
 }
+/* ============================================================
+   INCIDENT MANAGER
+   ============================================================ */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.summary-card {
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.summary-card span {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.summary-card strong {
+    font-size: 1.8rem;
+}
+
+
+#incident-branch-field {
+    padding: 12px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: 0.2s ease;
+}
+
+#incident-branch-field.branch-highlight {
+    border-color: #d97706;
+    background: #fff7ed;
+}
+
+
+#incident-description {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+
+#incident-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+.incident-status-select {
+    min-width: 120px;
+}
+
+
+#incidents-table small {
+    display: block;
+    margin-top: 4px;
+    color: #666;
+    max-width: 300px;
+}
+
+
+#incidents-table td {
+    vertical-align: top;
+}
+
+
+@media (max-width: 1000px) {
+
+    .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+}
