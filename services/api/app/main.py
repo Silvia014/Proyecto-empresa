@@ -1,6 +1,7 @@
 from typing import Optional
 import os
 from pathlib import Path
+from fastapi.responses import JSONResponse
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -12,10 +13,13 @@ if env_file.exists():
 from .users.routes import router as users_router
 from .profiles.routes import router as profiles_router
 from .auth.routes import router as auth_router
+from .incidents.routes import router as incidents_router
 from .auth.dependencies import get_current_user
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from typing import Optional
 
 from .crud import (
     create_supplier,
@@ -29,9 +33,31 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 
 app = FastAPI(title="Brasaland Supplier Directory API")
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError,
+):
+    errors = []
+
+    for error in exc.errors():
+        field = error["loc"][-1]
+
+        errors.append(
+            {
+                "field": field,
+                "message": error["msg"],
+            }
+        )
+
+    return JSONResponse(
+        status_code=400,
+        content={"errors": errors},
+    )
 app.include_router(users_router)
 app.include_router(profiles_router)
 app.include_router(auth_router)
+app.include_router(incidents_router)
 
 app.add_middleware(
     CORSMiddleware,

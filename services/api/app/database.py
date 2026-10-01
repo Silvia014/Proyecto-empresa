@@ -18,5 +18,5 @@ supplier_query = Query()
 # Authentication / profile storage
 users_table = db.table("users")
 profiles_table = db.table("profiles")
-
+incidents_table = db.table("incidents")
 password_reset_tokens_table = db.table("password_reset_tokens")

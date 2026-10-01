@@ -212,6 +212,274 @@
         </form>
 
     </section>
+    <section class="panel" id="incidents-section">
+
+    <div class="section-header">
+        <div>
+            <h2>Incident Manager</h2>
+            <p>Centralized incident management across all Brasaland locations.</p>
+        </div>
+
+        <button id="incidents-refresh-button" class="secondary-button">
+            Refresh
+        </button>
+    </div>
+
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <span>Total</span>
+            <strong id="incident-total">—</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Open</span>
+            <strong id="incident-open">—</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>In progress</span>
+            <strong id="incident-in-progress">—</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Resolved</span>
+            <strong id="incident-resolved">—</strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Discarded</span>
+            <strong id="incident-discarded">—</strong>
+        </div>
+
+    </div>
+
+
+    <div class="filters">
+
+        <div>
+            <label for="incident-status-filter">Status</label>
+
+            <select id="incident-status-filter">
+                <option value="">All statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="discarded">Discarded</option>
+            </select>
+        </div>
+
+
+        <div>
+            <label for="incident-origin-filter">Origin</label>
+
+            <select id="incident-origin-filter">
+                <option value="">All origins</option>
+                <option value="customer">Customer</option>
+                <option value="branch">Branch</option>
+                <option value="internal">Internal</option>
+            </select>
+        </div>
+
+
+        <div>
+            <label for="incident-branch-filter">Branch</label>
+
+            <select id="incident-branch-filter">
+                <option value="">All branches</option>
+                <option value="central">Central</option>
+                <option value="medellin_centro">Medellín Centro</option>
+                <option value="medellin_laureles">Medellín Laureles</option>
+                <option value="medellin_envigado">Medellín Envigado</option>
+                <option value="medellin_bello">Medellín Bello</option>
+                <option value="medellin_itagui">Medellín Itagüí</option>
+                <option value="bogota_chapinero">Bogotá Chapinero</option>
+                <option value="bogota_usaquen">Bogotá Usaquén</option>
+                <option value="cali_granada">Cali Granada</option>
+                <option value="barranquilla_norte">Barranquilla Norte</option>
+                <option value="miami_doral">Miami Doral</option>
+                <option value="miami_hialeah">Miami Hialeah</option>
+                <option value="miami_kendall">Miami Kendall</option>
+                <option value="orlando_international">
+                    Orlando International Drive
+                </option>
+                <option value="fort_lauderdale">Fort Lauderdale</option>
+            </select>
+        </div>
+
+    </div>
+
+
+    <p id="incident-list-message" class="message"></p>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Origin</th>
+                    <th>Branch</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="incidents-table">
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<section class="panel">
+
+    <h2>Register incident</h2>
+
+    <form id="incident-form">
+
+        <div class="form-grid">
+
+            <div>
+                <label for="incident-title">Title *</label>
+                <input id="incident-title" required>
+            </div>
+
+
+            <div>
+                <label for="incident-category">Category *</label>
+
+                <select id="incident-category" required>
+                    <option value="">Select category</option>
+                    <option value="equipment_failure">
+                        Equipment failure
+                    </option>
+                    <option value="supply_issue">
+                        Supply issue
+                    </option>
+                    <option value="customer_complaint">
+                        Customer complaint
+                    </option>
+                    <option value="staff_issue">
+                        Staff issue
+                    </option>
+                    <option value="facility_issue">
+                        Facility issue
+                    </option>
+                    <option value="pos_system">
+                        POS system
+                    </option>
+                    <option value="delivery_issue">
+                        Delivery issue
+                    </option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+
+            <div>
+                <label for="incident-origin">Origin *</label>
+
+                <select id="incident-origin" required>
+                    <option value="">Select origin</option>
+                    <option value="customer">Customer</option>
+                    <option value="branch">Branch</option>
+                    <option value="internal">Internal</option>
+                </select>
+            </div>
+
+
+            <div id="incident-branch-field">
+
+                <label for="incident-branch">
+                    Branch *
+                </label>
+
+                <select id="incident-branch" required>
+                    <option value="">Select branch</option>
+                    <option value="central">Central</option>
+                    <option value="medellin_centro">
+                        Medellín Centro
+                    </option>
+                    <option value="medellin_laureles">
+                        Medellín Laureles
+                    </option>
+                    <option value="medellin_envigado">
+                        Medellín Envigado
+                    </option>
+                    <option value="medellin_bello">
+                        Medellín Bello
+                    </option>
+                    <option value="medellin_itagui">
+                        Medellín Itagüí
+                    </option>
+                    <option value="bogota_chapinero">
+                        Bogotá Chapinero
+                    </option>
+                    <option value="bogota_usaquen">
+                        Bogotá Usaquén
+                    </option>
+                    <option value="cali_granada">
+                        Cali Granada
+                    </option>
+                    <option value="barranquilla_norte">
+                        Barranquilla Norte
+                    </option>
+                    <option value="miami_doral">
+                        Miami Doral
+                    </option>
+                    <option value="miami_hialeah">
+                        Miami Hialeah
+                    </option>
+                    <option value="miami_kendall">
+                        Miami Kendall
+                    </option>
+                    <option value="orlando_international">
+                        Orlando International Drive
+                    </option>
+                    <option value="fort_lauderdale">
+                        Fort Lauderdale
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div class="full-width">
+
+                <label for="incident-description">
+                    Description *
+                </label>
+
+                <textarea
+                    id="incident-description"
+                    rows="4"
+                    required
+                ></textarea>
+
+            </div>
+
+        </div>
+
+
+        <button id="incident-submit-button" type="submit">
+            Register incident
+        </button>
+
+        <p id="incident-form-message" class="message"></p>
+
+    </form>
+
+</section>
 
 </main>
 
