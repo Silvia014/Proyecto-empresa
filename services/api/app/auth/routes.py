@@ -100,7 +100,7 @@ def forgot_password(request: ForgotPasswordRequest):
     # Always return the same response, even if the email does not exist.
     if user is not None:
         token = create_reset_token(user["id"])
-    send_reset_email(request.email, token)
+        send_reset_email(request.email, token)
 
     return {
         "message": "If that address is registered, you'll receive a link shortly."
