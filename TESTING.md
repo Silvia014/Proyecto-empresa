@@ -85,7 +85,7 @@ Tests focus on authentication business logic rather than HTTP serialization or F
 
 #### Failure mode
 - Simulate an email service failure.
-- Verify that the endpoint does not expose whether the account exists.
+- Verify that the email service error is propagated.
 
 ---
 
@@ -112,8 +112,8 @@ Tests focus on authentication business logic rather than HTTP serialization or F
 - Verify that the password is updated.
 
 #### Edge case
-- Submit the same password as the new password.
-- Verify the endpoint's current behaviour.
+- Verify that a password change only occurs when the current password is correct.
+- Verify that the update operation is not called when the current password is incorrect.
 
 #### Failure mode
 - Provide an incorrect current password.
