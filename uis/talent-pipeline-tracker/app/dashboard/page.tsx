@@ -18,6 +18,7 @@ export default function DashboardPage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -48,8 +49,7 @@ export default function DashboardPage() {
         const data = await response.json();
         setUser(data);
       } catch {
-        localStorage.removeItem("access_token");
-        router.push("/login");
+        setError("We couldn’t load your dashboard right now. Please try again or log in again.");
       } finally {
         setLoading(false);
       }
@@ -67,6 +67,33 @@ export default function DashboardPage() {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#f5f0e8]">
         <p className="text-[#5a1f2b]">Loading...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#f5f0e8]">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-semibold text-[#5a1f2b]">
+            We couldn’t load your dashboard
+          </h1>
+          <p className="mt-3 text-sm text-gray-600">{error}</p>
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg bg-[#5a1f2b] px-4 py-2 text-sm font-medium text-white hover:bg-[#4a1a28]"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => router.push("/login")}
+              className="rounded-lg border border-[#5a1f2b] px-4 py-2 text-sm font-medium text-[#5a1f2b] hover:bg-[#f8f2ec]"
+            >
+              Login
+            </button>
+          </div>
+        </div>
       </main>
     );
   }

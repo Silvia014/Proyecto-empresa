@@ -47,7 +47,6 @@ export function ordersRouter(io: SocketIOServer) {
   // de brasaland-utils): al menos un artículo, cantidades > 0, precios
   // unitarios no negativos.
   router.post("/", requirePermission("ORDERS", "WRITE"), async (req, res) => {
-  try {
     const {
       customerId,
       locationId,
@@ -82,62 +81,67 @@ export function ordersRouter(io: SocketIOServer) {
     // CREAR PEDIDO
     // ---------------------------------------
 
-    const order = await prisma.order.create({
-      data: {
-        customerId,
-        locationId,
+    try {
+      const order = await prisma.order.create({
+        data: {
+          customerId,
+          locationId,
 
-        currency: "USD",
+          currency: "USD",
 
-        subtotal,
-        discount: 0,
-        total: subtotal,
+          subtotal,
+          discount: 0,
+          total: subtotal,
 
-        brasapointsDiscount: 0,
-        brasapointsUsed: 0,
-        brasapointsEarned: 0,
+          brasapointsDiscount: 0,
+          brasapointsUsed: 0,
+          brasapointsEarned: 0,
 
-        source: "POS",
-        status: "RECEIVED",
-        paymentStatus: "NOT_APPLICABLE",
+          source: "POS",
+          status: "RECEIVED",
+          paymentStatus: "NOT_APPLICABLE",
 
-        fulfillment: fulfillment || "pickup",
+          fulfillment: fulfillment || "pickup",
 
-        items: {
-          create: items.map(
-            (item: {
-              dishName: string;
-              quantity: number;
-              unitPrice: number;
-              menuItemId?: string;
-            }) => ({
-              dishName: item.dishName,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              subtotal: item.quantity * item.unitPrice,
-              menuItemId: item.menuItemId,
-            })
-          ),
+          items: {
+            create: items.map(
+              (item: {
+                dishName: string;
+                quantity: number;
+                unitPrice: number;
+                menuItemId?: string;
+              }) => ({
+                dishName: item.dishName,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.quantity * item.unitPrice,
+                menuItemId: item.menuItemId,
+              })
+            ),
+          },
         },
-      },
 
-      include: {
-        items: true,
-        customer: true,
-        location: true,
-      },
-    });
+        include: {
+          items: true,
+          customer: true,
+          location: true,
+        },
+      });
 
-    io.emit("order:created", order);
+      try {
+        io.emit("order:created", order);
+      } catch (emitError) {
+        console.error("Error emitendo evento order:created:", emitError);
+      }
 
-    return res.status(201).json(order);
-  } catch (error) {
-    console.error("Error creando pedido:", error);
+      return res.status(201).json(order);
+    } catch (error) {
+      console.error("Error creando pedido:", error);
 
-    return res.status(500).json({
-      error: "No se pudo crear el pedido",
-    });
-  }
-});
+      return res.status(500).json({
+        error: "No se pudo crear el pedido",
+      });
+    }
+  });
   return router;
 }

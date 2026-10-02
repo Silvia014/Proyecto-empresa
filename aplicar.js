@@ -173,14 +173,15 @@ async function submitApplication(payload) {
     });
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
 
-    const body =
-      await response.text().catch(() => "");
+    console.error("Application submission failed:", {
+      status: response.status,
+      body,
+    });
 
     throw new Error(
-      `No se pudo enviar tu candidatura. Código: ${response.status}${
-        body ? ` — ${body}` : ""
-      }`
+      "No se pudo enviar tu candidatura. Por favor, inténtalo de nuevo."
     );
   }
 

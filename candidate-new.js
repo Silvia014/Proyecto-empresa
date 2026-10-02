@@ -20,8 +20,13 @@ async function createCandidate(candidate) {
   });
 
   if (!response.ok) {
+    console.error("Candidate creation failed:", {
+      status: response.status,
+      responseText: await response.text().catch(() => "")
+    });
+
     throw new Error(
-      `No se pudo crear la candidatura. Código: ${response.status}`
+      "No se pudo crear la candidatura. Por favor, inténtalo de nuevo."
     );
   }
 
