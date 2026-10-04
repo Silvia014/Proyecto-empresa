@@ -55,6 +55,11 @@ class MovementCreate(BaseModel):
     quantity: float = Field(gt=0)
     reason: Optional[str] = None
 
+class AdjustmentCreate(BaseModel):
+    item_id: int
+    lot_id: Optional[int] = None
+    quantity: float
+    reason: str = Field(min_length=1)
 
 class MovementResponse(BaseModel):
     id: int

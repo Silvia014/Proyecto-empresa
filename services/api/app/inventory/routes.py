@@ -4,8 +4,14 @@ from sqlmodel import Session, select
 from ..auth.dependencies import get_current_user
 from ..database import get_db
 
-from .models import InventoryItem, InventoryMovement
-from .schemas import ProductCreate
+from .models import InventoryItem, InventoryMovement, InventoryLot
+from .schemas import (
+    ProductCreate,
+    ProductResponse,
+    MovementCreate,
+    MovementResponse,
+    AdjustmentCreate,
+)
 from .services import calculate_stock, calculate_stocks
 
 
@@ -19,7 +25,7 @@ router = APIRouter(
 # PRODUCTS
 # ---------------------------------------------------------
 
-@router.get("/products")
+@router.get("/products", response_model=list[ProductResponse])
 def list_products(
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -40,8 +46,7 @@ def list_products(
             "unit_of_measure": item.unit_of_measure,
             "reorder_point": item.reorder_point,
             "current_stock": stocks.get(item.id, 0),
-            "below_reorder": stocks.get(item.id, 0)
-            <= item.reorder_point,
+            "below_reorder": stocks.get(item.id, 0) <= item.reorder_point,
             "created_at": item.created_at,
             "updated_at": item.updated_at,
         }
@@ -51,6 +56,7 @@ def list_products(
 
 @router.post(
     "/products",
+    response_model=ProductResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def create_product(
@@ -103,7 +109,7 @@ def create_product(
     }
 
 
-@router.get("/products/{item_id}")
+@router.get("/products/{item_id}", response_model=ProductResponse)
 def get_product(
     item_id: int,
     session: Session = Depends(get_db),
@@ -137,22 +143,16 @@ def get_product(
 # INBOUND
 # ---------------------------------------------------------
 
-@router.post("/orders/inbound")
+@router.post(
+    "/orders/inbound",
+    response_model=MovementResponse,
+)
 def create_inbound(
-    movement: dict,
+    movement: MovementCreate,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    item_id = movement.get("item_id")
-    quantity = movement.get("quantity")
-
-    if not isinstance(quantity, (int, float)) or quantity <= 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Quantity must be greater than zero.",
-        )
-
-    item = session.get(InventoryItem, item_id)
+    item = session.get(InventoryItem, movement.item_id)
 
     if item is None:
         raise HTTPException(
@@ -160,12 +160,29 @@ def create_inbound(
             detail="Product not found.",
         )
 
+    # Meat and produce require a lot
+    if item.category in {"meat", "produce"} and movement.lot_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="A lot is required for meat and produce items.",
+        )
+
+    # Lot must exist and belong to this product
+    if movement.lot_id is not None:
+        lot = session.get(InventoryLot, movement.lot_id)
+
+        if lot is None or lot.item_id != item.id:
+            raise HTTPException(
+                status_code=400,
+                detail="The specified lot does not belong to this product.",
+            )
+
     record = InventoryMovement(
-        item_id=item_id,
-        lot_id=movement.get("lot_id"),
+        item_id=movement.item_id,
+        lot_id=movement.lot_id,
         movement_type="inbound",
-        quantity=quantity,
-        reason=movement.get("reason"),
+        quantity=movement.quantity,
+        reason=movement.reason,
         user_uuid=str(current_user["id"]),
     )
 
@@ -173,29 +190,32 @@ def create_inbound(
     session.commit()
     session.refresh(record)
 
-    return record
+    return {
+        "id": record.id,
+        "item_id": record.item_id,
+        "lot_id": record.lot_id,
+        "movement_type": record.movement_type,
+        "quantity": record.quantity,
+        "reason": record.reason,
+        "created_at": record.created_at,
+        "user_uuid": record.user_uuid,
+    }
 
 
 # ---------------------------------------------------------
 # OUTBOUND
 # ---------------------------------------------------------
 
-@router.post("/orders/outbound")
+@router.post(
+    "/orders/outbound",
+    response_model=MovementResponse,
+)
 def create_outbound(
-    movement: dict,
+    movement: MovementCreate,
     session: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    item_id = movement.get("item_id")
-    quantity = movement.get("quantity")
-
-    if not isinstance(quantity, (int, float)) or quantity <= 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Quantity must be greater than zero.",
-        )
-
-    item = session.get(InventoryItem, item_id)
+    item = session.get(InventoryItem, movement.item_id)
 
     if item is None:
         raise HTTPException(
@@ -203,23 +223,40 @@ def create_outbound(
             detail="Product not found.",
         )
 
-    current_stock = calculate_stock(session, item_id)
+    # Meat and produce require a lot
+    if item.category in {"meat", "produce"} and movement.lot_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="A lot is required for meat and produce items.",
+        )
 
-    if quantity > current_stock:
+    # Lot must exist and belong to this product
+    if movement.lot_id is not None:
+        lot = session.get(InventoryLot, movement.lot_id)
+
+        if lot is None or lot.item_id != item.id:
+            raise HTTPException(
+                status_code=400,
+                detail="The specified lot does not belong to this product.",
+            )
+
+    current_stock = calculate_stock(session, movement.item_id)
+
+    if movement.quantity > current_stock:
         raise HTTPException(
             status_code=400,
             detail=(
                 f"Insufficient stock. Available: "
-                f"{current_stock}, requested: {quantity}."
+                f"{current_stock}, requested: {movement.quantity}."
             ),
         )
 
     record = InventoryMovement(
-        item_id=item_id,
-        lot_id=movement.get("lot_id"),
+        item_id=movement.item_id,
+        lot_id=movement.lot_id,
         movement_type="outbound",
-        quantity=quantity,
-        reason=movement.get("reason"),
+        quantity=movement.quantity,
+        reason=movement.reason,
         user_uuid=str(current_user["id"]),
     )
 
@@ -227,7 +264,92 @@ def create_outbound(
     session.commit()
     session.refresh(record)
 
-    return record
+    return {
+        "id": record.id,
+        "item_id": record.item_id,
+        "lot_id": record.lot_id,
+        "movement_type": record.movement_type,
+        "quantity": record.quantity,
+        "reason": record.reason,
+        "created_at": record.created_at,
+        "user_uuid": record.user_uuid,
+    }
+
+
+# ---------------------------------------------------------
+# ADJUSTMENT
+# ---------------------------------------------------------
+
+@router.post(
+    "/orders/adjustment",
+    response_model=MovementResponse,
+)
+def create_adjustment(
+    movement: AdjustmentCreate,
+    session: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    item = session.get(InventoryItem, movement.item_id)
+
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found.",
+        )
+
+    # Meat and produce require a lot
+    if item.category in {"meat", "produce"} and movement.lot_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="A lot is required for meat and produce items.",
+        )
+
+    # Lot must exist and belong to this product
+    if movement.lot_id is not None:
+        lot = session.get(InventoryLot, movement.lot_id)
+
+        if lot is None or lot.item_id != item.id:
+            raise HTTPException(
+                status_code=400,
+                detail="The specified lot does not belong to this product.",
+            )
+
+    current_stock = calculate_stock(session, movement.item_id)
+    new_stock = current_stock + movement.quantity
+
+    if new_stock < 0:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Adjustment would result in negative stock. "
+                f"Available: {current_stock}, "
+                f"adjustment: {movement.quantity}."
+            ),
+        )
+
+    record = InventoryMovement(
+        item_id=movement.item_id,
+        lot_id=movement.lot_id,
+        movement_type="adjustment",
+        quantity=movement.quantity,
+        reason=movement.reason,
+        user_uuid=str(current_user["id"]),
+    )
+
+    session.add(record)
+    session.commit()
+    session.refresh(record)
+
+    return {
+        "id": record.id,
+        "item_id": record.item_id,
+        "lot_id": record.lot_id,
+        "movement_type": record.movement_type,
+        "quantity": record.quantity,
+        "reason": record.reason,
+        "created_at": record.created_at,
+        "user_uuid": record.user_uuid,
+    }
 
 
 # ---------------------------------------------------------

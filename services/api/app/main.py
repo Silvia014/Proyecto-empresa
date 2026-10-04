@@ -2,7 +2,8 @@ from typing import Optional
 import os
 from pathlib import Path
 from fastapi.responses import JSONResponse
-from .database import create_db_and_tables
+from .database import create_db_and_tables, get_db
+from .inventory.seed import seed_inventory
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -36,6 +37,8 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 app = FastAPI(title="Brasaland Supplier Directory API")
 create_db_and_tables()
+with next(get_db()) as session:
+    seed_inventory(session)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request,
