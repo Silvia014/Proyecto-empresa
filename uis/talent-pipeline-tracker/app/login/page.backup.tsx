@@ -3,9 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
-
-const supabase = createClient();
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,23 +21,35 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const body = new URLSearchParams();
 
-        if (authError) {
-          throw new Error("Incorrect email or password.");
-        }
+      body.append("username", email);
+      body.append("password", password);
 
-        router.push("/dashboard");
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Unable to log in."
-        );
-      } finally {
-        setLoading(false);
-          }
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Login failed.");
+      }
+
+      localStorage.setItem("access_token", data.access_token);
+
+      router.push("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to log in."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

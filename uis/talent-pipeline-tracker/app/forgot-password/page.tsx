@@ -27,13 +27,31 @@ export default function ForgotPasswordPage() {
         }
       );
 
+      const contentType = response.headers.get("content-type") ?? "";
+      let message = "Request failed.";
+
+      if (contentType.includes("application/json")) {
+        const data = await response.json();
+        message = data.detail || data.message || message;
+      } else {
+        const text = await response.text();
+
+        if (text) {
+          message = text;
+        }
+      }
+
       if (!response.ok) {
-        throw new Error("Request failed");
+        throw new Error(message);
       }
 
       setSubmitted(true);
-    } catch {
-      setError("Unable to connect to the server.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to connect to the server."
+      );
     } finally {
       setLoading(false);
     }

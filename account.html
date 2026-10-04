@@ -162,14 +162,35 @@
               Contraseña
             </label>
 
-            <input
-              type="password"
-              id="register-password"
-              name="password"
-              required
-              minlength="6"
-              autocomplete="new-password"
-            /> 
+            <div class="password-field">
+              <input
+                type="password"
+                id="register-password"
+                name="password"
+                required
+                minlength="6"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-toggle
+                data-target="register-password"
+                aria-label="Mostrar contraseña"
+                aria-pressed="false"
+              >
+                <svg class="password-toggle-icon password-toggle-show" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <svg class="password-toggle-icon password-toggle-hide hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m3 3 18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M9.88 5.1A9.96 9.96 0 0 1 12 5c6.5 0 10 7 10 7a18.11 18.11 0 0 1-3.13 4.15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6.23 6.23C3.86 8.25 2 12 2 12s3.5 7 10 7c1.44 0 2.78-.25 4-.68" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
             <button
               type="submit"
               class="btn-primary account-submit"
@@ -223,12 +244,33 @@
               Contraseña
             </label>
 
-            <input
-              type="password"
-              id="login-password"
-              required
-              autocomplete="current-password"
-            />
+            <div class="password-field">
+              <input
+                type="password"
+                id="login-password"
+                required
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-toggle
+                data-target="login-password"
+                aria-label="Mostrar contraseña"
+                aria-pressed="false"
+              >
+                <svg class="password-toggle-icon password-toggle-show" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <svg class="password-toggle-icon password-toggle-hide hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m3 3 18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M9.88 5.1A9.96 9.96 0 0 1 12 5c6.5 0 10 7 10 7a18.11 18.11 0 0 1-3.13 4.15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M6.23 6.23C3.86 8.25 2 12 2 12s3.5 7 10 7c1.44 0 2.78-.25 4-.68" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
 
             <button
               type="button"

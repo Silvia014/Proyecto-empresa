@@ -118,6 +118,49 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 3.25rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(59, 29, 29, 0.55);
+
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: #7a1f2b;
+  background: rgba(122, 31, 43, 0.08);
+  outline: none;
+}
+
+.password-toggle-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
 .account-card input:focus {
   border-color: #7a1f2b;
 
