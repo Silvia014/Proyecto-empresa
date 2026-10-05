@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Inbound</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>Inbound Order</h1>
+        <p>Register a delivery received by the restaurant</p>
+    </div>
+
+    <a href="products.html">Inventory</a>
+</header>
+
+<main>
+
+<section class="panel">
+
+    <h2>Register delivery</h2>
+
+    <form id="inbound-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="product">Product</label>
+                <select id="product" required></select>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input
+                    id="quantity"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="lot">Lot ID</label>
+                <input
+                    id="lot"
+                    type="number"
+                    placeholder="Required for meat and produce"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Reason</label>
+                <input
+                    id="reason"
+                    type="text"
+                    value="Delivery received"
+                >
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">
+                    Register inbound order
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+
+    <div id="message" class="message"></div>
+
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../lib/supabase-config.js"></script>
+<script src="../lib/inventory.js"></script>
+
+<script>
+const productSelect = document.getElementById("product");
+const form = document.getElementById("inbound-form");
+const message = document.getElementById("message");
+
+let products = [];
+
+function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
+
+async function loadProducts() {
+    try {
+        products = await getProducts();
+
+        productSelect.innerHTML = `
+            <option value="">Select a product</option>
+        `;
+
+        products.forEach(product => {
+            const option = document.createElement("option");
+
+            option.value = product.id;
+            option.textContent =
+                `${product.name} — ${product.location_id}`;
+
+            productSelect.appendChild(option);
+        });
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const product = products.find(
+        item => item.id === Number(productSelect.value)
+    );
+
+    const lotValue = document.getElementById("lot").value;
+
+    const data = {
+        item_id: Number(productSelect.value),
+        quantity: Number(
+            document.getElementById("quantity").value
+        ),
+        lot_id: lotValue ? Number(lotValue) : null,
+        reason: document.getElementById("reason").value.trim()
+    };
+
+    try {
+        await createInbound(data);
+
+        showMessage(
+            `Inbound order registered for ${product.name}.`,
+            "success"
+        );
+
+        form.reset();
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+});
+
+loadProducts();
+</script>
+
+</body>
+</html>

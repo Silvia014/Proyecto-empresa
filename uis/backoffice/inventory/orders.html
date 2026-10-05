@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Orders</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>Inventory Orders</h1>
+        <p>Inbound and outbound movement history</p>
+    </div>
+
+    <a href="products.html">Inventory</a>
+</header>
+
+<main>
+
+<section class="panel">
+
+    <div class="panel-header">
+        <h2>Order history</h2>
+
+        <button id="refresh">
+            Refresh
+        </button>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <div class="table-wrapper">
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Lot</th>
+                    <th>Reason</th>
+                    <th>Created by</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="orders-table"></tbody>
+
+        </table>
+    </div>
+
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../lib/supabase-config.js"></script>
+<script src="../lib/inventory.js"></script>
+
+<script>
+const table = document.getElementById("orders-table");
+const message = document.getElementById("message");
+
+function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
+
+async function loadOrders() {
+
+    showMessage("Loading orders...");
+
+    try {
+
+        const orders = await getOrders();
+
+        table.innerHTML = "";
+
+        if (!orders.length) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        No orders found.
+                    </td>
+                </tr>
+            `;
+        }
+
+        orders.forEach(order => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    <strong>${order.product_name}</strong>
+                </td>
+
+                <td>
+                    <span class="inventory-badge ${order.movement_type}">
+                        ${order.movement_type}
+                    </span>
+                </td>
+
+                <td>${order.quantity}</td>
+
+                <td>${order.lot_id ?? "—"}</td>
+
+                <td>${order.reason ?? "—"}</td>
+
+                <td>${order.user_uuid}</td>
+
+                <td>
+                    ${new Date(order.created_at).toLocaleString()}
+                </td>
+            `;
+
+            table.appendChild(row);
+        });
+
+        showMessage(
+            `${orders.length} order(s) found.`,
+            "success"
+        );
+
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+document
+    .getElementById("refresh")
+    .addEventListener("click", loadOrders);
+
+loadOrders();
+</script>
+
+</body>
+</html>

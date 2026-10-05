@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Outbound</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>Outbound Order</h1>
+        <p>Register a consumption or stock output</p>
+    </div>
+
+    <a href="products.html">Inventory</a>
+</header>
+
+<main>
+
+<section class="panel">
+
+    <h2>Register stock output</h2>
+
+    <form id="outbound-form">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="product">Product</label>
+
+                <select id="product" required></select>
+
+                <div id="available-stock" class="stock-display">
+                    Select a product to see available stock.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+
+                <input
+                    id="quantity"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="lot">Lot ID</label>
+
+                <input
+                    id="lot"
+                    type="number"
+                    placeholder="Required for meat and produce"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Reason</label>
+
+                <input
+                    id="reason"
+                    type="text"
+                    value="Consumption"
+                >
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">
+                    Register outbound order
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+
+    <div id="message" class="message"></div>
+
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../lib/supabase-config.js"></script>
+<script src="../lib/inventory.js"></script>
+
+<script>
+const productSelect = document.getElementById("product");
+const availableStock = document.getElementById("available-stock");
+const form = document.getElementById("outbound-form");
+const message = document.getElementById("message");
+
+let products = [];
+
+function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
+
+function updateStockDisplay() {
+    const product = products.find(
+        item => item.id === Number(productSelect.value)
+    );
+
+    if (!product) {
+        availableStock.textContent =
+            "Select a product to see available stock.";
+        return;
+    }
+
+    availableStock.textContent =
+        `Available stock: ${product.current_stock} ${product.unit_of_measure}`;
+
+    availableStock.className =
+        product.below_reorder
+            ? "stock-display stock-warning"
+            : "stock-display";
+}
+
+async function loadProducts() {
+    try {
+        products = await getProducts();
+
+        productSelect.innerHTML = `
+            <option value="">Select a product</option>
+        `;
+
+        products.forEach(product => {
+            const option = document.createElement("option");
+
+            option.value = product.id;
+            option.textContent =
+                `${product.name} — ${product.location_id}`;
+
+            productSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+productSelect.addEventListener(
+    "change",
+    updateStockDisplay
+);
+
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const product = products.find(
+        item => item.id === Number(productSelect.value)
+    );
+
+    const quantity = Number(
+        document.getElementById("quantity").value
+    );
+
+    if (quantity > product.current_stock) {
+        showMessage(
+            `Insufficient stock. Available: ${product.current_stock}, requested: ${quantity}.`,
+            "error"
+        );
+        return;
+    }
+
+    const lotValue = document.getElementById("lot").value;
+
+    try {
+        await createOutbound({
+            item_id: product.id,
+            quantity,
+            lot_id: lotValue ? Number(lotValue) : null,
+            reason: document.getElementById("reason").value.trim()
+        });
+
+        showMessage(
+            `Outbound order registered for ${product.name}.`,
+            "success"
+        );
+
+        form.reset();
+        availableStock.textContent =
+            "Select a product to see available stock.";
+
+        products = await getProducts();
+
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+});
+
+loadProducts();
+</script>
+
+</body>
+</html>

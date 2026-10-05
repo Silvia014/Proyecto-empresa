@@ -423,3 +423,51 @@ tbody tr:hover {
     }
 
 }
+/* ============================================================
+   INVENTORY
+   ============================================================ */
+
+.inventory-low {
+    color: var(--burgundy);
+    font-weight: 700;
+}
+
+.inventory-ok {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.inventory-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.inventory-badge.low,
+.inventory-badge.outbound {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.inventory-badge.ok,
+.inventory-badge.inbound {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.stock-display {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--success-bg);
+    color: var(--success);
+    font-weight: 700;
+}
+
+.stock-display.stock-warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
