@@ -7,11 +7,57 @@ export function Success() {
   const orderId = params.get("order");
   const unpaid = params.get("unpaid") === "1";
   const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(Boolean(orderId));
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!orderId) return;
-    api.order(orderId).then(setOrder).catch(() => {});
+    if (!orderId) {
+      setLoading(false);
+      setError("No pudimos confirmar tu pedido. Vuelve a la página principal e inténtalo de nuevo.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    api
+      .order(orderId)
+      .then((data) => {
+        setOrder(data);
+      })
+      .catch(() => {
+        setError("No pudimos cargar la confirmación del pedido. Puedes intentarlo de nuevo o volver al inicio.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-20 text-center">
+        <h1 className="text-3xl font-semibold">Confirmando tu pedido…</h1>
+        <p className="mt-3 text-walnut/70">Esto puede tardar unos segundos.</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-20 text-center">
+        <h1 className="text-3xl font-semibold">No hemos podido confirmar tu pedido</h1>
+        <p className="mt-3 text-walnut/70">{error}</p>
+        <div className="mt-8 flex justify-center gap-3">
+          <button onClick={() => window.location.reload()} className="btn-primary">
+            Reintentar
+          </button>
+          <Link to="/" className="btn-secondary inline-block">
+            Volver al inicio
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-lg px-6 py-20 text-center">

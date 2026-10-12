@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
@@ -32,6 +34,7 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserPublic, status_code=201)
@@ -100,7 +103,17 @@ def forgot_password(request: ForgotPasswordRequest):
     # Always return the same response, even if the email does not exist.
     if user is not None:
         token = create_reset_token(user["id"])
-        send_reset_email(request.email, token)
+        try:
+            send_reset_email(request.email, token)
+        except Exception:
+            logger.exception(
+                "Password reset email delivery failed for %s",
+                request.email,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Password reset email could not be sent. Please try again later.",
+            )
 
     return {
         "message": "If that address is registered, you'll receive a link shortly."

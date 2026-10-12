@@ -2,6 +2,8 @@ from typing import Optional
 import os
 from pathlib import Path
 from fastapi.responses import JSONResponse
+from .database import create_db_and_tables, get_db
+from .inventory.seed import seed_inventory
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -20,6 +22,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
+from .inventory.routes import router as inventory_router
 
 from .crud import (
     create_supplier,
@@ -33,6 +36,9 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 
 app = FastAPI(title="Brasaland Supplier Directory API")
+create_db_and_tables()
+with next(get_db()) as session:
+    seed_inventory(session)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request,
@@ -58,6 +64,7 @@ app.include_router(users_router)
 app.include_router(profiles_router)
 app.include_router(auth_router)
 app.include_router(incidents_router)
+app.include_router(inventory_router)
 
 app.add_middleware(
     CORSMiddleware,

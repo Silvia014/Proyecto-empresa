@@ -1,5 +1,5 @@
 from unittest.mock import patch
-
+from fastapi import HTTPException
 import pytest
 
 from services.api.app.auth.routes import (
@@ -70,5 +70,10 @@ def test_forgot_password_failure_email_service_error():
         "services.api.app.auth.routes.send_reset_email",
         side_effect=RuntimeError("Email service unavailable"),
     ):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(HTTPException) as exc:
             forgot_password(request)
+
+        assert exc.value.status_code == 503
+        assert exc.value.detail == (
+            "Password reset email could not be sent. Please try again later."
+        )

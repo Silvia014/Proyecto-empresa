@@ -55,14 +55,27 @@ chatForm?.addEventListener("submit", async (event) => {
 
     try {
       result = JSON.parse(rawResponse);
-    } catch {
+    } catch (parseError) {
+      console.error("Chat API parse error:", {
+        status: response.status,
+        rawResponse,
+        error: parseError,
+      });
+
       throw new Error(
-        `Server returned status ${response.status}: ${rawResponse}`
+        "The assistant could not process the response. Please try again."
       );
     }
 
     if (!response.ok) {
-      throw new Error(result.error || "Something went wrong");
+      console.error("Chat API error:", {
+        status: response.status,
+        response: result,
+      });
+
+      throw new Error(
+        "Something went wrong while getting a response. Please try again."
+      );
     }
 
     addMessage(result.answer, "assistant");
@@ -71,7 +84,7 @@ chatForm?.addEventListener("submit", async (event) => {
     console.error("Chat error:", error);
 
     addMessage(
-      "Error: " + error.message,
+      "Something went wrong while getting a response. Please try again.",
       "assistant"
     );
   }

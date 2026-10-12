@@ -179,7 +179,7 @@ async function main() {
   });
 
   console.log("Seed completado.");
-  console.log(`Superadmin -> email: ${email} / password: ${password}`);
+  console.log(`Superadmin -> email: ${email} / password: [redacted]`);
 }
 
 main()

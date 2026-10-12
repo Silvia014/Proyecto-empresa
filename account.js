@@ -8,6 +8,30 @@ const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
 const forgotPassword = document.getElementById("forgot-password");
 
+const passwordToggleButtons = document.querySelectorAll("[data-password-toggle]");
+
+passwordToggleButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const targetId = button.getAttribute("data-target");
+    const passwordInput = document.getElementById(targetId);
+
+    if (!passwordInput) {
+      return;
+    }
+
+    const shouldShow = passwordInput.type === "password";
+    passwordInput.type = shouldShow ? "text" : "password";
+    button.setAttribute("aria-pressed", String(shouldShow));
+    button.setAttribute("aria-label", shouldShow ? "Ocultar contraseña" : "Mostrar contraseña");
+
+    const showIcon = button.querySelector(".password-toggle-show");
+    const hideIcon = button.querySelector(".password-toggle-hide");
+
+    showIcon?.classList.toggle("hidden", shouldShow);
+    hideIcon?.classList.toggle("hidden", !shouldShow);
+  });
+});
+
 // ==========================================
 // SWITCH REGISTER / LOGIN
 // ==========================================
