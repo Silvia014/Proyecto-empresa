@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Products</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>Inventory</h1>
+        <p>Current stock by product and location</p>
+    </div>
+
+    <a href="../index.html">Back to Backoffice</a>
+</header>
+
+<main>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Products</h2>
+
+        <button id="refresh-products">
+            Refresh
+        </button>
+    </div>
+
+    <div id="products-message" class="message"></div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Location</th>
+                    <th>Unit</th>
+                    <th>Current Stock</th>
+                    <th>Reorder Point</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="products-table"></tbody>
+        </table>
+    </div>
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../lib/supabase-config.js"></script>
+<script src="../lib/inventory.js"></script>
+
+<script>
+const table = document.getElementById("products-table");
+const message = document.getElementById("products-message");
+
+function showMessage(text, type = "") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+}
+
+function renderProducts(products) {
+    table.innerHTML = "";
+
+    if (!products.length) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7">No products found.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    products.forEach(product => {
+        const row = document.createElement("tr");
+
+        const lowStock = product.below_reorder;
+
+        row.innerHTML = `
+            <td><strong>${product.name}</strong></td>
+            <td>${product.category}</td>
+            <td>${product.location_id}</td>
+            <td>${product.unit_of_measure}</td>
+            <td class="${lowStock ? "inventory-low" : "inventory-ok"}">
+                ${product.current_stock}
+            </td>
+            <td>${product.reorder_point}</td>
+            <td>
+                <span class="inventory-badge ${lowStock ? "low" : "ok"}">
+                    ${lowStock ? "Below reorder point" : "In stock"}
+                </span>
+            </td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+
+async function loadProducts() {
+    showMessage("Loading products...");
+
+    try {
+        const products = await getProducts();
+
+        renderProducts(products);
+
+        showMessage(
+            `${products.length} product(s) loaded.`,
+            "success"
+        );
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+document
+    .getElementById("refresh-products")
+    .addEventListener("click", loadProducts);
+
+loadProducts();
+</script>
+
+</body>
+</html>
