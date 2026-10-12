@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
-from ..auth.dependencies import get_current_user
+from ..auth.supabase_dependencies import get_current_inventory_user
 from ..database import get_db
 
 from .models import InventoryItem, InventoryMovement, InventoryLot
@@ -28,7 +28,7 @@ router = APIRouter(
 @router.get("/products", response_model=list[ProductResponse])
 def list_products(
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     items = session.exec(
         select(InventoryItem)
@@ -62,7 +62,7 @@ def list_products(
 def create_product(
     product: ProductCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     if product.category not in {
         "meat",
@@ -113,7 +113,7 @@ def create_product(
 def get_product(
     item_id: int,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     item = session.get(InventoryItem, item_id)
 
@@ -150,7 +150,7 @@ def get_product(
 def create_inbound(
     movement: MovementCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -213,7 +213,7 @@ def create_inbound(
 def create_outbound(
     movement: MovementCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -287,7 +287,7 @@ def create_outbound(
 def create_adjustment(
     movement: AdjustmentCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -359,7 +359,7 @@ def create_adjustment(
 @router.get("/orders")
 def list_orders(
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(get_current_inventory_user),
 ):
     movements = session.exec(
         select(InventoryMovement, InventoryItem)
