@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
 from .inventory.seed import seed_inventory
+from .incidents.models import IncidentRecord
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 

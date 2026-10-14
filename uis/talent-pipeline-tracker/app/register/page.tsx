@@ -85,7 +85,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-[#5a1f2b]"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
               placeholder="name@brasaland.com"
             />
           </div>
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-[#5a1f2b]"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
                 placeholder="••••••••"
               />
 
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                 }
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-[#5a1f2b]"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
                 placeholder="••••••••"
               />
 

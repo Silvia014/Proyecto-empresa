@@ -1,7 +1,10 @@
+
 from datetime import datetime, timezone
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
+from sqlmodel import SQLModel, Field as SQLField
 
 
 class IncidentStatus(str, Enum):
@@ -60,6 +63,7 @@ class IncidentBase(BaseModel):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
+
     @field_validator("branch")
     @classmethod
     def validate_branch(cls, value: str) -> str:
@@ -74,6 +78,7 @@ class IncidentCreate(BaseModel):
     category: IncidentCategory
     origin: IncidentOrigin
     branch: str
+
     @field_validator("branch")
     @classmethod
     def validate_branch(cls, value: str) -> str:
@@ -84,3 +89,21 @@ class IncidentCreate(BaseModel):
 
 class Incident(IncidentBase):
     id: int
+
+
+class IncidentRecord(SQLModel, table=True):
+    __tablename__ = "incidents"
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    title: str
+    description: str
+    category: str
+    status: str = "open"
+    origin: str
+    branch: str
+    created_at: datetime = SQLField(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = SQLField(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )

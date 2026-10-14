@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -11,38 +12,19 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     setError("");
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const supabase = createClient();
 
-      const contentType = response.headers.get("content-type") ?? "";
-      let message = "Request failed.";
+      const { error: resetError } =
+        await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
 
-      if (contentType.includes("application/json")) {
-        const data = await response.json();
-        message = data.detail || data.message || message;
-      } else {
-        const text = await response.text();
-
-        if (text) {
-          message = text;
-        }
-      }
-
-      if (!response.ok) {
-        throw new Error(message);
+      if (resetError) {
+        throw resetError;
       }
 
       setSubmitted(true);
@@ -50,7 +32,7 @@ export default function ForgotPasswordPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to connect to the server."
+          : "Unable to send the reset email. Please try again."
       );
     } finally {
       setLoading(false);
@@ -62,11 +44,9 @@ export default function ForgotPasswordPage() {
       <main className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md">
           <h1 className="mb-4 text-3xl font-bold">Check your email</h1>
-
           <p className="mb-6">
             If that address is registered, you'll receive a link shortly.
           </p>
-
           <Link href="/login" className="underline">
             Back to login
           </Link>
@@ -83,7 +63,6 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block">Email</label>
-
             <input
               type="email"
               value={email}
@@ -93,11 +72,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
             type="submit"

@@ -1,46 +1,59 @@
+
 from datetime import datetime, timezone
 from typing import Optional
 
-from ..database import incidents_table
-from .models import Incident, IncidentCreate, IncidentStatus
+from sqlmodel import Session, select
+
+from ..database import engine
+from .models import (
+    Incident,
+    IncidentCategory,
+    IncidentCreate,
+    IncidentOrigin,
+    IncidentRecord,
+    IncidentStatus,
+)
+
+
+def _to_incident(record: IncidentRecord) -> Incident:
+    return Incident(
+        id=record.id,
+        title=record.title,
+        description=record.description,
+        category=IncidentCategory(record.category),
+        status=IncidentStatus(record.status),
+        origin=IncidentOrigin(record.origin),
+        branch=record.branch,
+        created_at=record.created_at,
+        updated_at=record.updated_at,
+    )
 
 
 def create_incident(incident_data: IncidentCreate) -> Incident:
     now = datetime.now(timezone.utc)
 
-    incident = Incident(
-        id=0,
+    record = IncidentRecord(
         title=incident_data.title,
         description=incident_data.description,
-        category=incident_data.category,
-        status=IncidentStatus.OPEN,
-        origin=incident_data.origin,
+        category=incident_data.category.value,
+        status=IncidentStatus.OPEN.value,
+        origin=incident_data.origin.value,
         branch=incident_data.branch,
         created_at=now,
         updated_at=now,
     )
 
-    data = incident.model_dump(mode="json")
-    data.pop("id")
-
-    incident_id = incidents_table.insert(data)
-
-    return Incident(
-        id=incident_id,
-        **data,
-    )
+    with Session(engine) as session:
+        session.add(record)
+        session.commit()
+        session.refresh(record)
+        return _to_incident(record)
 
 
 def get_incident(incident_id: int) -> Optional[Incident]:
-    record = incidents_table.get(doc_id=incident_id)
-
-    if record is None:
-        return None
-
-    return Incident(
-        id=record.doc_id,
-        **record,
-    )
+    with Session(engine) as session:
+        record = session.get(IncidentRecord, incident_id)
+        return _to_incident(record) if record else None
 
 
 def list_incidents(
@@ -49,64 +62,39 @@ def list_incidents(
     branch: Optional[str] = None,
     category: Optional[str] = None,
 ) -> list[Incident]:
-    records = incidents_table.all()
-
-    incidents = [
-        Incident(
-            id=record.doc_id,
-            **record,
-        )
-        for record in records
-    ]
+    statement = select(IncidentRecord)
 
     if status is not None:
-        incidents = [
-            incident
-            for incident in incidents
-            if incident.status == status
-        ]
-
+        statement = statement.where(
+            IncidentRecord.status == status.value
+        )
     if origin is not None:
-        incidents = [
-            incident
-            for incident in incidents
-            if incident.origin.value == origin
-        ]
-
+        statement = statement.where(IncidentRecord.origin == origin)
     if branch is not None:
-        incidents = [
-            incident
-            for incident in incidents
-            if incident.branch == branch
-        ]
-
+        statement = statement.where(IncidentRecord.branch == branch)
     if category is not None:
-        incidents = [
-            incident
-            for incident in incidents
-            if incident.category.value == category
-        ]
+        statement = statement.where(IncidentRecord.category == category)
 
-    return incidents
+    with Session(engine) as session:
+        records = session.exec(statement).all()
+        return [_to_incident(record) for record in records]
 
 
 def update_incident_status(
     incident_id: int,
     new_status: IncidentStatus,
 ) -> Optional[Incident]:
-    record = incidents_table.get(doc_id=incident_id)
+    with Session(engine) as session:
+        record = session.get(IncidentRecord, incident_id)
 
-    if record is None:
-        return None
+        if record is None:
+            return None
 
-    updated_at = datetime.now(timezone.utc).isoformat()
+        record.status = new_status.value
+        record.updated_at = datetime.now(timezone.utc)
 
-    incidents_table.update(
-        {
-            "status": new_status.value,
-            "updated_at": updated_at,
-        },
-        doc_ids=[incident_id],
-    )
+        session.add(record)
+        session.commit()
+        session.refresh(record)
 
-    return get_incident(incident_id)
+        return _to_incident(record)
