@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..auth.dependencies import get_current_user
+from ..auth.supabase_dependencies import (
+    get_current_inventory_user as get_current_user,
+)
 from .crud import (
     create_profile,
     delete_profile,
@@ -17,8 +19,9 @@ def register_profile(
     current_user=Depends(get_current_user),
 ):
     profile_data = profile.model_dump()
-    profile_data["user_id"] = current_user["id"]
-
+    profile_data["user_id"] = str(current_user["id"])
+    profile_data["email"] = current_user["email"]
+    
     created_profile = create_profile(profile_data)
 
     if created_profile is None:
@@ -63,7 +66,7 @@ def update_my_profile(
 
 @router.get("/{user_id}", response_model=Profile)
 def read_profile(
-    user_id: int,
+    user_id: str,
     current_user=Depends(get_current_user),
 ):
     profile = get_profile_by_user_id(user_id)
@@ -79,7 +82,7 @@ def read_profile(
 
 @router.patch("/{user_id}", response_model=Profile)
 def edit_profile(
-    user_id: int,
+    user_id: str,
     updates: ProfileUpdate,
     current_user=Depends(get_current_user),
 ):
@@ -99,7 +102,7 @@ def edit_profile(
 
 @router.delete("/{user_id}", status_code=204)
 def remove_profile(
-    user_id: int,
+    user_id: str,
     current_user=Depends(get_current_user),
 ):
     deleted = delete_profile(user_id)

@@ -1,9 +1,14 @@
-from pydantic import BaseModel
+
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
 
 
 class Profile(BaseModel):
-    id: int
-    user_id: int
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
     name: str
     phone: str
     address: str
@@ -16,6 +21,6 @@ class ProfileCreate(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    name: str
-    phone: str
-    address: str
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
