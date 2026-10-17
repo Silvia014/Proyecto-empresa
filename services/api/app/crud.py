@@ -1,113 +1,116 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from .database import db
+from sqlalchemy import func
+from sqlmodel import Session, select
+
+from .database import engine
+from .supplier_directory_model import SupplierDirectoryRecord
+
+
+def _to_dict(supplier: SupplierDirectoryRecord) -> dict:
+    return {
+        "id": supplier.id,
+        "name": supplier.name,
+        "country": supplier.country,
+        "categories": supplier.categories,
+        "rate_per_unit": supplier.rate_per_unit,
+        "currency": supplier.currency,
+        "status": supplier.status,
+        "contact_email": supplier.contact_email,
+        "notes": supplier.notes,
+        "updated_at": supplier.updated_at,
+    }
 
 
 def create_supplier(supplier_data: dict) -> dict:
-    supplier_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    data = dict(supplier_data)
+    data["updated_at"] = datetime.now(timezone.utc)
 
-    doc_id = db.insert(supplier_data)
-
-    return {
-        "id": doc_id,
-        **supplier_data,
-    }
+    with Session(engine) as session:
+        supplier = SupplierDirectoryRecord(**data)
+        session.add(supplier)
+        session.commit()
+        session.refresh(supplier)
+        return _to_dict(supplier)
 
 
 def get_suppliers(
     country: Optional[str] = None,
     category: Optional[str] = None,
 ) -> list[dict]:
+    with Session(engine) as session:
+        statement = select(SupplierDirectoryRecord)
 
-    suppliers = db.all()
+        if country:
+            statement = statement.where(
+                func.lower(SupplierDirectoryRecord.country)
+                == country.lower()
+            )
+            
+        suppliers = session.exec(statement).all()
 
-    if country:
-        suppliers = [
-            supplier
-            for supplier in suppliers
-            if supplier["country"].lower() == country.lower()
-        ]
+        results = []
+        for supplier in suppliers:
+            item = _to_dict(supplier)
+            if category and category.lower() not in [
+                value.lower() for value in item["categories"]
+            ]:
+                continue
+            results.append(item)
 
-    if category:
-        suppliers = [
-            supplier
-            for supplier in suppliers
-            if category.lower() in [
-                item.lower() for item in supplier["categories"]
-            ]
-        ]
-
-    return [
-        {
-            "id": supplier.doc_id,
-            **supplier,
-        }
-        for supplier in suppliers
-    ]
+        return results
 
 
 def get_supplier(supplier_id: int) -> Optional[dict]:
-    supplier = db.get(doc_id=supplier_id)
-
-    if supplier is None:
-        return None
-
-    return {
-        "id": supplier.doc_id,
-        **supplier,
-    }
+    with Session(engine) as session:
+        supplier = session.get(SupplierDirectoryRecord, supplier_id)
+        return _to_dict(supplier) if supplier else None
 
 
 def update_supplier_rate(
     supplier_id: int,
     rate_per_unit: float,
 ) -> Optional[dict]:
+    with Session(engine) as session:
+        supplier = session.get(SupplierDirectoryRecord, supplier_id)
 
-    supplier = db.get(doc_id=supplier_id)
+        if supplier is None:
+            return None
 
-    if supplier is None:
-        return None
-
-    updated_at = datetime.now(timezone.utc).isoformat()
-
-    db.update(
-        {
-            "rate_per_unit": rate_per_unit,
-            "updated_at": updated_at,
-        },
-        doc_ids=[supplier_id],
-    )
-
-    return get_supplier(supplier_id)
+        supplier.rate_per_unit = rate_per_unit
+        supplier.updated_at = datetime.now(timezone.utc)
+        session.add(supplier)
+        session.commit()
+        session.refresh(supplier)
+        return _to_dict(supplier)
 
 
 def update_supplier_status(
     supplier_id: int,
     status: str,
 ) -> Optional[dict]:
+    with Session(engine) as session:
+        supplier = session.get(SupplierDirectoryRecord, supplier_id)
 
-    supplier = db.get(doc_id=supplier_id)
+        if supplier is None:
+            return None
 
-    if supplier is None:
-        return None
-
-    db.update(
-        {
-            "status": status,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        },
-        doc_ids=[supplier_id],
-    )
-
-    return get_supplier(supplier_id)
+        supplier.status = status
+        supplier.updated_at = datetime.now(timezone.utc)
+        session.add(supplier)
+        session.commit()
+        session.refresh(supplier)
+        return _to_dict(supplier)
 
 
 def delete_supplier(supplier_id: int) -> bool:
-    supplier = db.get(doc_id=supplier_id)
+    with Session(engine) as session:
+        supplier = session.get(SupplierDirectoryRecord, supplier_id)
 
-    if supplier is None:
-        return False
+        if supplier is None:
+            return False
 
-    db.remove(doc_ids=[supplier_id])
-    return True
+        session.delete(supplier)
+        session.commit()
+        return True

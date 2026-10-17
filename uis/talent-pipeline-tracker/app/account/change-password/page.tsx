@@ -1,12 +1,13 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { createClient } from "@/lib/supabase/client";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -27,32 +28,45 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      router.push("/login");
+    if (newPassword.length < 8) {
+      setError("The new password must contain at least 8 characters.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/change-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      const data = await response.json();
+      if (userError || !user) {
+        router.push("/login");
+        return;
+      }
 
-      if (!response.ok) {
-        setError(data.detail || "Unable to change password.");
+      // Re-authenticate before changing the password.
+      // This verifies the current password without storing it
+      // in the application database.
+      const { error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: user.email ?? "",
+          password: currentPassword,
+        });
+
+      if (signInError) {
+        setError("Current password is incorrect.");
+        return;
+      }
+
+      const { error: updateError } =
+        await supabase.auth.updateUser({
+          password: newPassword,
+        });
+
+      if (updateError) {
+        setError(updateError.message || "Unable to change password.");
         return;
       }
 
@@ -62,7 +76,7 @@ export default function ChangePasswordPage() {
       setNewPassword("");
       setConfirmPassword("");
     } catch {
-      setError("Unable to connect to the server.");
+      setError("Unable to connect to the authentication service.");
     } finally {
       setLoading(false);
     }
@@ -93,6 +107,7 @@ export default function ChangePasswordPage() {
             <input
               id="currentPassword"
               type="password"
+              autoComplete="current-password"
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
               required
@@ -111,6 +126,8 @@ export default function ChangePasswordPage() {
             <input
               id="newPassword"
               type="password"
+              autoComplete="new-password"
+              minLength={8}
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               required
@@ -129,6 +146,8 @@ export default function ChangePasswordPage() {
             <input
               id="confirmPassword"
               type="password"
+              autoComplete="new-password"
+              minLength={8}
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               required
@@ -137,13 +156,13 @@ export default function ChangePasswordPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </p>
           )}
 
           {message && (
-            <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+            <p role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
               {message}
             </p>
           )}

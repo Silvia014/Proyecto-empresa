@@ -1,78 +1,40 @@
-from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from ..auth.dependencies import get_current_user
-
-from .crud import create_user, delete_user, get_user, get_user_by_email, update_user
-from .models import User, UserCreate, UserUpdate, UserPublic
-
+from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.post("", response_model=UserPublic, status_code=201)
-def register_user(user: UserCreate):
-    existing_user = get_user_by_email(user.email)
-
-    if existing_user:
-        raise HTTPException(
-            status_code=409,
-            detail="A user with this email already exists.",
-        )
-
-    return create_user(user.model_dump())
-
-
-@router.get("", response_model=List[User])
-def list_users():
-    from ..database import users_table
-
-    return [
-        {
-            "id": user.doc_id,
-            **user,
-        }
-        for user in users_table.all()
-    ]
-
-
-@router.get("/{user_id}", response_model=UserPublic)
-def read_user(user_id: int):
-    user = get_user(user_id)
-
-    if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found.",
-        )
-
-    return user
-
-
-@router.patch("/{user_id}", response_model=UserPublic)
-def edit_user(user_id: int, updates: UserUpdate):
-    user = update_user(
-        user_id,
-        updates.model_dump(exclude_unset=True),
+def legacy_auth_disabled():
+    raise HTTPException(
+        status_code=status.HTTP_410_GONE,
+        detail=(
+            "The legacy user API has been retired. "
+            "Use Supabase Auth for user registration, "
+            "authentication and account management."
+        ),
     )
 
-    if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found.",
-        )
 
-    return user
+@router.post("", status_code=status.HTTP_410_GONE)
+def register_user():
+    legacy_auth_disabled()
 
 
-@router.delete("/{user_id}", status_code=204)
+@router.get("", status_code=status.HTTP_410_GONE)
+def list_users():
+    legacy_auth_disabled()
+
+
+@router.get("/{user_id}", status_code=status.HTTP_410_GONE)
+def read_user(user_id: int):
+    legacy_auth_disabled()
+
+
+@router.patch("/{user_id}", status_code=status.HTTP_410_GONE)
+def edit_user(user_id: int):
+    legacy_auth_disabled()
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_410_GONE)
 def remove_user(user_id: int):
-    deleted = delete_user(user_id)
-
-    if not deleted:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found.",
-        )
-
-    return None
+    legacy_auth_disabled()

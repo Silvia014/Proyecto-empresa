@@ -1,4 +1,4 @@
-const INVENTORY_API_URL = "http://127.0.0.1:8000";
+const INVENTORY_API_URL = "";
 
 const supabaseClient = window.supabase.createClient(
     window.SUPABASE_URL,

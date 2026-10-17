@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
-from .inventory.seed import seed_inventory
+from .incidents.models import IncidentRecord
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -16,7 +16,9 @@ from .users.routes import router as users_router
 from .profiles.routes import router as profiles_router
 from .auth.routes import router as auth_router
 from .incidents.routes import router as incidents_router
-from .auth.dependencies import get_current_user
+from .auth.supabase_dependencies import (
+    get_current_inventory_user as get_current_user,
+)
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,8 +39,6 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 app = FastAPI(title="Brasaland Supplier Directory API")
 create_db_and_tables()
-with next(get_db()) as session:
-    seed_inventory(session)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request,
