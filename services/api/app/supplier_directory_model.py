@@ -11,7 +11,7 @@ class SupplierDirectoryRecord(SQLModel, table=True):
 
     __tablename__ = "supplier_directory"
 
-    # Preserve TinyDB document IDs during the data migration.
+    # Preserve source document IDs during the data migration.
     id: Optional[int] = Field(
         default=None,
         sa_column=Column(Integer, primary_key=True, autoincrement=True),

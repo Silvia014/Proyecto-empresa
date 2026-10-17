@@ -1,0 +1,39 @@
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    env_file:
+      - .env.local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/api:/app/services/api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  interfaces:
+    build:
+      context: .
+      dockerfile: uis/Dockerfile
+    env_file:
+      - .env.local
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - ./uis/talent-pipeline-tracker:/app/talent-pipeline-tracker
+      - /app/talent-pipeline-tracker/node_modules
+      - /app/talent-pipeline-tracker/.next
+      - ./uis/backoffice:/usr/share/nginx/html/backoffice
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
