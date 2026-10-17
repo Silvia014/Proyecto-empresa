@@ -1,0 +1,43 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    env_file:
+      - .env.local
+    command:
+      - uvicorn
+      - app.main:app
+      - --app-dir
+      - /app/services/api
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  interfaces:
+    build:
+      context: .
+      dockerfile: uis/Dockerfile.prod
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+    env_file:
+      - .env.local
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
