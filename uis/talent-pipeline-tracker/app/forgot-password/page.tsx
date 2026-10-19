@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md">
           <h1 className="mb-4 text-3xl font-bold">Check your email</h1>
           <p className="mb-6">
-            If that address is registered, you'll receive a link shortly.
+            If that address is registered, you&apos;ll receive a link shortly.
           </p>
           <Link href="/login" className="underline">
             Back to login
@@ -62,17 +62,26 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block">Email</label>
+            <label htmlFor="email" className="mb-1 block">
+              Email
+            </label>
             <input
+              id="email"
+              name="email"
               type="email"
               value={email}
+              autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
               required
               className="w-full rounded border p-2"
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p aria-live="polite" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
