@@ -66,8 +66,10 @@ export default function LoginPage() {
 
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
+              autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
@@ -86,8 +88,10 @@ export default function LoginPage() {
             <div className="relative">
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
+                autoComplete="current-password"
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
@@ -165,7 +169,10 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p
+              aria-live="polite"
+              className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
               {error}
             </p>
           )}
@@ -188,7 +195,7 @@ export default function LoginPage() {
         </a>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a
             href="/register"
             className="font-medium text-[#5a1f2b] hover:underline"

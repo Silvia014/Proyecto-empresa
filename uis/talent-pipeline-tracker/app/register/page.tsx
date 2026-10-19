@@ -81,8 +81,10 @@ export default function RegisterPage() {
 
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
+              autoComplete="email"
               onChange={(event) => setEmail(event.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
@@ -101,8 +103,10 @@ export default function RegisterPage() {
             <div className="relative">
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
+                autoComplete="new-password"
                 onChange={(event) => setPassword(event.target.value)}
                 required
                 minLength={8}
@@ -145,8 +149,10 @@ export default function RegisterPage() {
             <div className="relative">
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
+                autoComplete="new-password"
                 onChange={(event) =>
                   setConfirmPassword(event.target.value)
                 }
@@ -183,7 +189,10 @@ export default function RegisterPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p
+              aria-live="polite"
+              className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
               {error}
             </p>
           )}

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "web-perf": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-perf/SKILL.md",
+      "computedHash": "72d0dd9706147e19bf3c1a36fdc02570f77685541d89d901a3a2f570824ba3cb"
+    }
+  }
+}

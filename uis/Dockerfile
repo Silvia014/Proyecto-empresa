@@ -19,8 +19,10 @@ COPY index.html styles.css main.js account.html account.js \
      candidate-detail.html candidate-detail.js \
      candidate-new.html candidate-new.js \
      reset-password.html reset-password.js \
-     translations.js validation.js \
+     translations.js validation.js chat.js \
      /usr/share/nginx/html/website/
+
+COPY uis/talent-pipeline-tracker/app/favicon.ico /usr/share/nginx/html/website/favicon.ico
 
 COPY uis/backoffice/ /usr/share/nginx/html/backoffice/
 COPY uis/nginx.conf /etc/nginx/conf.d/default.conf

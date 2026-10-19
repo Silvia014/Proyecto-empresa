@@ -107,8 +107,12 @@ function ResetPasswordForm() {
         ) : validSession ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-1 block">New password</label>
+              <label htmlFor="newPassword" className="mb-1 block">
+                New password
+              </label>
               <input
+                id="newPassword"
+                name="newPassword"
                 type="password"
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
@@ -120,8 +124,12 @@ function ResetPasswordForm() {
             </div>
 
             <div>
-              <label className="mb-1 block">Confirm password</label>
+              <label htmlFor="confirmPassword" className="mb-1 block">
+                Confirm password
+              </label>
               <input
+                id="confirmPassword"
+                name="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
@@ -132,8 +140,16 @@ function ResetPasswordForm() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {message && <p className="text-sm text-green-600">{message}</p>}
+            {error && (
+              <p aria-live="polite" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
+            {message && (
+              <p aria-live="polite" className="text-sm text-green-600">
+                {message}
+              </p>
+            )}
 
             <button
               type="submit"
