@@ -42,3 +42,12 @@ This is a direct before/after improvement from the original 404 responses to suc
 ## Final status
 
 The real root causes were addressed and validated for the missing static resources. The performance/accessibility follow-up remains intentionally minimal and evidence-based, without altering the functional behavior of the site or the backoffice.
+
+## Lighthouse Performance Improvements
+
+| Audit | Before | After | Change |
+|---|---:|---:|---:|
+| Corporate Website — Mobile | 63 | 94 | +31 |
+| Corporate Website — Desktop | 87 | 99 | +12 |
+| ERP — Mobile | 100 | 99 | -1 |
+| ERP — Desktop | 89 | 100 | +11 |
