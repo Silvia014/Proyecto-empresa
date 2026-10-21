@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brasaland — Restaurante en Colombia y Estados Unidos  | Reserva tu mesa</title>
+  <title>Brasaland — Tu restaurante de brasas en Bogotá y Orlando  | Reserva tu mesa</title>
   <meta name="description" content="Brasaland: cocina de temporada en Colombia y Florida con el estándar de servicio de la hostelería de hotel boutique. Reserva tu mesa en menos de un minuto." />
   <meta name="keywords" content="restaurante Colombia, restaurante Florida, reservar mesa, cocina de temporada, restaurante boutique" />
   <link rel="canonical" href="https://www.brasaland.example/" />
   <!-- Open Graph / redes sociales -->
   <meta property="og:type" content="restaurant" />
-  <meta property="og:title" content="Brasaland — Restaurante en Colombia y Estados Unidos" />
-  <meta property="og:description" content="Cocina de temporada con el estándar de servicio de la hostelería de hotel boutique. Reserva tu mesa." />
+  <meta property="og:title" content="Brasaland — Restaurante en Bogotá y Orlando" />
+  <meta property="og:description" content="Cocina de temporada con el estándar de servicio de la hostelería de un establecimiento gran lujo. Reserva tu mesa." />
   <meta property="og:image" content="https://www.brasaland.example/assets/og-cover.jpg" />
   <meta property="og:url" content="https://www.brasaland.example/" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -68,10 +68,27 @@
      BRASALAND AI ASSISTANT
 ========================================== -->
 
+<div id="chat-menu" class="chat-menu hidden" role="menu" aria-label="Opciones del asistente de Brasaland">
+  <button type="button" class="chat-option-item" data-chat-action="chat" role="menuitem">
+    Escribir al chatbot
+  </button>
+  <a
+    class="chat-option-item"
+    data-chat-action="whatsapp"
+    href="https://wa.me/34606064795?text=Hola%20Brasaland%20quiero%20hacer%20una%20consulta"
+    target="_blank"
+    rel="noopener noreferrer"
+    role="menuitem"
+  >
+    Escribir una consulta al WhatsApp
+  </a>
+</div>
+
 <button
   id="chat-toggle"
   class="chat-toggle"
-  aria-label="Open Brasaland Assistant"
+  aria-label="Abrir opciones del asistente"
+  aria-expanded="false"
 >
   💬
 </button>
@@ -129,7 +146,7 @@
   <a href="#contenido" class="skip-link">Saltar al contenido principal</a>
 
   <!-- ===================== ENCABEZADO ===================== -->
-  <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+  <header class="sticky top-0 z-40 bg-cream/95 backdrop-blur">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
       <div class="flex items-center gap-3">
         <a href="#inicio" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
@@ -146,10 +163,11 @@
       </div>
 
       <!-- Navegación de escritorio -->
-      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+      <nav aria-label="Navegación principal" class="hidden items-center gap-3 lg:flex lg:gap-5 xl:gap-6">
         <a href="#inicio" class="nav-link" data-i18n="nav.home">Inicio</a>
         <a href="#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
         <a href="#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="#faq" class="nav-link" data-i18n="nav.faq">FAQ</a>
         <a href="#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
@@ -190,6 +208,10 @@
     Nuestra experiencia
     </a>
 
+    <a href="#faq" class="nav-link" data-i18n="nav.faq">
+    FAQ
+    </a>
+
     <a href="#contacto" class="nav-link" data-i18n="nav.contact">
     Contacto
     </a>
@@ -221,13 +243,13 @@
         />
       </div>
       <div class="relative mx-auto max-w-7xl px-6 py-28 lg:px-8 lg:py-40">
-        <p class="section-eyebrow text-brass-bright" data-i18n="hero.location">Restaurante en Colombia y Florida</p>
+        <p class="section-eyebrow text-brass-bright" data-i18n="hero.location">Tu restaurante de brasas en Bogotá y Orlando</p>
         <h1 class="mt-4 max-w-2xl font-display text-4xl font-semibold text-cream sm:text-5xl lg:text-6xl">
-          <span data-i18n="hero.title">Una mesa con la cuidada hospitalidad de un gran hotel</span>
+          <span data-i18n="hero.title">Una mesa con la cuidada hospitalidad de un establecimiento de gran lujo</span>
         </h1>
         <p class="mt-6 max-w-xl text-lg leading-relaxed text-cream/85" data-i18n="hero.subtitle">
           En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de
-          atención que aprendimos en la hostelería de hotel boutique: puntual, cálido y sin fricciones.
+          atención que aprendimos en nuestra larga trayectoria en la hostelería de lujo: puntual, cálido y sin fricciones.
           Reservar te toma menos de un minuto.
         </p>
         <div class="mt-10 flex flex-wrap gap-4">
@@ -276,14 +298,45 @@
             </li>
           </ul>
         </div>
-        <div class="overflow-hidden rounded-2xl">
-          <img
-            src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=60"
-            alt="Sala del restaurante Brasaland con mesas preparadas para el servicio"
-            class="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
+        <div class="about-gallery">
+          <div class="about-carousel" aria-label="Carrusel de platos, mesas y comida del restaurante">
+            <button type="button" class="about-carousel-btn about-carousel-prev" aria-label="Ver imagen anterior">‹</button>
+            <div class="about-carousel-track">
+              <figure class="about-carousel-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=60"
+                  alt="Plato principal servido en la mesa"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <figure class="about-carousel-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=60"
+                  alt="Mesa cuidadosamente preparada con comida y bebida"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <figure class="about-carousel-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1200&q=60"
+                  alt="Cócteles y bebidas del restaurante"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <figure class="about-carousel-slide">
+                <img
+                  src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1200&q=60&sat=-30"
+                  alt="Brownie con moras sobre fondo oscuro"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            </div>
+            <button type="button" class="about-carousel-btn about-carousel-next" aria-label="Ver siguiente imagen">›</button>
+          </div>
         </div>
       </div>
     </section>
@@ -296,26 +349,26 @@
           De un servicio y cocina premium a tu mesa
         </h2>
         <p class="mt-5 max-w-2xl leading-relaxed text-walnut/80" data-i18n="experiencia.description">
-          Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&amp;B en hoteles boutique de
-          4 y 5 estrellas. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos
+          Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&amp;B en hoteles boutique gran lujo.
+          Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos
           aquí, en un restaurante que cualquiera puede reservar sin necesidad de estar alojado en un hotel.
         </p>
 
         <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
-            <p class="font-display text-4xl font-semibold text-wine">15+</p>
-            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience1">años de experiencia combinada en hostelería de hotel</p>
+          <div class="landing-card rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
+            <p class="font-display text-4xl font-semibold text-wine" data-counter data-target="15" data-suffix="+">0</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience1">años de experiencia combinada en hostelería en hoteles gran lujo</p>
           </div>
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
-            <p class="font-display text-4xl font-semibold text-wine">6</p>
-            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience2">hoteles boutique donde formamos parte del equipo directivo de sala</p>
+          <div class="landing-card rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
+            <p class="font-display text-4xl font-semibold text-wine" data-counter data-target="6" data-suffix="+">0</p>
+            <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience2">reconocidos restaurantes donde formamos parte del equipo directivo de sala</p>
           </div>
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
-            <p class="font-display text-4xl font-semibold text-wine">98%</p>
+          <div class="landing-card rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
+            <p class="font-display text-4xl font-semibold text-wine" data-counter data-target="98" data-suffix="%">0</p>
             <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience3">de reservas atendidas sin tiempo de espera adicional</p>
           </div>
-          <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
-            <p class="font-display text-4xl font-semibold text-wine">2</p>
+          <div class="landing-card rounded-xl bg-white p-6 shadow-sm ring-1 ring-walnut/5">
+            <p class="font-display text-4xl font-semibold text-wine" data-counter data-target="2">0</p>
             <p class="mt-2 text-sm text-walnut/70" data-i18n="experiencia.experience4">restaurantes hermanos, con recetas y estándares compartidos</p>
           </div>
         </div>
@@ -344,7 +397,7 @@
 
         <div class="brasapoints-grid">
 
-          <div class="brasapoints-step">
+          <div class="landing-card brasapoints-step">
             <span class="brasapoints-number">01</span>
 
             <h3 data-i18n="order.brasapoints.restaurant.title">
@@ -356,7 +409,7 @@
             </p>
           </div>
 
-          <div class="brasapoints-step">
+          <div class="landing-card brasapoints-step">
             <span class="brasapoints-number">02</span>
 
             <h3 data-i18n="order.brasapoints.online.title">
@@ -368,7 +421,7 @@
             </p>
           </div>
 
-          <div class="brasapoints-step">
+          <div class="landing-card brasapoints-step">
             <span class="brasapoints-number">03</span>
 
             <h3 data-i18n="order.brasapoints.redeem.title">
@@ -394,6 +447,111 @@
       </div>
     </section>
 
+    <!-- ===================== FAQ ===================== -->
+    <section id="faq" class="faq-section fade-up">
+      <div class="faq-container">
+        <div class="faq-header">
+          <p class="section-eyebrow" data-i18n="faq.eyebrow">FAQ</p>
+          <h2 data-i18n="faq.title">Preguntas frecuentes</h2>
+        </div>
+
+        <div class="faq-list" aria-label="Preguntas frecuentes de Brasaland">
+          <div class="faq-item open">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="true" data-i18n="faq.items.0.question">
+                ¿Dónde está ubicado Brasaland?
+              </button>
+            </h3>
+            <div class="faq-answer" data-i18n="faq.items.0.answer">
+              Brasaland es un restaurante de carnes a la brasa pensado para quienes tienen un gran apetito, con ubicaciones en Orlando, Florida, y Bogotá, Colombia.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.1.question">
+                ¿Puedo pedir online?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.1.answer">
+              Sí. Los clientes pueden pedir online si su dirección de entrega está dentro del área de servicio del restaurante de Orlando o Bogotá. La elegibilidad debe confirmarse con la dirección del cliente.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.2.question">
+                ¿Cuánto cuesta la entrega?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.2.answer">
+              La entrega cuesta 5 USD en Orlando, o la cantidad equivalente en pesos colombianos en Bogotá. La tarifa aplicable debe mostrarse claramente antes de confirmar el pedido.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.3.question">
+                ¿Qué es Brasaland Club?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.3.answer">
+              Brasaland Club es el programa de fidelidad de Brasaland. Los miembros registrados pueden ganar Brasapoints en compras elegibles, incluidas las compras online.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.4.question">
+                ¿Cómo funcionan los Brasapoints?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.4.answer">
+              Por cada 100 € de gasto elegible, los miembros reciben 100 Brasapoints. Cuando un miembro alcanza 100 puntos, puede canjear la recompensa por un 10% de descuento en su próxima comida. Después de canjear la recompensa, el contador activo de puntos se reinicia.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.5.question">
+                ¿Puedo ganar puntos sin unirme a Brasaland Club?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.5.answer">
+              No. Los clientes deben registrarse en Brasaland Club e identificarse con su cuenta para ganar Brasapoints en compras elegibles.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.6.question">
+                ¿Cómo me uno a Brasaland Club?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.6.answer">
+              El registro requiere: nombre completo, dirección de email y contraseña. Tras registrarse e iniciar sesión, los clientes pueden acceder a su interfaz de cuenta del cliente.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-question" aria-expanded="false" data-i18n="faq.items.7.question">
+                ¿Qué pasa con mis pedidos anteriores cuando canjeo mis puntos?
+              </button>
+            </h3>
+            <div class="faq-answer" hidden data-i18n="faq.items.7.answer">
+              Los pedidos anteriores permanecen en el historial del cliente aunque el contador activo de Brasapoints se reinicie. El historial de pedidos debe conservar los detalles de los pedidos anteriores sin mostrar un total acumulado del gasto histórico del cliente.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-actions">
+          <a href="account.html" class="btn-primary" data-i18n="faq.ctaClub">Únete a Brasaland Club</a>
+          <a href="order.html" class="btn-secondary" data-i18n="faq.ctaOrder">Pedir online</a>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== CONTACTO ===================== -->
     <section id="contacto" class="fade-up mx-auto max-w-7xl px-6 py-20 lg:px-8">
   <div class="grid gap-12 lg:grid-cols-2">
@@ -411,7 +569,7 @@
         <!-- Bogotá -->
         <div
           onclick="cambiarMapa('https://www.openstreetmap.org/export/embed.html?bbox=-74.0738%2C4.5953%2C-74.0638%2C4.6053&layer=mapnik&marker=4.6003%2C-74.0688')"
-          class="cursor-pointer rounded-2xl border border-walnut/10 bg-white p-5 shadow-sm transition hover:border-brass hover:shadow-md"
+          class="landing-card cursor-pointer rounded-2xl border border-walnut/10 bg-white p-5 shadow-sm transition hover:border-brass hover:shadow-md"
         >
           <h3 class="mb-4 text-lg font-semibold text-wine">Bogotá</h3>
 
@@ -441,7 +599,7 @@
         <!-- Orlando -->
         <div
           onclick="cambiarMapa('https://www.openstreetmap.org/export/embed.html?bbox=-81.3845%2C28.5395%2C-81.3745%2C28.5495&layer=mapnik&marker=28.5445%2C-81.3795')"
-          class="cursor-pointer rounded-2xl border border-walnut/10 bg-white p-5 shadow-sm transition hover:border-brass hover:shadow-md"
+          class="landing-card cursor-pointer rounded-2xl border border-walnut/10 bg-white p-5 shadow-sm transition hover:border-brass hover:shadow-md"
         >
           <h3 class="mb-4 text-lg font-semibold text-wine" data-i18n="contacto.city2">Orlando</h3>
 

@@ -1,4 +1,5 @@
 const chatToggle = document.getElementById("chat-toggle");
+const chatMenu = document.getElementById("chat-menu");
 const chatWindow = document.getElementById("chat-window");
 const chatClose = document.getElementById("chat-close");
 
@@ -8,11 +9,48 @@ const chatMessages = document.getElementById("chat-messages");
 
 
 // ==========================================
-// OPEN / CLOSE CHAT
+// OPEN / CLOSE CHAT MENU
 // ==========================================
 
-chatToggle?.addEventListener("click", () => {
-  chatWindow.classList.toggle("hidden");
+chatToggle?.addEventListener("click", (event) => {
+  event.stopPropagation();
+
+  const isMenuVisible = !chatMenu.classList.contains("hidden");
+  chatMenu.classList.toggle("hidden", isMenuVisible);
+  chatToggle.setAttribute("aria-expanded", String(!isMenuVisible));
+
+  if (!isMenuVisible) {
+    chatWindow.classList.add("hidden");
+  }
+});
+
+chatMenu?.querySelectorAll("[data-chat-action]").forEach((option) => {
+  option.addEventListener("click", () => {
+    chatMenu.classList.add("hidden");
+    chatToggle.setAttribute("aria-expanded", "false");
+
+    const action = option.dataset.chatAction;
+
+    if (action === "chat") {
+      chatWindow.classList.remove("hidden");
+      return;
+    }
+
+    if (action === "whatsapp") {
+      window.open(
+        "https://wa.me/?text=Hola%20Brasaland%20quiero%20hacer%20una%20consulta",
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  });
+});
+
+document.addEventListener("click", (event) => {
+  if (!chatMenu?.contains(event.target) && !chatToggle?.contains(event.target)) {
+    chatMenu?.classList.add("hidden");
+    chatToggle?.setAttribute("aria-expanded", "false");
+  }
 });
 
 chatClose?.addEventListener("click", () => {

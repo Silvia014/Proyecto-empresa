@@ -5,6 +5,7 @@ const translations = {
       home: "Inicio",
       about: "Qué hacemos",
       experience: "Nuestra experiencia",
+      faq: "FAQ",
       contact: "Contacto",
       careers: "Trabaja con nosotros",
       reserve: "Reservar mesa",
@@ -12,9 +13,9 @@ const translations = {
     },
 
     hero: {
-      location: "Restaurante en Colombia y Estados Unidos",
-      title: "Una mesa con la cuidada hospitalidad de un gran hotel",
-      subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en la hostelería de hotel boutique: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
+      location: "Tu restaurante de brasas en Bogotá y Orlando",
+      title: "Una mesa con la cuidada hospitalidad de un establecimiento de gran lujo",
+      subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en nuestra larga trayectoria en la hostelería de lujo: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
       button: "Reservar mesa",
       button2: "Conócenos",
       order: "Pedir online"
@@ -153,10 +154,10 @@ const translations = {
     experiencia: {
       title: "Nuestra experiencia",
       subtitle: "De un servicio y cocina premium a tu mesa",
-      description: "Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&B en hoteles boutique de 4 y 5 estrellas. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos aquí, en un restaurante que cualquiera puede reservar sin necesidad de estar alojado en un hotel.",
+      description: "Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&B en hoteles boutique gran lujo. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos aquí, en un restaurante que cualquiera puede reservar sin necesidad de estar alojado en un hotel.",
 
-      experience1: "años de experiencia combinada en hostelería de hotel",
-      experience2: "hoteles boutique donde formamos parte del equipo directivo de sala",
+      experience1: "años de experiencia combinada en hostelería en hoteles gran lujo",
+      experience2: "restaurantes de prestigio donde formamos parte del equipo directivo de sala",
       experience3: "de reservas atendidas sin tiempo de espera adicional",
       experience4: "restaurantes hermanos, con recetas y estándares compartidos"
     },
@@ -176,6 +177,47 @@ const translations = {
       card3: {
         points: "300"
       }
+    },
+
+    faq: {
+      eyebrow: "FAQ",
+      title: "Preguntas frecuentes",
+      items: [
+        {
+          question: "¿Dónde está ubicado Brasaland?",
+          answer: "Brasaland es un restaurante de carnes a la brasa pensado para quienes tienen un gran apetito, con ubicaciones en Orlando, Florida, y Bogotá, Colombia."
+        },
+        {
+          question: "¿Puedo pedir online?",
+          answer: "Sí. Los clientes pueden pedir online si su dirección de entrega está dentro del área de servicio del restaurante de Orlando o Bogotá. La elegibilidad debe confirmarse con la dirección del cliente."
+        },
+        {
+          question: "¿Cuánto cuesta la entrega?",
+          answer: "La entrega cuesta 5 USD en Orlando, o la cantidad equivalente en pesos colombianos en Bogotá. La tarifa aplicable debe mostrarse claramente antes de confirmar el pedido."
+        },
+        {
+          question: "¿Qué es Brasaland Club?",
+          answer: "Brasaland Club es el programa de fidelidad de Brasaland. Los miembros registrados pueden ganar Brasapoints en compras elegibles, incluidas las compras online."
+        },
+        {
+          question: "¿Cómo funcionan los Brasapoints?",
+          answer: "Por cada 100 € de gasto elegible, los miembros reciben 100 Brasapoints. Cuando un miembro alcanza 100 puntos, puede canjear la recompensa por un 10% de descuento en su próxima comida. Después de canjear la recompensa, el contador activo de puntos se reinicia."
+        },
+        {
+          question: "¿Puedo ganar puntos sin unirme a Brasaland Club?",
+          answer: "No. Los clientes deben registrarse en Brasaland Club e identificarse con su cuenta para ganar Brasapoints en compras elegibles."
+        },
+        {
+          question: "¿Cómo me uno a Brasaland Club?",
+          answer: "El registro requiere: nombre completo, dirección de email y contraseña. Tras registrarse e iniciar sesión, los clientes pueden acceder a su interfaz de cuenta del cliente."
+        },
+        {
+          question: "¿Qué pasa con mis pedidos anteriores cuando canjeo mis puntos?",
+          answer: "Los pedidos anteriores permanecen en el historial del cliente aunque el contador activo de Brasapoints se reinicie. El historial de pedidos debe conservar los detalles de los pedidos anteriores sin mostrar un total acumulado del gasto histórico del cliente."
+        }
+      ],
+      ctaClub: "Únete a Brasaland Club",
+      ctaOrder: "Pedir online"
     },
 
     contacto: {
@@ -549,6 +591,7 @@ const translations = {
       home: "Home",
       about: "What We Do",
       experience: "Our Experience",
+      faq: "FAQ",
       contact: "Contact",
       careers: "Careers",
       reserve: "Book a Table",
@@ -556,9 +599,9 @@ const translations = {
     },
 
     hero: {
-      location: "Restaurant in Colombia and USA",
-      title: "The warm hospitality of an amazing hotel, at your table",
-      subtitle: "At Brasaland we prepare seasonal cuisine and serve every guest with the same high standards of hospitality found in boutique hotels. Booking your table takes less than a minute.",
+      location: "Your grill restaurant in Bogotá and Orlando",
+      title: "A table with the refined hospitality of a luxury establishment",
+      subtitle: "At Brasaland, we cook seasonal dishes and serve every table with the same high standards of hospitality we developed through our long experience in luxury hospitality: punctual, warm, and frictionless. Booking takes less than a minute.",
       button: "Book a Table",
       button2: "Learn More",
       order: "Order Online"
@@ -737,10 +780,10 @@ const translations = {
     experiencia: {
       title: "Our Experience",
       subtitle: "Premium Hospitality at Your Table",
-      description: "Before opening Brasaland, members of our team managed dining rooms and F&B operations in four and five-star boutique hotels. That same discreet, attentive and flawless service is now available to everyone.",
+      description: "Before opening Brasaland, part of our team led service and F&B operations in luxury boutique hotels. That same discreet, attentive and flawless standard is what we bring here, in a restaurant anyone can book without staying in a hotel.",
 
-      experience1: "years of combined boutique hotel hospitality experience",
-      experience2: "boutique hotels where we were part of the management team",
+      experience1: "years of combined hospitality experience in luxury hotels",
+      experience2: "prestigious restaurants where we were part of the management team",
       experience3: "of reservations served with no additional waiting time",
       experience4: "sister restaurants sharing recipes and service standards"
     },
@@ -760,6 +803,47 @@ const translations = {
       card3: {
         points: "300"
       }
+    },
+
+    faq: {
+      eyebrow: "FAQ",
+      title: "Frequently asked questions",
+      items: [
+        {
+          question: "Where is Brasaland located?",
+          answer: "Brasaland is a grilled-meat restaurant for people with a big appetite, with locations in Orlando, Florida, and Bogotá, Colombia."
+        },
+        {
+          question: "Can I order online?",
+          answer: "Yes. Customers can order online if their delivery address falls within the service area of the Orlando or Bogotá restaurant. Delivery eligibility must be confirmed using the customer's address."
+        },
+        {
+          question: "How much does delivery cost?",
+          answer: "Delivery costs USD 5 in Orlando, or the equivalent amount in Colombian pesos (COP) in Bogotá. The applicable fee should be displayed clearly before the customer confirms the order."
+        },
+        {
+          question: "What is Brasaland Club?",
+          answer: "Brasaland Club is Brasaland's customer loyalty programme. Registered members can earn Brasapoints on eligible purchases, including online orders."
+        },
+        {
+          question: "How do Brasapoints work?",
+          answer: "For every €100 in eligible spending, members earn 100 Brasapoints. Once a member reaches 100 points, they can redeem the reward for a 10% discount on their next meal. After the reward is redeemed, the active points counter resets."
+        },
+        {
+          question: "Can I earn points without joining Brasaland Club?",
+          answer: "No. Customers must register for Brasaland Club and identify themselves through their account for eligible purchases to earn Brasapoints."
+        },
+        {
+          question: "How do I join Brasaland Club?",
+          answer: "Registration requires: full name, email address and password. After registering and signing in, customers can access their customer account interface."
+        },
+        {
+          question: "What happens to my previous orders when I redeem my points?",
+          answer: "Previous orders remain in the customer's order history even when the active Brasapoints counter resets. The order history should retain the details of previous orders without showing a cumulative total of the customer's historical spending."
+        }
+      ],
+      ctaClub: "Join Brasaland Club",
+      ctaOrder: "Order online"
     },
 
     contacto: {

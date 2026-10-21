@@ -19,6 +19,12 @@
 }
 
 @layer components {
+  .landing-parallax {
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    transition: transform 0.2s linear;
+  }
+
   /* Enlace "saltar al contenido" para usuarios de teclado/lectores de pantalla */
   .skip-link {
     @apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50
@@ -28,13 +34,13 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-md bg-wine px-6 py-3
       font-body font-semibold text-cream transition hover:bg-wine/90
-      focus-visible:ring-2 focus-visible:ring-brass;
+      focus-visible:ring-2 focus-visible:ring-brass whitespace-nowrap;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-md border border-brass/60 px-6 py-3
       font-body font-semibold text-walnut transition hover:bg-brass/10
-      focus-visible:ring-2 focus-visible:ring-brass;
+      focus-visible:ring-2 focus-visible:ring-brass whitespace-nowrap;
   }
 
   .section-eyebrow {
@@ -42,7 +48,7 @@
   }
 
   .nav-link {
-    @apply font-body text-sm font-medium text-walnut/80 transition hover:text-wine;
+    @apply font-body text-sm font-medium text-walnut/80 transition hover:text-wine whitespace-nowrap;
   }
 
   .field-label {
@@ -99,13 +105,219 @@
   }
 
   .brasapoints-actions {
-    @apply mt-10 flex flex-col gap-4 sm:flex-row;
+    @apply mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row;
   }
 
   .brasapoints-actions .btn-secondary {
     @apply border-cream/40 text-cream hover:bg-cream/10;
   }
+
+  .faq-section {
+    @apply bg-parchment py-20;
+  }
+
+  .faq-container {
+    @apply mx-auto max-w-5xl px-6 lg:px-8;
+  }
+
+  .faq-header {
+    @apply mx-auto max-w-3xl text-center;
+  }
+
+  .faq-header h2 {
+    @apply mt-3 text-3xl font-semibold text-wine sm:text-4xl;
+  }
+
+  .faq-list {
+    @apply mt-12 space-y-4;
+  }
+
+  .faq-item {
+    @apply overflow-hidden rounded-2xl border border-walnut/10 bg-white shadow-sm transition-all duration-200;
+  }
+
+  .faq-question {
+    @apply flex w-full items-center justify-between gap-4 bg-transparent px-5 py-4 text-left font-body text-lg font-semibold text-walnut transition hover:text-wine focus-visible:outline-none;
+  }
+
+  .faq-question::after {
+    content: "+";
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgba(176, 141, 87, 0.1);
+    color: #6e2c3b;
+    font-size: 1.5rem;
+    line-height: 1;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+  }
+
+  .faq-item.open .faq-question::after {
+    content: "−";
+  }
+
+  .faq-answer {
+    @apply border-t border-walnut/10 px-5 py-4 text-base leading-relaxed text-walnut/80;
+  }
+
+  .faq-answer[hidden] {
+    display: none;
+  }
+
+  .faq-actions {
+    @apply mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row;
+  }
+
+  .chat-toggle {
+    @apply fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-wine text-2xl text-cream shadow-lg transition hover:scale-105 hover:bg-wine/90 focus-visible:ring-2 focus-visible:ring-brass;
+  }
+
+  .chat-menu {
+    @apply fixed bottom-24 right-6 z-40 w-72 overflow-hidden rounded-2xl border border-walnut/10 bg-white shadow-xl;
+  }
+
+  .chat-option-item {
+    @apply flex w-full items-center justify-between border-b border-walnut/5 bg-white px-4 py-3 text-left text-sm font-medium text-walnut transition hover:bg-cream;
+  }
+
+  .chat-option-item:last-child {
+    @apply border-b-0;
+  }
+
+  .chat-window {
+    @apply fixed bottom-24 right-6 z-40 w-[min(90vw,22rem)] overflow-hidden rounded-2xl border border-walnut/10 bg-cream shadow-xl;
+  }
+
+  .chat-header {
+    @apply flex items-center justify-between gap-4 border-b border-walnut/10 bg-wine px-4 py-3 text-cream;
+  }
+
+  .chat-header strong {
+    @apply block text-sm font-semibold;
+  }
+
+  .chat-header span {
+    @apply block text-xs opacity-80;
+  }
+
+  .chat-close {
+    @apply flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-lg text-cream transition hover:bg-white/20;
+  }
+
+  .chat-messages {
+    @apply max-h-80 space-y-3 overflow-y-auto bg-cream p-4;
+  }
+
+  .chat-message {
+    @apply max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed;
+  }
+
+  .chat-message.user {
+    @apply ml-auto bg-wine text-cream;
+  }
+
+  .chat-message.assistant {
+    @apply mr-auto bg-white text-walnut ring-1 ring-walnut/10;
+  }
+
+  .chat-form {
+    @apply flex gap-2 border-t border-walnut/10 bg-white p-3;
+  }
+
+  .chat-form input {
+    @apply w-full rounded-md border border-walnut/15 bg-cream px-3 py-2 text-sm text-walnut placeholder:text-walnut/40 focus:border-wine focus:outline-none focus-visible:ring-2 focus-visible:ring-brass;
+  }
+
+  .chat-form button {
+    @apply rounded-md bg-wine px-3 py-2 text-sm font-semibold text-cream transition hover:bg-wine/90;
+  }
+
+  .about-gallery {
+    position: relative;
+  }
+
+  .about-carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(34, 27, 22, 0.08);
+    border-radius: 1.5rem;
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(34, 27, 22, 0.08);
+  }
+
+  .about-carousel-track {
+    display: flex;
+    width: 100%;
+    gap: 0.875rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #ffffff;
+  }
+
+  .about-carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .about-carousel-slide {
+    position: relative;
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    overflow: hidden;
+    border-radius: 1rem;
+  }
+
+  .about-carousel-slide img {
+    display: block;
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    border-radius: 1rem;
+  }
+
+  .about-carousel-btn {
+    z-index: 10;
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(34, 27, 22, 0.18);
+    background: rgba(255, 255, 255, 0.9);
+    color: #221b16;
+    font-size: 2rem;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(34, 27, 22, 0.08);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .about-carousel-btn:hover {
+    background: rgba(248, 242, 231, 0.95);
+  }
+
+  .about-carousel-btn:focus-visible {
+    outline: 3px solid theme("colors.brass");
+    outline-offset: 2px;
+  }
 }
+
+@media (min-width: 768px) {
+  .about-carousel-slide img {
+    height: 480px;
+  }
+}
+
 .fade-up {
   opacity: 0;
   transform: translateY(40px);
