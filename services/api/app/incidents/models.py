@@ -91,6 +91,13 @@ class Incident(IncidentBase):
     id: int
 
 
+class IncidentSummaryResponse(BaseModel):
+    total: int
+    by_status: dict[str, int]
+    by_origin: dict[str, int]
+    by_category: dict[str, int]
+
+
 class IncidentRecord(SQLModel, table=True):
     __tablename__ = "incidents"
 

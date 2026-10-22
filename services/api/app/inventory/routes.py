@@ -11,6 +11,7 @@ from .schemas import (
     MovementCreate,
     MovementResponse,
     AdjustmentCreate,
+    InventoryMovementSummaryResponse,
 )
 from .services import calculate_stock, calculate_stocks
 
@@ -356,7 +357,7 @@ def create_adjustment(
 # ORDERS / MOVEMENTS
 # ---------------------------------------------------------
 
-@router.get("/orders")
+@router.get("/orders", response_model=list[InventoryMovementSummaryResponse])
 def list_orders(
     session: Session = Depends(get_db),
     current_user=Depends(get_current_inventory_user),

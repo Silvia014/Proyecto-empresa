@@ -72,6 +72,18 @@ class MovementResponse(BaseModel):
     user_uuid: str
 
 
+class InventoryMovementSummaryResponse(BaseModel):
+    id: int
+    item_id: int
+    product_name: str
+    movement_type: str
+    quantity: float
+    lot_id: Optional[int] = None
+    reason: Optional[str] = None
+    created_at: datetime
+    user_uuid: str
+
+
 class LotCreate(BaseModel):
     item_id: int
     lot_code: str
