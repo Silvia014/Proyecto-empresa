@@ -14,6 +14,7 @@ from .models import (
     IncidentCreate,
     IncidentOrigin,
     IncidentStatus,
+    IncidentSummaryResponse,
 )
 
 
@@ -60,7 +61,7 @@ def list_incidents_endpoint(
     )
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=IncidentSummaryResponse)
 def incident_summary():
     incidents = list_incidents()
 
