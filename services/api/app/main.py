@@ -1,5 +1,7 @@
 from typing import Optional
 import os
+import time
+import logging
 from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
@@ -23,7 +25,6 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional
 from .inventory.routes import router as inventory_router
 
 from .crud import (
@@ -36,8 +37,23 @@ from .crud import (
 )
 from .models import Supplier, SupplierCreate, SupplierStatus
 
-
 app = FastAPI(title="Brasaland Supplier Directory API")
+logger = logging.getLogger("api.timing")
+
+@app.middleware("http")
+async def timing_middleware(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration = (time.perf_counter() - start) * 1000
+
+    logger.info(
+        "%s %s → %s | %.1fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration,
+    )
+    return response
 create_db_and_tables()
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(

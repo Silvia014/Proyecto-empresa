@@ -13,7 +13,7 @@ from .schemas import (
     AdjustmentCreate,
     InventoryMovementSummaryResponse,
 )
-from .services import calculate_stock, calculate_stocks
+from .services import calculate_stock, calculate_stocks, invalidate_stock_cache
 
 
 router = APIRouter(
@@ -94,6 +94,7 @@ def create_product(
 
     session.add(item)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(item)
 
     return {
@@ -189,6 +190,7 @@ def create_inbound(
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
 
     return {
@@ -263,6 +265,7 @@ def create_outbound(
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
 
     return {
@@ -339,6 +342,7 @@ def create_adjustment(
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
 
     return {
