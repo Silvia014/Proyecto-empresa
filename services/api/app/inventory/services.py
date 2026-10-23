@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
-
 from .models import InventoryItem, InventoryMovement
+from functools import lru_cache
 
 
 def calculate_stock(
