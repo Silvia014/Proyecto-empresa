@@ -1,0 +1,1882 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brasaland.example/schemas/telemetry/event-schemas.json",
+  "title": "Brasaland Telemetry Event",
+  "description": "Standard event envelope and strict per-event payload allowlists. This is a design contract, not proof that events are instrumented.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "timestamp",
+    "sessionId",
+    "userId",
+    "event_type",
+    "schemaVersion",
+    "requestId",
+    "properties"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sessionId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "userId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "inbound_order_created",
+        "outbound_order_created",
+        "stock_waste_registered",
+        "stock_threshold_triggered",
+        "direct_stock_edit_rejected",
+        "ingredient_price_variance_detected",
+        "inbound_order_validation_failed",
+        "outbound_order_validation_failed",
+        "inventory_order_submitted",
+        "inventory_flow_abandoned",
+        "minimum_stock_alert_acknowledged",
+        "supplier_delivery_recorded",
+        "supplier_price_updated",
+        "inventory_threshold_configuration_changed",
+        "login_succeeded",
+        "login_failed",
+        "session_expired",
+        "permission_denied",
+        "api_request_completed",
+        "api_request_failed",
+        "database_operation_slow",
+        "frontend_action_failed",
+        "frontend_route_viewed",
+        "frontend_flow_step_completed",
+        "frontend_flow_abandoned",
+        "telemetry_event_dropped",
+        "telemetry_schema_validation_failed"
+      ]
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "properties": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "inbound_order_created"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_inbound_order_created"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "outbound_order_created"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_outbound_order_created"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "stock_waste_registered"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_stock_waste_registered"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "stock_threshold_triggered"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_stock_threshold_triggered"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "direct_stock_edit_rejected"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_direct_stock_edit_rejected"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "ingredient_price_variance_detected"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_ingredient_price_variance_detected"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "inbound_order_validation_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_inbound_order_validation_failed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "outbound_order_validation_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_outbound_order_validation_failed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "inventory_order_submitted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_inventory_order_submitted"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "inventory_flow_abandoned"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_inventory_flow_abandoned"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "minimum_stock_alert_acknowledged"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_minimum_stock_alert_acknowledged"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "supplier_delivery_recorded"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_supplier_delivery_recorded"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "supplier_price_updated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_supplier_price_updated"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "inventory_threshold_configuration_changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_inventory_threshold_configuration_changed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "login_succeeded"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_login_succeeded"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "login_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_login_failed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "session_expired"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_session_expired"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "permission_denied"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_permission_denied"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "api_request_completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_api_request_completed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "api_request_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_api_request_failed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "database_operation_slow"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_database_operation_slow"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "frontend_action_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_frontend_action_failed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "frontend_route_viewed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_frontend_route_viewed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "frontend_flow_step_completed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_frontend_flow_step_completed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "frontend_flow_abandoned"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_frontend_flow_abandoned"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "telemetry_event_dropped"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_telemetry_event_dropped"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "telemetry_schema_validation_failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "properties": {
+            "$ref": "#/$defs/payload_telemetry_schema_validation_failed"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "payload_inbound_order_created": {
+      "title": "inbound_order_created properties",
+      "description": "Mandatory: confirmed inbound delivery, supporting purchasing analysis.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "supplier_id",
+        "order_id",
+        "unit_cost",
+        "total_cost"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "order_id": {
+          "type": "string"
+        },
+        "unit_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "total_cost": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "payload_outbound_order_created": {
+      "title": "outbound_order_created properties",
+      "description": "Mandatory: confirmed outbound ingredient consumption.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "order_id",
+        "reason"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "order_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "consumption"
+          ]
+        }
+      }
+    },
+    "payload_stock_waste_registered": {
+      "title": "stock_waste_registered properties",
+      "description": "Mandatory: registered stock waste with a controlled reason.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "order_id",
+        "reason"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "order_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "expired",
+            "kitchen_error",
+            "theft_suspected"
+          ]
+        }
+      }
+    },
+    "payload_stock_threshold_triggered": {
+      "title": "stock_threshold_triggered properties",
+      "description": "Mandatory: current stock has crossed below the configured minimum.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "threshold_quantity"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "threshold_quantity": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "payload_direct_stock_edit_rejected": {
+      "title": "direct_stock_edit_rejected properties",
+      "description": "Mandatory: a direct stock modification attempt was rejected.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "rejection_code",
+        "source"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "rejection_code": {
+          "type": "string",
+          "enum": [
+            "direct_edit_forbidden",
+            "permission_denied",
+            "invalid_movement"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "api",
+            "ui"
+          ]
+        }
+      }
+    },
+    "payload_ingredient_price_variance_detected": {
+      "title": "ingredient_price_variance_detected properties",
+      "description": "Mandatory: an ingredient's unit cost breached its configured variance threshold.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "product_category",
+        "quantity",
+        "unit",
+        "currency",
+        "supplier_id",
+        "current_unit_cost",
+        "reference_unit_cost",
+        "variance_percent",
+        "threshold_percent"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "product_category": {
+          "type": "string",
+          "enum": [
+            "protein",
+            "vegetable",
+            "sauce",
+            "beverage",
+            "packaging",
+            "cleaning"
+          ]
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "current_unit_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reference_unit_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "variance_percent": {
+          "type": "number"
+        },
+        "threshold_percent": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "payload_inbound_order_validation_failed": {
+      "title": "inbound_order_validation_failed properties",
+      "description": "Proposed: inbound order validation failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "validation_code",
+        "field_name",
+        "source"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validation_code": {
+          "type": "string"
+        },
+        "field_name": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "api",
+            "ui"
+          ]
+        }
+      }
+    },
+    "payload_outbound_order_validation_failed": {
+      "title": "outbound_order_validation_failed properties",
+      "description": "Proposed: outbound validation failed, for example because of insufficient stock.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "validation_code",
+        "field_name",
+        "source",
+        "requested_quantity",
+        "available_quantity",
+        "unit"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validation_code": {
+          "type": "string"
+        },
+        "field_name": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "api",
+            "ui"
+          ]
+        },
+        "requested_quantity": {
+          "type": "number"
+        },
+        "available_quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        }
+      }
+    },
+    "payload_inventory_order_submitted": {
+      "title": "inventory_order_submitted properties",
+      "description": "Proposed: an inventory order workflow was submitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_kind",
+        "location_id",
+        "country",
+        "source"
+      ],
+      "properties": {
+        "order_kind": {
+          "type": "string",
+          "enum": [
+            "inbound",
+            "outbound"
+          ]
+        },
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "api",
+            "ui"
+          ]
+        }
+      }
+    },
+    "payload_inventory_flow_abandoned": {
+      "title": "inventory_flow_abandoned properties",
+      "description": "Proposed: an inventory workflow was left incomplete after the defined timeout.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flow_name",
+        "last_step",
+        "elapsed_seconds",
+        "source"
+      ],
+      "properties": {
+        "flow_name": {
+          "type": "string"
+        },
+        "last_step": {
+          "type": "string"
+        },
+        "elapsed_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "api",
+            "ui"
+          ]
+        }
+      }
+    },
+    "payload_minimum_stock_alert_acknowledged": {
+      "title": "minimum_stock_alert_acknowledged properties",
+      "description": "Proposed: an operator acknowledged a minimum-stock alert.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "alert_age_seconds",
+        "acknowledgement_channel"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "alert_age_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "acknowledgement_channel": {
+          "type": "string",
+          "enum": [
+            "backoffice",
+            "email",
+            "other"
+          ]
+        }
+      }
+    },
+    "payload_supplier_delivery_recorded": {
+      "title": "supplier_delivery_recorded properties",
+      "description": "Proposed: supplier delivery timing and completion were recorded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "supplier_id",
+        "order_id",
+        "expected_at",
+        "received_at",
+        "delivery_status"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "order_id": {
+          "type": "string"
+        },
+        "expected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "delivery_status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "late",
+            "missing"
+          ]
+        }
+      }
+    },
+    "payload_supplier_price_updated": {
+      "title": "supplier_price_updated properties",
+      "description": "Proposed: the supplier's unit price was updated.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supplier_id",
+        "product_id",
+        "country",
+        "currency",
+        "previous_unit_cost",
+        "new_unit_cost",
+        "effective_at"
+      ],
+      "properties": {
+        "supplier_id": {
+          "type": "string"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "COP",
+            "USD"
+          ]
+        },
+        "previous_unit_cost": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "new_unit_cost": {
+          "type": "number",
+          "minimum": 0
+        },
+        "effective_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "payload_inventory_threshold_configuration_changed": {
+      "title": "inventory_threshold_configuration_changed properties",
+      "description": "Proposed: the configured minimum stock threshold changed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "location_id",
+        "country",
+        "product_id",
+        "old_threshold",
+        "new_threshold",
+        "unit",
+        "change_source"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "enum": [
+            "CO",
+            "US"
+          ]
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "old_threshold": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "new_threshold": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kg",
+            "g",
+            "unit",
+            "liter",
+            "ml",
+            "box",
+            "pack"
+          ]
+        },
+        "change_source": {
+          "type": "string",
+          "enum": [
+            "backoffice",
+            "api",
+            "migration"
+          ]
+        }
+      }
+    },
+    "payload_login_succeeded": {
+      "title": "login_succeeded properties",
+      "description": "Proposed: authentication succeeded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auth_method",
+        "client_type",
+        "country",
+        "outcome"
+      ],
+      "properties": {
+        "auth_method": {
+          "type": "string",
+          "enum": [
+            "password",
+            "sso",
+            "other"
+          ]
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile",
+            "service"
+          ]
+        },
+        "country": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "CO",
+            "US",
+            null
+          ]
+        },
+        "outcome": {
+          "const": "success"
+        }
+      }
+    },
+    "payload_login_failed": {
+      "title": "login_failed properties",
+      "description": "Proposed: authentication failed, without capturing credentials.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failure_code",
+        "auth_method",
+        "client_type",
+        "attempt_bucket"
+      ],
+      "properties": {
+        "failure_code": {
+          "type": "string",
+          "enum": [
+            "invalid_credentials",
+            "account_locked",
+            "mfa_failed",
+            "provider_unavailable",
+            "unknown"
+          ]
+        },
+        "auth_method": {
+          "type": "string",
+          "enum": [
+            "password",
+            "sso",
+            "other"
+          ]
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile",
+            "service"
+          ]
+        },
+        "attempt_bucket": {
+          "type": "string",
+          "enum": [
+            "1",
+            "2-3",
+            "4-5",
+            "6+"
+          ]
+        }
+      }
+    },
+    "payload_session_expired": {
+      "title": "session_expired properties",
+      "description": "Proposed: a user session expired.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_age_seconds",
+        "client_type",
+        "route_group",
+        "expiry_reason"
+      ],
+      "properties": {
+        "session_age_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile",
+            "service"
+          ]
+        },
+        "route_group": {
+          "type": "string"
+        },
+        "expiry_reason": {
+          "type": "string",
+          "enum": [
+            "idle_timeout",
+            "absolute_timeout",
+            "revoked",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "payload_permission_denied": {
+      "title": "permission_denied properties",
+      "description": "Proposed: an action was denied by an authorisation rule.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_name",
+        "resource_type",
+        "reason_code",
+        "client_type"
+      ],
+      "properties": {
+        "action_name": {
+          "type": "string"
+        },
+        "resource_type": {
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "role_missing",
+            "scope_missing",
+            "resource_forbidden",
+            "unknown"
+          ]
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile",
+            "service"
+          ]
+        }
+      }
+    },
+    "payload_api_request_completed": {
+      "title": "api_request_completed properties",
+      "description": "Proposed: API request timing and result were recorded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_template",
+        "method",
+        "status_code",
+        "duration_ms",
+        "response_size_bucket",
+        "client_type"
+      ],
+      "properties": {
+        "route_template": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "status_code": {
+          "type": "integer",
+          "minimum": 100
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "response_size_bucket": {
+          "type": "string",
+          "enum": [
+            "0-1kb",
+            "1-10kb",
+            "10-100kb",
+            "100kb+"
+          ]
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile",
+            "service"
+          ]
+        }
+      }
+    },
+    "payload_api_request_failed": {
+      "title": "api_request_failed properties",
+      "description": "Proposed: an API request failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_template",
+        "method",
+        "status_code",
+        "error_code",
+        "dependency"
+      ],
+      "properties": {
+        "route_template": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "status_code": {
+          "type": "integer",
+          "minimum": 400
+        },
+        "error_code": {
+          "type": "string"
+        },
+        "dependency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "payload_database_operation_slow": {
+      "title": "database_operation_slow properties",
+      "description": "Proposed: a database operation exceeded a latency threshold.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_name",
+        "duration_ms",
+        "table_group",
+        "result_count_bucket"
+      ],
+      "properties": {
+        "operation_name": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "table_group": {
+          "type": "string"
+        },
+        "result_count_bucket": {
+          "type": "string",
+          "enum": [
+            "0",
+            "1-10",
+            "11-100",
+            "101+"
+          ]
+        }
+      }
+    },
+    "payload_frontend_action_failed": {
+      "title": "frontend_action_failed properties",
+      "description": "Proposed: a frontend action failed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_name",
+        "route_group",
+        "error_code",
+        "client_type"
+      ],
+      "properties": {
+        "action_name": {
+          "type": "string"
+        },
+        "route_group": {
+          "type": "string"
+        },
+        "error_code": {
+          "type": "string"
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile"
+          ]
+        }
+      }
+    },
+    "payload_frontend_route_viewed": {
+      "title": "frontend_route_viewed properties",
+      "description": "Proposed: a user viewed an application route.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_group",
+        "client_type",
+        "language",
+        "entry_source"
+      ],
+      "properties": {
+        "route_group": {
+          "type": "string"
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "es",
+            "en",
+            "other"
+          ]
+        },
+        "entry_source": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "internal_navigation",
+            "external_referral"
+          ]
+        }
+      }
+    },
+    "payload_frontend_flow_step_completed": {
+      "title": "frontend_flow_step_completed properties",
+      "description": "Proposed: a step in a user workflow was completed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flow_name",
+        "step_name",
+        "step_index",
+        "client_type"
+      ],
+      "properties": {
+        "flow_name": {
+          "type": "string"
+        },
+        "step_name": {
+          "type": "string"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile"
+          ]
+        }
+      }
+    },
+    "payload_frontend_flow_abandoned": {
+      "title": "frontend_flow_abandoned properties",
+      "description": "Proposed: a frontend workflow was abandoned.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flow_name",
+        "last_step",
+        "elapsed_seconds",
+        "client_type"
+      ],
+      "properties": {
+        "flow_name": {
+          "type": "string"
+        },
+        "last_step": {
+          "type": "string"
+        },
+        "elapsed_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "client_type": {
+          "type": "string",
+          "enum": [
+            "web",
+            "mobile"
+          ]
+        }
+      }
+    },
+    "payload_telemetry_event_dropped": {
+      "title": "telemetry_event_dropped properties",
+      "description": "Proposed: telemetry events were dropped at a pipeline stage.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason_code",
+        "event_type",
+        "pipeline_stage",
+        "dropped_count"
+      ],
+      "properties": {
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "queue_full",
+            "serialization_failed",
+            "transport_error",
+            "retention_policy"
+          ]
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "pipeline_stage": {
+          "type": "string",
+          "enum": [
+            "client",
+            "api",
+            "queue",
+            "storage"
+          ]
+        },
+        "dropped_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "payload_telemetry_schema_validation_failed": {
+      "title": "telemetry_schema_validation_failed properties",
+      "description": "Proposed: an event failed schema validation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_type",
+        "schema_version",
+        "validation_code",
+        "source"
+      ],
+      "properties": {
+        "event_type": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "validation_code": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "frontend",
+            "backend",
+            "consumer"
+          ]
+        }
+      }
+    }
+  }
+}
