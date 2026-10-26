@@ -854,10 +854,7 @@
           ]
         },
         "product_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": "string",
           "maxLength": 128
         },
         "product_category": {

@@ -59,15 +59,15 @@ The following six events are mandatory according to the Brasaland briefing. They
 | `event_type` | When it fires | Hypothesis and decision enabled | Main event-specific properties | Processing |
 |---|---|---|---|---|
 | `inbound_order_created` | A supplier delivery is successfully received and recorded at a location. | Consolidate purchasing quantities and costs by location and supplier to negotiate prices and improve replenishment decisions. | `location_id`, `country`, `product_id`, `product_category`, `quantity`, `unit`, `currency`, `supplier_id`, `order_id`, `unit_cost`, `total_cost`. | Stream for operational visibility; daily and weekly batch aggregation for purchasing analysis. |
-| `outbound_order_created` | An outbound order for ingredient consumption is successfully recorded. | Identify the ingredients consumed most frequently and their consumption rates by location to improve replenishment suggestions. | Required inventory properties, `order_id`, `reason`. | Stream for operational stock visibility; batch for trends. |
-| `stock_waste_registered` | Inventory waste is recorded. | Identify products, causes, and locations with high losses to prioritise waste audits. | Required inventory properties, `reason`, and `order_id` when available. | Stream for relevant operational events; batch for analysis. |
-| `stock_threshold_triggered` | A product's stock falls below its configured minimum threshold. | Detect stockout risk and adjust minimum thresholds or replenishment frequency. | `location_id`, `country`, `product_id`, `product_category`, `quantity` (current stock), `unit`, `threshold_quantity`. | Stream, because action may be urgent. |
-| `direct_stock_edit_rejected` | The system rejects an attempt to modify stock directly. | Detect attempts to bypass traceability controls and reinforce permissions or training. | `location_id`, `country`, `product_id` if known, `rejection_code`, `source`. | Stream for audit visibility and batch aggregation for trends. |
-| `ingredient_price_variance_detected` | The unit cost of an inbound ingredient exceeds a configured threshold against a comparable historical price for that product and supplier. | Detect abnormal price increases so Procurement can review or renegotiate supplier terms. | `location_id`, `country`, `product_id`, `product_category`, `supplier_id`, `currency`, `current_unit_cost`, `reference_unit_cost`, `variance_percent`, `threshold_percent`. | Stream when the threshold is breached; batch for price trends. |
+| `outbound_order_created` | An outbound order for ingredient consumption is successfully recorded. | Identify the ingredients consumed most frequently and their consumption rates by location to improve replenishment suggestions. | All mandatory inventory properties (`location_id`, `country`, `product_id`, `product_category`, `quantity`, `unit`, `currency`), plus `order_id` and `reason`. | Stream for operational stock visibility; batch for trends. |
+| `stock_waste_registered` | Inventory waste is recorded. | Identify products, causes, and locations with high losses to prioritise waste audits. | All mandatory inventory properties (`location_id`, `country`, `product_id`, `product_category`, `quantity`, `unit`, `currency`), plus `reason` and `order_id` (use `null` when no order can be associated). | Stream for relevant operational events; batch for analysis. |
+| `stock_threshold_triggered` | A product's stock falls below its configured minimum threshold. | Detect stockout risk and adjust minimum thresholds or replenishment frequency. | All mandatory inventory properties (`location_id`, `country`, `product_id`, `product_category`, `quantity` as current stock, `unit`, `currency`), plus `threshold_quantity`. | Stream, because action may be urgent. |
+| `direct_stock_edit_rejected` | The system rejects an attempt to modify stock directly. | Detect attempts to bypass traceability controls and reinforce permissions or training. | All mandatory inventory properties (`location_id`, `country`, `product_id`, `product_category`, `quantity` as the attempted quantity, `unit`, `currency`), plus `rejection_code` and `source`. | Stream for audit visibility and batch aggregation for trends. |
+| `ingredient_price_variance_detected` | The unit cost of an inbound ingredient exceeds a configured threshold against a comparable historical price for that product and supplier. | Detect abnormal price increases so Procurement can review or renegotiate supplier terms. | All mandatory inventory properties (`location_id`, `country`, `product_id`, `product_category`, `quantity` received, `unit`, `currency`), plus `supplier_id`, `current_unit_cost`, `reference_unit_cost`, `variance_percent`, and `threshold_percent`. | Stream when the threshold is breached; batch for price trends. |
 
 ### 4.1. Mandatory Inventory Properties
 
-As specified by the Brasaland briefing, inventory events must include the applicable fields:
+As specified by the Brasaland briefing, **all six mandatory inventory events must include every field listed below**, even when a field is not the event's primary analytical measure. The event-specific payload must also include the additional fields listed in the table above:
 
 - `location_id`
 - `country`: `CO` or `US`
@@ -77,7 +77,7 @@ As specified by the Brasaland briefing, inventory events must include the applic
 - `unit`
 - `currency`: `COP` or `USD`
 
-In addition, `outbound_order_created` and `stock_waste_registered` must include `reason`.
+The field `product_id` must be populated for `direct_stock_edit_rejected` using the product targeted by the attempted change; it must not be omitted or set to `null`. For `stock_waste_registered`, include the `order_id` key and use `null` when no order can be associated. In addition, `outbound_order_created` and `stock_waste_registered` must include `reason`.
 
 For an outbound order representing kitchen consumption, use `reason = consumption`. For recorded waste, restrict the reason to:
 
