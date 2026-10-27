@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from ..auth.supabase_dependencies import get_current_inventory_user
 from ..database import get_db
 
-from .models import InventoryItem, InventoryMovement, InventoryLot
+from .models import InventoryItem, InventoryMovement, InventoryLot, Location
 from .schemas import (
     ProductCreate,
     ProductResponse,
@@ -14,6 +14,7 @@ from .schemas import (
     InventoryMovementSummaryResponse,
 )
 from .services import calculate_stock, calculate_stocks, invalidate_stock_cache
+from ..telemetry import record_internal_event
 
 
 router = APIRouter(
@@ -268,6 +269,46 @@ def create_outbound(
     invalidate_stock_cache()
     session.refresh(record)
 
+    # Emit telemetry when an outbound movement represents recognized waste.
+    waste_reasons = {"expired", "kitchen_error", "theft_suspected"}
+    normalized_reason = (record.reason or "").strip().lower()
+
+    if normalized_reason in waste_reasons:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "stock_waste_registered",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": location.country if location else None,
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": record.quantity,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "reason": normalized_reason,
+            },
+        )
+
+    new_stock = calculate_stock(session, movement.item_id)
+    if current_stock > item.reorder_point and new_stock <= item.reorder_point:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "stock_threshold_triggered",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": location.country if location else None,
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": new_stock,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "previous_stock": current_stock,
+                "reorder_point": item.reorder_point,
+            },
+        )
+
     return {
         "id": record.id,
         "item_id": record.item_id,
@@ -322,6 +363,22 @@ def create_adjustment(
     new_stock = current_stock + movement.quantity
 
     if new_stock < 0:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "direct_stock_edit_rejected",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": location.country if location else None,
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": movement.quantity,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "current_stock": current_stock,
+                "reason": "adjustment_would_make_stock_negative",
+            },
+        )
         raise HTTPException(
             status_code=400,
             detail=(

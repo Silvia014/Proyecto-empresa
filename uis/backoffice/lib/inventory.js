@@ -66,18 +66,81 @@ async function getProducts() {
     return inventoryRequest("/inventory/products");
 }
 
-async function createInbound(data) {
-    return inventoryRequest("/inventory/orders/inbound", {
-        method: "POST",
-        body: JSON.stringify(data),
+async function getTelemetryContext(itemId) {
+    const product = (await getProducts()).find(
+        item => item.id === Number(itemId)
+    );
+
+    let userId = null;
+
+    try {
+        const { data } = await supabaseClient.auth.getSession();
+        userId = data?.session?.user?.id ?? null;
+    } catch (error) {
+        console.warn("[Telemetry] Could not read user ID:", error);
+    }
+
+    return { product, userId };
+}
+
+function trackInventoryEvent(eventType, product, quantity, reason, userId) {
+    if (!window.TelemetryService || !product) return;
+
+    window.TelemetryService.track(eventType, {
+        location_id: product.location_id,
+        country: product.country ?? null,
+        product_id: product.id,
+        product_category: product.category ?? null,
+        quantity,
+        unit: product.unit_of_measure ?? null,
+        currency: product.currency ?? null,
+        ...(reason ? { reason } : {}),
+        ...(userId ? { userId } : {}),
     });
 }
 
-async function createOutbound(data) {
-    return inventoryRequest("/inventory/orders/outbound", {
+async function createInbound(data) {
+    const result = await inventoryRequest("/inventory/orders/inbound", {
         method: "POST",
         body: JSON.stringify(data),
     });
+
+    try {
+        const { product, userId } = await getTelemetryContext(data.item_id);
+        trackInventoryEvent(
+            "inbound_order_created",
+            product,
+            data.quantity,
+            data.reason,
+            userId
+        );
+    } catch (error) {
+        console.warn("[Telemetry] Could not record inbound order:", error);
+    }
+
+    return result;
+}
+
+async function createOutbound(data) {
+    const result = await inventoryRequest("/inventory/orders/outbound", {
+        method: "POST",
+        body: JSON.stringify(data),
+    });
+
+    try {
+        const { product, userId } = await getTelemetryContext(data.item_id);
+        trackInventoryEvent(
+            "outbound_order_created",
+            product,
+            data.quantity,
+            data.reason,
+            userId
+        );
+    } catch (error) {
+        console.warn("[Telemetry] Could not record outbound order:", error);
+    }
+
+    return result;
 }
 
 async function getOrders() {
