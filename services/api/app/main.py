@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
 from .incidents.models import IncidentRecord
+from .telemetry import router as telemetry_router
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -81,6 +82,7 @@ app.include_router(profiles_router)
 app.include_router(auth_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
+app.include_router(telemetry_router)
 
 app.add_middleware(
     CORSMiddleware,
