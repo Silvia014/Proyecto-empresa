@@ -192,7 +192,17 @@ def test_telemetry_batch_stores_valid_events_and_counts_rejections(monkeypatch):
                     "event_type": "outbound_order_created",
                     "schemaVersion": "1.0",
                     "requestId": "test-request",
-                    "properties": {"product_id": 12},
+                    "properties": {
+                        "location_id": "TEST-01",
+                        "country": "CO",
+                        "product_id": 12,
+                        "product_category": "produce",
+                        "quantity": 2,
+                        "unit": "kg",
+                        "currency": "COP",
+                        "order_id": 101,
+                        "reason": "consumption",
+                    },
                 },
                 {"event_type": "not_a_real_event"},
             ]
