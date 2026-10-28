@@ -197,6 +197,8 @@ def create_inbound(
         movement_type="inbound",
         quantity=movement.quantity,
         reason=movement.reason,
+        supplier_id=movement.supplier_id,
+        unit_cost=movement.unit_cost,
         user_uuid=str(current_user["id"]),
     )
 
