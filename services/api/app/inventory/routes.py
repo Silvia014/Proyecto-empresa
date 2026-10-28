@@ -466,7 +466,6 @@ def create_adjustment(
                 "quantity": movement.quantity,
                 "unit": item.unit_of_measure,
                 "currency": location.currency if location else None,
-                "current_stock": current_stock,
                 "rejection_code": "adjustment_would_make_stock_negative",
                 "source": "inventory_adjustment",
             },
