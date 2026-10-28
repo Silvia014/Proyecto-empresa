@@ -228,7 +228,10 @@ def receive_telemetry(batch: dict[str, Any]):
         try:
             event = TelemetryEvent.model_validate(raw_event)
             allowed = EVENT_PROPERTY_ALLOWLIST[event.event_type]
-            if set(event.properties) - allowed:
+            if (
+                set(event.properties) - allowed
+                or not allowed.issubset(event.properties)
+            ):
                 rejected += 1
                 continue
             valid_events.append(event)
