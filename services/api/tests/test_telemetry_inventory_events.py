@@ -5,6 +5,7 @@ from app.inventory import routes as inventory_routes
 from app.inventory.models import InventoryItem, InventoryMovement, Location
 from app.inventory.schemas import AdjustmentCreate, MovementCreate
 from app.inventory.services import invalidate_stock_cache
+from app import telemetry
 
 
 def make_session():
@@ -147,3 +148,57 @@ def test_rejected_direct_stock_edit_emits_audit_event(monkeypatch):
     assert properties["product_id"] == item.id
     assert properties["rejection_code"] == "adjustment_would_make_stock_negative"
     assert properties["source"] == "inventory_adjustment"
+
+
+
+def test_telemetry_batch_stores_valid_events_and_counts_rejections(monkeypatch):
+    class FakeResult:
+        rowcount = 1
+
+    class FakeSession:
+        def __init__(self, engine):
+            self.executed = []
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def execute(self, statement, params):
+            self.executed.append(params)
+            return FakeResult()
+
+        def commit(self):
+            pass
+
+    recorded = []
+    monkeypatch.setattr(telemetry, "Session", FakeSession)
+    monkeypatch.setattr(
+        telemetry,
+        "record_internal_event",
+        lambda event_type, user_id, properties, **kwargs: recorded.append(
+            (event_type, properties)
+        ),
+    )
+
+    response = telemetry.receive_telemetry(
+        {
+            "events": [
+                {
+                    "eventId": "e78b31b0-2e9d-4b7b-9e0f-4e9d08b3f6d1",
+                    "sessionId": "test-session",
+                    "timestamp": "2026-10-28T07:00:00Z",
+                    "event_type": "outbound_order_created",
+                    "schemaVersion": "1.0",
+                    "requestId": "test-request",
+                    "properties": {"product_id": 12},
+                },
+                {"event_type": "not_a_real_event"},
+            ]
+        }
+    )
+
+    assert response == {"received": 2, "stored": 1, "rejected": 1}
+    assert recorded[0][0] == "telemetry_schema_validation_failed"
+    assert recorded[0][1]["rejected_count"] == 1
