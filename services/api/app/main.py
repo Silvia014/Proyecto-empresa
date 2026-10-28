@@ -49,7 +49,7 @@ async def timing_middleware(request: Request, call_next):
         response = await call_next(request)
         duration_ms = round((time.perf_counter() - start) * 1000, 2)
         route = request.scope.get("route")
-        route_template = getattr(route, "path", request.url.path)
+        route_template = getattr(route, "path", "unmatched_route")
         status_code = response.status_code
 
         logger.info(
