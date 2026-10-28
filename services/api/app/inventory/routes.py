@@ -396,7 +396,6 @@ def create_outbound(
                 "quantity": new_stock,
                 "unit": item.unit_of_measure,
                 "currency": location.currency if location else None,
-                "previous_stock": current_stock,
                 "threshold_quantity": item.reorder_point,
             },
         )
