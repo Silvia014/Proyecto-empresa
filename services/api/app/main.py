@@ -72,7 +72,9 @@ async def timing_middleware(request: Request, call_next):
                 "api_request_failed",
                 None,
                 {
-                    **properties,
+                    "route_template": route_template,
+                    "method": request.method,
+                    "status_code": status_code,
                     "error_code": f"http_{status_code}",
                     "dependency": "api",
                 },
