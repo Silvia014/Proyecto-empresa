@@ -6,7 +6,12 @@ from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
 from .incidents.models import IncidentRecord
+<<<<<<< HEAD
+from .telemetry import router as telemetry_router, record_internal_event
+=======
 from .telemetry import router as telemetry_router
+from app.telemetry_report import router as telemetry_report_router
+>>>>>>> ffa9a06 (push para lectura del agente)
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -39,22 +44,66 @@ from .crud import (
 from .models import Supplier, SupplierCreate, SupplierStatus
 
 app = FastAPI(title="Brasaland Supplier Directory API")
+app.include_router(telemetry_report_router)
 logger = logging.getLogger("api.timing")
 
 @app.middleware("http")
 async def timing_middleware(request: Request, call_next):
     start = time.perf_counter()
-    response = await call_next(request)
-    duration = (time.perf_counter() - start) * 1000
+    route_template = None
+    try:
+        response = await call_next(request)
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        route = request.scope.get("route")
+        route_template = getattr(route, "path", "unmatched_route")
+        status_code = response.status_code
 
-    logger.info(
-        "%s %s → %s | %.1fms",
-        request.method,
-        request.url.path,
-        response.status_code,
-        duration,
-    )
-    return response
+        logger.info(
+            "%s %s → %s | %.1fms",
+            request.method,
+            route_template,
+            status_code,
+            duration_ms,
+        )
+        properties = {
+            "route_template": route_template,
+            "method": request.method,
+            "status_code": status_code,
+            "duration_ms": duration_ms,
+            "response_size_bucket": "unknown",
+            "client_type": "api",
+        }
+        if status_code >= 500:
+            record_internal_event(
+                "api_request_failed",
+                None,
+                {
+                    "route_template": route_template,
+                    "method": request.method,
+                    "status_code": status_code,
+                    "error_code": f"http_{status_code}",
+                    "dependency": "api",
+                },
+            )
+        else:
+            record_internal_event("api_request_completed", None, properties)
+        return response
+    except Exception as exc:
+        duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        route = request.scope.get("route")
+        route_template = getattr(route, "path", request.url.path)
+        record_internal_event(
+            "api_request_failed",
+            None,
+            {
+                "route_template": route_template,
+                "method": request.method,
+                "status_code": 500,
+                "error_code": type(exc).__name__,
+                "dependency": "api",
+            },
+        )
+        raise
 create_db_and_tables()
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(

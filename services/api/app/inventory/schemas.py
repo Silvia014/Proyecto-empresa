@@ -54,6 +54,9 @@ class MovementCreate(BaseModel):
     lot_id: Optional[int] = None
     quantity: float = Field(gt=0)
     reason: Optional[str] = None
+    # Optional purchasing details, accepted only for inbound movements.
+    supplier_id: Optional[int] = Field(default=None, gt=0)
+    unit_cost: Optional[float] = Field(default=None, gt=0)
 
 class AdjustmentCreate(BaseModel):
     item_id: int

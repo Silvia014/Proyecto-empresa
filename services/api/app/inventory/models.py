@@ -100,6 +100,9 @@ class InventoryMovement(SQLModel, table=True):
 
     reason: Optional[str] = None
 
+    supplier_id: Optional[int] = Field(default=None, index=True)
+    unit_cost: Optional[float] = Field(default=None, gt=0)
+
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )

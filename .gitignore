@@ -3,3 +3,7 @@
 node_modules/
 results.csv
 .venv/
+
+# Python generated files
+__pycache__/
+*.py[cod]
