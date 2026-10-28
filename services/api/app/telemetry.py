@@ -190,7 +190,11 @@ def _persist_event(
     import json
 
     allowed = EVENT_PROPERTY_ALLOWLIST.get(event_type)
-    if allowed is None or set(properties) - allowed:
+    if (
+        allowed is None
+        or set(properties) - allowed
+        or not allowed.issubset(properties)
+    ):
         raise ValueError(f"Invalid telemetry properties for event type: {event_type}")
 
     event = {
