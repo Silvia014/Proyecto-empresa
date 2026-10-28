@@ -6,7 +6,12 @@ from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
 from .incidents.models import IncidentRecord
+<<<<<<< HEAD
 from .telemetry import router as telemetry_router, record_internal_event
+=======
+from .telemetry import router as telemetry_router
+from app.telemetry_report import router as telemetry_report_router
+>>>>>>> ffa9a06 (push para lectura del agente)
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -39,6 +44,7 @@ from .crud import (
 from .models import Supplier, SupplierCreate, SupplierStatus
 
 app = FastAPI(title="Brasaland Supplier Directory API")
+app.include_router(telemetry_report_router)
 logger = logging.getLogger("api.timing")
 
 @app.middleware("http")

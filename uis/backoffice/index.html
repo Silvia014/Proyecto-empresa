@@ -504,6 +504,52 @@
         </a>
     </div>
 </section>
+<section class="panel" id="telemetry-dashboard">
+    <div class="panel-header">
+        <div>
+            <h2>Telemetry Dashboard</h2>
+            <p>Monitor application activity, errors and API performance.</p>
+        </div>
+
+        <button
+            id="telemetry-refresh-button"
+            class="secondary"
+            type="button"
+        >
+            Refresh metrics
+        </button>
+    </div>
+
+    <p
+        id="telemetry-status"
+        role="status"
+        aria-live="polite"
+    >
+        Loading telemetry...
+    </p>
+
+    <div class="telemetry-grid">
+        <article class="telemetry-card">
+            <h3>Events per day</h3>
+            <div id="events-per-day"></div>
+        </article>
+
+        <article class="telemetry-card">
+            <h3>Error rate by type</h3>
+            <div id="error-rate-by-type"></div>
+        </article>
+
+        <article class="telemetry-card">
+            <h3>API latency by day</h3>
+            <div id="api-latency-by-day"></div>
+        </article>
+
+        <article class="telemetry-card">
+            <h3>Event volume by type</h3>
+            <div id="event-volume-by-type"></div>
+        </article>
+    </div>
+</section>
 
 </section>
 
