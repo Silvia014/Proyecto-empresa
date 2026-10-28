@@ -74,12 +74,6 @@ def update_supplier_rate(
 ) -> Optional[dict]:
     import os
 
-    from .telemetry import record_internal_event
-
-    threshold_percent = float(
-        os.getenv("SUPPLIER_RATE_VARIANCE_THRESHOLD_PERCENT", "10")
-    )
-
     with Session(engine) as session:
         supplier = session.get(SupplierDirectoryRecord, supplier_id)
 

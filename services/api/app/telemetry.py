@@ -1,10 +1,11 @@
+import json
 import logging
 from datetime import datetime, timezone
 from typing import Any, Literal, Optional
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy import text
 from sqlmodel import Session
 
@@ -97,26 +98,51 @@ def _persist_event(
 
 
 @router.post("/events", status_code=200)
-def receive_telemetry(batch: TelemetryBatch):
-    import json
+def receive_telemetry(batch: dict[str, Any]):
+    raw_events = batch.get("events")
 
+    if not isinstance(raw_events, list):
+        raise HTTPException(
+            status_code=400,
+            detail="The request must contain an events array",
+        )
+
+    valid_events = []
+    rejected = 0
+
+    # Validate each event independently.
+    for raw_event in raw_events:
+        try:
+            event = TelemetryEvent.model_validate(raw_event)
+            valid_events.append(event)
+        except ValidationError:
+            rejected += 1
+
+    # Persist all valid events in one transaction.
     try:
-        with Session(engine) as session:
-            for event in batch.events:
+        if valid_events:
+            with Session(engine) as session:
                 session.execute(
                     INSERT_EVENT,
-                    {
-                        "event_id": str(event.eventId),
-                        "session_id": event.sessionId,
-                        "user_id": event.userId,
-                        "event_timestamp": event.timestamp,
-                        "event_type": event.event_type,
-                        "schema_version": event.schemaVersion,
-                        "request_id": event.requestId,
-                        "properties": json.dumps(event.properties, default=str),
-                    },
+                    [
+                        {
+                            "event_id": str(event.eventId),
+                            "session_id": event.sessionId,
+                            "user_id": event.userId,
+                            "event_timestamp": event.timestamp,
+                            "event_type": event.event_type,
+                            "schema_version": event.schemaVersion,
+                            "request_id": event.requestId,
+                            "properties": json.dumps(
+                                event.properties,
+                                default=str,
+                            ),
+                        }
+                        for event in valid_events
+                    ],
                 )
-            session.commit()
+                session.commit()
+
     except Exception as exc:
         logger.exception("Failed to persist telemetry batch")
         raise HTTPException(
@@ -124,8 +150,11 @@ def receive_telemetry(batch: TelemetryBatch):
             detail="Telemetry storage is temporarily unavailable",
         ) from exc
 
-    return {"received": len(batch.events)}
-
+    return {
+        "received": len(raw_events),
+        "stored": len(valid_events),
+        "rejected": rejected,
+    }
 
 def record_internal_event(
     event_type: str,

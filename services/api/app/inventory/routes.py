@@ -286,6 +286,7 @@ def create_outbound(
                 "quantity": record.quantity,
                 "unit": item.unit_of_measure,
                 "currency": location.currency if location else None,
+                "order_id": None,
                 "reason": normalized_reason,
             },
         )
@@ -305,7 +306,7 @@ def create_outbound(
                 "unit": item.unit_of_measure,
                 "currency": location.currency if location else None,
                 "previous_stock": current_stock,
-                "reorder_point": item.reorder_point,
+                "threshold_quantity": item.reorder_point,
             },
         )
 
@@ -376,7 +377,8 @@ def create_adjustment(
                 "unit": item.unit_of_measure,
                 "currency": location.currency if location else None,
                 "current_stock": current_stock,
-                "reason": "adjustment_would_make_stock_negative",
+                "rejection_code": "adjustment_would_make_stock_negative",
+                "source": "inventory_adjustment",
             },
         )
         raise HTTPException(
