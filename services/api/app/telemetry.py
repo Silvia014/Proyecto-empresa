@@ -54,12 +54,12 @@ class TelemetryEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     eventId: UUID
-    sessionId: str = Field(min_length=1)
+    sessionId: Optional[str] = None
     userId: Optional[str] = None
     timestamp: datetime
     event_type: EventType
     schemaVersion: str = Field(min_length=1)
-    requestId: str = Field(min_length=1)
+    requestId: Optional[str] = None
     properties: dict[str, Any]
 
 
@@ -67,6 +67,89 @@ class TelemetryBatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     events: list[TelemetryEvent] = Field(min_length=1, max_length=100)
+
+
+# Closed property allowlists from the telemetry plan. Keep personal data,
+# credentials, full URLs, and request/response bodies out of telemetry.
+EVENT_PROPERTY_ALLOWLIST: dict[str, set[str]] = {
+    "inbound_order_created": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "supplier_id", "order_id", "unit_cost", "total_cost",
+    },
+    "outbound_order_created": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "order_id", "reason",
+    },
+    "stock_waste_registered": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "reason", "order_id",
+    },
+    "stock_threshold_triggered": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "threshold_quantity",
+    },
+    "direct_stock_edit_rejected": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "rejection_code", "source",
+    },
+    "ingredient_price_variance_detected": {
+        "location_id", "country", "product_id", "product_category", "quantity",
+        "unit", "currency", "supplier_id", "current_unit_cost",
+        "reference_unit_cost", "variance_percent", "threshold_percent",
+    },
+    "inbound_order_validation_failed": {
+        "location_id", "country", "product_id", "validation_code", "field_name", "source",
+    },
+    "outbound_order_validation_failed": {
+        "location_id", "country", "product_id", "validation_code",
+        "requested_quantity", "available_quantity", "unit",
+    },
+    "inventory_order_submitted": {"order_kind", "location_id", "country", "source"},
+    "inventory_flow_abandoned": {"flow_name", "last_step", "elapsed_seconds", "source"},
+    "minimum_stock_alert_acknowledged": {
+        "location_id", "country", "product_id", "alert_age_seconds", "acknowledgement_channel",
+    },
+    "supplier_delivery_recorded": {
+        "location_id", "country", "supplier_id", "order_id", "expected_at",
+        "received_at", "delivery_status",
+    },
+    "supplier_price_updated": {
+        "supplier_id", "product_id", "country", "currency", "previous_unit_cost",
+        "new_unit_cost", "effective_at",
+    },
+    "inventory_threshold_configuration_changed": {
+        "location_id", "country", "product_id", "old_threshold", "new_threshold",
+        "unit", "change_source",
+    },
+    "login_succeeded": {"auth_method", "client_type", "outcome"},
+    "login_failed": {"failure_code", "auth_method", "client_type", "attempt_bucket"},
+    "session_expired": {"session_age_seconds", "client_type", "route_group", "expiry_reason"},
+    "permission_denied": {"action_name", "resource_type", "reason_code", "client_type"},
+    "api_request_completed": {
+        "route_template", "method", "status_code", "duration_ms",
+        "response_size_bucket", "client_type",
+    },
+    "api_request_failed": {
+        "route_template", "method", "status_code", "error_code", "dependency",
+    },
+    "database_operation_slow": {
+        "operation_name", "duration_ms", "table_group", "result_count_bucket",
+    },
+    "frontend_action_failed": {"action_name", "route_group", "error_code", "client_type"},
+    "frontend_route_viewed": {"route_group", "client_type", "language", "entry_source"},
+    "frontend_flow_step_completed": {
+        "flow_name", "step_name", "step_index", "client_type",
+    },
+    "frontend_flow_abandoned": {
+        "flow_name", "last_step", "elapsed_seconds", "client_type",
+    },
+    "telemetry_event_dropped": {
+        "reason_code", "event_type", "pipeline_stage", "dropped_count",
+    },
+    "telemetry_schema_validation_failed": {
+        "event_type", "schema_version", "validation_code", "source",
+    },
+}
 
 
 INSERT_EVENT = text("""
@@ -112,7 +195,7 @@ def _persist_event(
         "user_id": user_id,
         "event_timestamp": timestamp or datetime.now(timezone.utc),
         "event_type": event_type,
-        "schema_version": "1.0",
+        "schema_version": "1.0.0",
         "request_id": request_id or str(uuid4()),
         "properties": json.dumps(properties, default=str),
     }
@@ -139,8 +222,22 @@ def receive_telemetry(batch: dict[str, Any]):
     # discard otherwise valid events from the batch.
     for raw_event in raw_events:
         try:
-            valid_events.append(TelemetryEvent.model_validate(raw_event))
-        except ValidationError:
+            event = TelemetryEvent.model_validate(raw_event)
+            allowed = EVENT_PROPERTY_ALLOWLIST[event.event_type]
+            if set(event.properties) - allowed:
+                raise ValidationError.from_exception_data(
+                    "TelemetryEvent",
+                    [
+                        {
+                            "type": "extra_forbidden",
+                            "loc": ("properties", key),
+                            "input": event.properties[key],
+                        }
+                        for key in set(event.properties) - allowed
+                    ],
+                )
+            valid_events.append(event)
+        except (ValidationError, KeyError):
             rejected += 1
 
     stored = 0
@@ -152,12 +249,12 @@ def receive_telemetry(batch: dict[str, Any]):
                         INSERT_EVENT,
                         {
                             "event_id": str(event.eventId),
-                            "session_id": event.sessionId,
+                            "session_id": event.sessionId or f"backend-{uuid4()}",
                             "user_id": event.userId,
                             "event_timestamp": event.timestamp,
                             "event_type": event.event_type,
                             "schema_version": event.schemaVersion,
-                            "request_id": event.requestId,
+                            "request_id": event.requestId or str(uuid4()),
                             "properties": json.dumps(
                                 event.properties,
                                 default=str,
@@ -180,8 +277,9 @@ def receive_telemetry(batch: dict[str, Any]):
             "telemetry_schema_validation_failed",
             None,
             {
-                "rejected_count": rejected,
-                "received_count": len(raw_events),
+                "event_type": "unknown_or_invalid",
+                "schema_version": "1.0.0",
+                "validation_code": "event_schema_invalid",
                 "source": "telemetry_events_endpoint",
             },
         )
