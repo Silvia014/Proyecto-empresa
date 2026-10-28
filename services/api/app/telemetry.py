@@ -135,21 +135,21 @@ def receive_telemetry(batch: dict[str, Any]):
     valid_events = []
     rejected = 0
 
-    # Validate each event independently.
+    # Validate each event independently so one malformed event does not
+    # discard otherwise valid events from the batch.
     for raw_event in raw_events:
         try:
-            event = TelemetryEvent.model_validate(raw_event)
-            valid_events.append(event)
+            valid_events.append(TelemetryEvent.model_validate(raw_event))
         except ValidationError:
             rejected += 1
 
-    # Persist all valid events in one transaction.
+    stored = 0
     try:
         if valid_events:
             with Session(engine) as session:
-                session.execute(
-                    INSERT_EVENT,
-                    [
+                for event in valid_events:
+                    result = session.execute(
+                        INSERT_EVENT,
                         {
                             "event_id": str(event.eventId),
                             "session_id": event.sessionId,
@@ -162,12 +162,12 @@ def receive_telemetry(batch: dict[str, Any]):
                                 event.properties,
                                 default=str,
                             ),
-                        }
-                        for event in valid_events
-                    ],
-                )
+                        },
+                    )
+                    # ON CONFLICT DO NOTHING means duplicate event IDs are
+                    # received but are not counted as newly stored.
+                    stored += max(result.rowcount or 0, 0)
                 session.commit()
-
     except Exception as exc:
         logger.exception("Failed to persist telemetry batch")
         raise HTTPException(
@@ -175,9 +175,20 @@ def receive_telemetry(batch: dict[str, Any]):
             detail="Telemetry storage is temporarily unavailable",
         ) from exc
 
+    if rejected:
+        record_internal_event(
+            "telemetry_schema_validation_failed",
+            None,
+            {
+                "rejected_count": rejected,
+                "received_count": len(raw_events),
+                "source": "telemetry_events_endpoint",
+            },
+        )
+
     return {
         "received": len(raw_events),
-        "stored": len(valid_events),
+        "stored": stored,
         "rejected": rejected,
     }
 
