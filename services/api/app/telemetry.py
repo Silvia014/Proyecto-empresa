@@ -189,6 +189,10 @@ def _persist_event(
 ) -> None:
     import json
 
+    allowed = EVENT_PROPERTY_ALLOWLIST.get(event_type)
+    if allowed is None or set(properties) - allowed:
+        raise ValueError(f"Invalid telemetry properties for event type: {event_type}")
+
     event = {
         "event_id": str(event_id or uuid4()),
         "session_id": session_id or f"backend-{uuid4()}",
@@ -225,17 +229,8 @@ def receive_telemetry(batch: dict[str, Any]):
             event = TelemetryEvent.model_validate(raw_event)
             allowed = EVENT_PROPERTY_ALLOWLIST[event.event_type]
             if set(event.properties) - allowed:
-                raise ValidationError.from_exception_data(
-                    "TelemetryEvent",
-                    [
-                        {
-                            "type": "extra_forbidden",
-                            "loc": ("properties", key),
-                            "input": event.properties[key],
-                        }
-                        for key in set(event.properties) - allowed
-                    ],
-                )
+                rejected += 1
+                continue
             valid_events.append(event)
         except (ValidationError, KeyError):
             rejected += 1
