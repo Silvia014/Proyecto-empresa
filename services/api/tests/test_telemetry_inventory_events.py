@@ -4,9 +4,11 @@ from fastapi import HTTPException
 from app.inventory import routes as inventory_routes
 from app.inventory.models import InventoryItem, InventoryMovement, Location
 from app.inventory.schemas import AdjustmentCreate, MovementCreate
+from app.inventory.services import invalidate_stock_cache
 
 
 def make_session():
+    invalidate_stock_cache()
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
     return Session(engine)
