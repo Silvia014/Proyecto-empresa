@@ -25,6 +25,38 @@ const cartTotal = document.getElementById("cart-total");
 const checkoutButton = document.getElementById("checkout-button");
 const clearCartButton = document.getElementById("clear-cart-button");
 
+async function getFallbackOrderingData(url) {
+  const requestUrl = new URL(url, window.location.origin);
+  const locationId = requestUrl.searchParams.get("locationId");
+
+  const fallbackLocations = [
+    { id: "bogota", name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP" },
+    { id: "orlando", name: "Brasaland Orlando", city: "Orlando", country: "United States", currency: "USD" },
+  ];
+
+  try {
+    const response = await fetch("/services/api/app/ordering/catalog.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const catalog = await response.json();
+    if (!Array.isArray(catalog) || !catalog.length) return fallbackLocations;
+
+    if (locationId) {
+      const normalizedId = String(locationId).toLowerCase();
+      const location = fallbackLocations.find((item) => String(item.id).toLowerCase() === normalizedId) || fallbackLocations[0];
+      return catalog.map((item) => ({
+        ...item,
+        id: String(item.id),
+        locationId: location.id,
+        currency: item.currency || location.currency,
+      }));
+    }
+
+    return fallbackLocations;
+  } catch {
+    return fallbackLocations;
+  }
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -35,8 +67,54 @@ function saveCart() {
   localStorage.setItem("brasalandCart", JSON.stringify(cart));
 }
 
-function formatPrice(value, currency = selectedLocation?.currency || cart[0]?.currency || "EUR") {
-  return new Intl.NumberFormat(currency === "COP" ? "es-CO" : "en-US", { style: "currency", currency }).format(value);
+const USD_TO_COP_RATE = 4100;
+const USD_TO_EUR_RATE = 0.92;
+
+function convertCurrencyValue(value, fromCurrency = "USD", toCurrency = "USD") {
+  const numericValue = Number(value) || 0;
+  const normalizedFrom = String(fromCurrency || "USD").toUpperCase();
+  const normalizedTo = String(toCurrency || "USD").toUpperCase();
+
+  if (normalizedFrom === normalizedTo) return numericValue;
+
+  const usdValue = (() => {
+    switch (normalizedFrom) {
+      case "USD": return numericValue;
+      case "EUR": return numericValue / USD_TO_EUR_RATE;
+      case "COP": return numericValue / USD_TO_COP_RATE;
+      default: return numericValue;
+    }
+  })();
+
+  switch (normalizedTo) {
+    case "USD": return usdValue;
+    case "EUR": return usdValue * USD_TO_EUR_RATE;
+    case "COP": return usdValue * USD_TO_COP_RATE;
+    default: return numericValue;
+  }
+}
+
+function getDisplayCurrency(currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
+  const explicitCurrency = String(currency || selectedLocation?.currency || "USD").toUpperCase();
+  if (selectedLocation?.currency) return String(selectedLocation.currency).toUpperCase();
+  return explicitCurrency === "COP" ? "COP" : "USD";
+}
+
+function getDisplayPrice(value, currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
+  const targetCurrency = getDisplayCurrency(currency);
+  const sourceCurrency = String(currency || "USD").toUpperCase();
+  return convertCurrencyValue(value, sourceCurrency, targetCurrency);
+}
+
+function formatPrice(value, currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
+  const displayCurrency = getDisplayCurrency(currency);
+  const displayValue = getDisplayPrice(value, currency);
+
+  if (displayCurrency === "COP") {
+    return `COP ${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(displayValue)}`;
+  }
+
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(displayValue);
 }
 
 function translation(key, fallback) {
@@ -65,11 +143,17 @@ async function fetchJson(url, options) {
   try {
     response = await fetch(url, { cache: "no-store", ...options });
   } catch {
-    throw new Error("Could not reach the project API. Start `npx vercel dev` from the project root and open its local URL.");
+    if (url.startsWith("/api/ordering")) {
+      return await getFallbackOrderingData(url);
+    }
+    throw new Error("Could not reach the project API. Start `npx vercel dev` from the project root and open the URL printed by Vercel Dev.");
   }
   const raw = await response.text();
   let result = null;
   try { result = raw ? JSON.parse(raw) : null; } catch { /* handled with status below */ }
+  if ([404, 405, 503].includes(response.status) && url.startsWith("/api/ordering")) {
+    return await getFallbackOrderingData(url);
+  }
   if (response.status === 405) throw new Error(showApiError(405));
   if (!response.ok) throw new Error(result?.error || `Project API returned HTTP ${response.status}.`);
   if (result === null) throw new Error("Project API returned an empty or invalid response. Check the Vercel Dev terminal.");

@@ -31,16 +31,20 @@ router.get("/sales-summary", requirePermission("BI", "READ"), async (req, res) =
   // Antes esto era un par de reduce() manuales; ahora usa sumBy/averageBy
   // (trasladadas de brasaland-utils), y groupItems para partir por local
   // en vez de un reduce con un objeto acumulador a mano.
-  const totalUsd = sumBy(orders, (o) => o.totalUsd);
-  const totalCop = sumBy(orders, (o) => o.totalCop ?? o.totalUsd * fxRate);
-  const averageOrderUsd = averageBy(orders, (o) => o.totalUsd);
+  const orderTotalUsd = (order: (typeof orders)[number]) =>
+    order.currency.toUpperCase() === "COP" ? order.total / fxRate : order.total;
+  const orderTotalCop = (order: (typeof orders)[number]) =>
+    order.currency.toUpperCase() === "COP" ? order.total : order.total * fxRate;
+  const totalUsd = sumBy(orders, orderTotalUsd);
+  const totalCop = sumBy(orders, orderTotalCop);
+  const averageOrderUsd = averageBy(orders, orderTotalUsd);
 
   const byLocationGroups = groupItems(orders, (o) => o.locationId);
   const byLocation = Object.entries(byLocationGroups).map(([locId, locOrders]) => ({
     locationId: locId,
     locationName: locOrders[0]?.location.name ?? "—",
-    totalUsd: sumBy(locOrders, (o) => o.totalUsd),
-    totalCop: sumBy(locOrders, (o) => o.totalCop ?? o.totalUsd * fxRate),
+    totalUsd: sumBy(locOrders, orderTotalUsd),
+    totalCop: sumBy(locOrders, orderTotalCop),
     orders: locOrders.length,
   }));
 
