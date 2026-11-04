@@ -22,5 +22,12 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "fast-uri": "3.1.9",
+    "nanoid": "3.3.18",
+    "postcss": "8.5.23",
+    "postcss-selector-parser": "6.1.5",
+    "source-map-js": "1.2.2"
   }
 }
