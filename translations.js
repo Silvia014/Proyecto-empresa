@@ -9,7 +9,8 @@ const translations = {
       contact: "Contacto",
       careers: "Trabaja con nosotros",
       reserve: "Reservar mesa",
-      order: "Pedir online"
+      order: "Pedir online",
+      profile: "Mi perfil"
     },
 
     hero: {
@@ -17,7 +18,7 @@ const translations = {
       title: "Una mesa con la cuidada hospitalidad de un establecimiento de gran lujo",
       subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en nuestra larga trayectoria en la hostelería de lujo: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
       button: "Reservar mesa",
-      button2: "Conócenos",
+      button2: "Brasaclub",
       order: "Pedir online"
     },
 
@@ -315,7 +316,8 @@ const translations = {
         }
       ],
       ctaClub: "Únete a Brasaland Club",
-      ctaOrder: "Pedir online"
+      ctaOrder: "Pedir online",
+      ctaBookTable: "Reservar mesa"
     },
 
     contacto: {
@@ -706,7 +708,8 @@ const translations = {
       contact: "Contact",
       careers: "Careers",
       reserve: "Book a Table",
-      order: "Order Online"
+      order: "Order Online",
+      profile: "My profile"
     },
 
     hero: {
@@ -714,7 +717,7 @@ const translations = {
       title: "A table with the refined hospitality of a luxury establishment",
       subtitle: "At Brasaland, we cook seasonal dishes and serve every table with the same high standards of hospitality we developed through our long experience in luxury hospitality: punctual, warm, and frictionless. Booking takes less than a minute.",
       button: "Book a Table",
-      button2: "Learn More",
+      button2: "Brasaclub",
       order: "Order Online"
     },
 
@@ -1065,7 +1068,8 @@ const translations = {
         }
       ],
       ctaClub: "Join Brasaland Club",
-      ctaOrder: "Order online"
+      ctaOrder: "Order online",
+      ctaBookTable: "Book a Table"
     },
 
     contacto: {

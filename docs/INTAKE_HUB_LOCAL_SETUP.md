@@ -65,14 +65,23 @@ location-specific USD and COP equivalents for the €100 earning threshold
 before enabling accrual.
 
 The public menu now reads locations and menu items from the ERP API. Set
-`ORDERING_API_URL=http://127.0.0.1:4000/api` in the root `.env.local` for local
+`ORDERING_API_URL=http://127.0.0.1:8000/api` in the root `.env.local` for local
 work. Run `npx vercel dev` in one terminal and `cd restaurant-platform && npm run dev`
-in another. Vercel Dev does not start the ERP process. In `restaurant-platform`, configure its ignored `.env` with the rotated
+in another. Vercel Dev does not start the ERP process. The ERP API listens on port 8000 by default. In `restaurant-platform`, configure its ignored `.env` with the rotated
 development `DATABASE_URL`, generate the Prisma client, and run `npm run dev`
-on port 4000. A separate local database needs the Prisma migration applied.
+on port 8000. A separate local database needs the Prisma migration applied.
 The database needs real Location and MenuItem rows;
 the public page no longer supplies demo menu prices. In the deployment, set
 `ORDERING_API_URL` to the deployed ERP API URL.
+
+Delivery checkout validates the entered address against a 20 km straight-line
+radius from the Bogotá and Orlando branch addresses using Google Geocoding API
+v4. The Maps Demo Key supports this v4 endpoint with limited quotas. A standard
+Google Maps Platform key requires the Geocoding API enabled and billing linked.
+Keep the key on the server, restrict it to the Geocoding API, and set
+`GOOGLE_GEOCODING_API_KEY` in the FastAPI environment (`.env.local` locally and
+the backend deployment environment in production). Without a usable key,
+delivery orders are rejected; pickup remains available.
 
 The checkout creates an ERP Order and OrderItem with payment status `PENDING`.
 It does not charge the customer or open Stripe. The pending page lets the

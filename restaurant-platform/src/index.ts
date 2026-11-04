@@ -43,7 +43,7 @@ app.use("/api/orders", ordersRouter(io));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
   console.log(`API central escuchando en http://localhost:${PORT}`);
 });

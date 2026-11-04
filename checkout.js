@@ -13,7 +13,7 @@ try {
 const checkoutItems = document.getElementById("checkout-items");
 const checkoutTotal = document.getElementById("checkout-total");
 let checkoutLocationId = "";
-let checkoutReady = false;
+const chosenLocationId = localStorage.getItem("brasalandLocationId") || cart[0]?.locationId || "";
 
 async function apiJson(url, options = {}) {
   let response;
@@ -28,7 +28,7 @@ async function apiJson(url, options = {}) {
   if (response.status === 405) {
     throw new Error("The local server returned HTTP 405 for an API request. Stop Live Server, run `npx vercel dev` from the project root, then open the URL printed by Vercel Dev.");
   }
-  if (!response.ok) throw new Error(result?.error || `The project API returned HTTP ${response.status}.`);
+  if (!response.ok) throw new Error(result?.detail || result?.error || `The project API returned HTTP ${response.status}.`);
   if (!result) throw new Error("The project API returned an empty or invalid response. Check the Vercel Dev terminal.");
   return result;
 }
@@ -125,8 +125,13 @@ const orderTypeInputs =
 const deliveryAddress =
   document.getElementById("delivery-address");
 
-const addressInput =
-  document.getElementById("address");
+const addressInputs = [
+  document.getElementById("address-street"),
+  document.getElementById("address-number"),
+  document.getElementById("address-postcode"),
+  document.getElementById("address-city"),
+  document.getElementById("address-country"),
+];
 
 orderTypeInputs.forEach((input) => {
 
@@ -136,15 +141,16 @@ orderTypeInputs.forEach((input) => {
 
       deliveryAddress.classList.remove("hidden");
 
-      addressInput.required = true;
+      addressInputs.forEach((field) => { field.required = true; });
 
     } else if (input.value === "pickup" && input.checked) {
 
       deliveryAddress.classList.add("hidden");
 
-      addressInput.required = false;
-
-      addressInput.value = "";
+      addressInputs.forEach((field) => {
+        field.required = false;
+        field.value = "";
+      });
 
     }
 
@@ -172,7 +178,7 @@ async function reconcileCartWithLiveMenu() {
 
   const cartLocationIds = [...new Set(cart.map((item) => item.locationId).filter(Boolean).map(String))];
   if (cartLocationIds.length > 1) throw new Error("Your cart contains items from different restaurants. Return to the menu and place one restaurant order at a time.");
-  let locationId = cartLocationIds[0] || localStorage.getItem("brasalandLocationId") || "";
+  let locationId = chosenLocationId || cartLocationIds[0] || "";
   if (!locations.some((location) => String(location.id) === locationId)) locationId = "";
 
   let matchingLocation = locationId ? locations.find((location) => String(location.id) === locationId) : null;
@@ -213,8 +219,11 @@ async function reconcileCartWithLiveMenu() {
   cart = normalized;
   checkoutLocationId = String(matchingLocation.id);
   localStorage.setItem("brasalandLocationId", checkoutLocationId);
+  const restaurantSummary = document.getElementById("checkout-restaurant-summary");
+  if (restaurantSummary) restaurantSummary.textContent = `Restaurant: ${matchingLocation.name} · Delivery available within 20 km of ${matchingLocation.city}.`;
+  const deliveryCity = document.getElementById("delivery-city-label");
+  if (deliveryCity) deliveryCity.textContent = matchingLocation.city;
   localStorage.setItem("brasalandCart", JSON.stringify(cart));
-  checkoutReady = true;
   renderCheckout();
 }
 
@@ -241,13 +250,7 @@ checkoutForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!checkoutReady) {
-    checkoutFeedback.textContent = "Your cart has not been verified with the ERP yet. Wait for the menu check to finish, or return to the menu. After an order is saved, the restaurant will confirm availability and send a payment link; cash is also an option.";
-    checkoutFeedback.classList.add("error");
-    return;
-  }
-
-  const locationId = checkoutLocationId;
+  const locationId = checkoutLocationId || cart[0]?.locationId || localStorage.getItem("brasalandLocationId") || "";
 
   const fulfillment = document.querySelector('input[name="order-type"]:checked')?.value || "pickup";
   const customer = {
@@ -258,7 +261,9 @@ checkoutForm.addEventListener("submit", async (event) => {
   const payload = {
     locationId,
     fulfillment,
-    deliveryAddress: fulfillment === "delivery" ? addressInput.value.trim() : undefined,
+    deliveryAddress: fulfillment === "delivery"
+      ? addressInputs.map((field) => field.value.trim()).join(", ")
+      : undefined,
     customer,
     notes: document.getElementById("order-notes").value.trim(),
     items: cart.map((item) => ({ menuItemId: String(item.id), quantity: Number(item.quantity) })),
@@ -287,6 +292,7 @@ checkoutForm.addEventListener("submit", async (event) => {
       customerEmail: customer.email,
       total: result.total,
       currency: result.currency || cart[0].currency || "USD",
+      locationName: document.getElementById("checkout-restaurant-summary")?.textContent || "",
     }));
     window.location.assign("order-pending.html");
   } catch (error) {
@@ -307,6 +313,9 @@ checkoutForm.addEventListener("submit", async (event) => {
 renderCheckout();
 void loadBrasaclubCheckoutSession();
 void reconcileCartWithLiveMenu().catch((error) => {
-  checkoutFeedback.textContent = error instanceof Error ? error.message : "Your cart could not be refreshed. Return to the menu and choose a restaurant again.";
-  checkoutFeedback.classList.add("error");
+  // The ERP rechecks availability and prices when the order is submitted.
+  // A temporary menu refresh failure must not block that authoritative check.
+  checkoutFeedback.textContent = error instanceof Error
+    ? `${error.message} You can still submit your order; the restaurant system will validate it before saving.`
+    : "The menu could not be refreshed. You can still submit your order and the restaurant system will validate it before saving.";
 });

@@ -65,10 +65,32 @@ function showAuthMessage(message) {
   feedback.classList.remove("hidden");
 }
 
+function showExistingAccount(email) {
+  registerView.classList.add("hidden");
+  loginView.classList.remove("hidden");
+  document.getElementById("login-email").value = email;
+  showAuthMessage(copy(
+    "Ya existe una cuenta con este correo. Bienvenido de nuevo. Inicia sesión para acceder a tu Brasaclub.",
+    "A user with this email address has already been registered. Welcome back. Sign in to access your Brasaclub."
+  ));
+}
+
+function authErrorMessage(error) {
+  const message = String(error?.message || "");
+  if (/invalid login credentials|invalid email or password|email not confirmed/i.test(message)) {
+    return copy("El correo o la contraseña no son correctos. Comprueba tus datos e inténtalo de nuevo.", "The email or password is incorrect. Check your details and try again.");
+  }
+  return message;
+}
+
 function redirectToCheckoutIfRequested() {
   const next = new URLSearchParams(window.location.search).get("next");
   if (next === "checkout.html") {
     window.location.replace("checkout.html?member=1");
+    return true;
+  }
+  if (window.location.pathname.endsWith("/account.html") || window.location.pathname === "account.html") {
+    window.location.replace("account-dashboard.html");
     return true;
   }
   return false;
@@ -244,8 +266,7 @@ async function finishAuthentication(result) {
   if (!result.session?.access_token) throw new Error(copy("La sesión no se inició. Vuelve a iniciar sesión.", "No session was created. Please sign in again."));
   localStorage.setItem("brasaland_session", JSON.stringify(result.session));
   if (redirectToCheckoutIfRequested()) return;
-  setPortalView();
-  await loadPortal();
+  window.location.replace("account-dashboard.html");
 }
 
 document.getElementById("show-login")?.addEventListener("click", () => {
@@ -285,7 +306,9 @@ document.getElementById("register-form")?.addEventListener("submit", async (even
     });
     await finishAuthentication(result);
   } catch (error) {
-    showAuthMessage(error.message);
+    if (/already registered|already been registered|user exists/i.test(error.message)) {
+      showExistingAccount(document.getElementById("register-email").value.trim());
+    } else showAuthMessage(authErrorMessage(error));
   } finally {
     button.disabled = false;
   }
@@ -303,7 +326,7 @@ document.getElementById("login-form")?.addEventListener("submit", async (event) 
     });
     await finishAuthentication(result);
   } catch (error) {
-    showAuthMessage(error.message);
+    showAuthMessage(authErrorMessage(error));
   } finally {
     button.disabled = false;
   }

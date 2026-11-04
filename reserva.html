@@ -18,7 +18,7 @@
 
   <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:gap-6 lg:px-8">
       <div class="flex items-center gap-3">
         <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
           Brasaland
@@ -34,7 +34,7 @@
       </div>
 
       <!-- Navegación de escritorio -->
-      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:ml-8 lg:flex">
         <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
         <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
         <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
@@ -42,6 +42,7 @@
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
         <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+        <a id="reservation-account-link" href="account.html" class="nav-link" data-i18n="nav.profile">Mi perfil</a>
       </nav>
 
       <!-- Botón de menú móvil -->
@@ -93,6 +94,7 @@
       data-i18n="nav.order">
     Pedir online
     </a>
+    <a id="reservation-account-link-mobile" href="account.html" class="nav-link" data-i18n="nav.profile">Mi perfil</a>
         </nav>
       </header>
   
@@ -326,6 +328,7 @@
 
   <script src="translations.js" defer></script>
   <script src="main.js" defer></script>
+  <script src="reservation-account.js" defer></script>
   <script src="validation.js" defer></script>
 </body>
 </html>

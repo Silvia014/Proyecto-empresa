@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
 from .inventory.routes import router as inventory_router
+from .ordering.routes import router as ordering_router
 
 from .crud import (
     create_supplier,
@@ -65,6 +66,7 @@ app.include_router(profiles_router)
 app.include_router(auth_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
+app.include_router(ordering_router)
 
 app.add_middleware(
     CORSMiddleware,

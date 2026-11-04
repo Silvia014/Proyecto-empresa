@@ -1,7 +1,239 @@
 const session = JSON.parse(localStorage.getItem("brasaland_session") || "null");
 const errorElement = document.getElementById("account-error");
+const profileForm = document.getElementById("member-profile-form");
+const dashboardProfileTitle = document.getElementById("dashboard-profile-title");
+const logoutButton = document.getElementById("logout-button");
 
-document.getElementById("logout-button").addEventListener("click", () => {
+let dashboardMemberName = "";
+let dashboardData = { reservations: [], orders: [] };
+
+function isDashboardEnglish() {
+  return localStorage.getItem("language") === "en";
+}
+
+function formatDashboardDate(dateValue) {
+  const locale = isDashboardEnglish() ? "en-US" : "es-CO";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(locale, { year: "numeric", month: "long", day: "numeric" }).format(date);
+}
+
+function formatReservationStatus(status) {
+  const english = isDashboardEnglish();
+  const normalized = String(status || "").toUpperCase();
+  const map = {
+    NEW: english ? "Awaiting confirmation" : "Pendiente de confirmación",
+    PENDING: english ? "Pending" : "Pendiente",
+    CONFIRMED: english ? "Confirmed" : "Confirmada",
+    CANCELLED: english ? "Cancelled" : "Cancelada",
+  };
+  return map[normalized] || (english ? status || "Status" : status || "Estado");
+}
+
+function formatOrderStatus(status, paymentStatus) {
+  const english = isDashboardEnglish();
+  const normalized = String(status || "").toUpperCase();
+  const paymentNormalized = String(paymentStatus || "").toUpperCase();
+  const statusMap = {
+    PENDING: english ? "Pending" : "Pendiente",
+    PAID: english ? "Paid" : "Pagado",
+    RECEIVED: english ? "Received" : "Recibido",
+    PREPARING: english ? "Preparing" : "En preparación",
+    COMPLETED: english ? "Completed" : "Completado",
+    CANCELLED: english ? "Cancelled" : "Cancelado",
+    NEW: english ? "Awaiting confirmation" : "Pendiente de confirmación",
+    CONFIRMED: english ? "Confirmed" : "Confirmada",
+  };
+  const paymentMap = {
+    PENDING: english ? "Payment pending" : "Pago pendiente",
+    PAID: english ? "Paid" : "Pagado",
+    REFUNDED: english ? "Refunded" : "Reembolsado",
+  };
+  const statusLabel = statusMap[normalized] || (english ? String(status || "Status") : String(status || "Estado"));
+  const paymentLabel = paymentMap[paymentNormalized] || (english ? String(paymentStatus || "Payment") : String(paymentStatus || "Pago"));
+  return `${statusLabel} · ${english ? "Payment:" : "Pago:"} ${paymentLabel}`;
+}
+
+function renderReservations(reservations) {
+  const list = document.getElementById("reservations-list");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!reservations.length) {
+    const empty = document.getElementById("reservations-empty");
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  const empty = document.getElementById("reservations-empty");
+  if (empty) empty.classList.add("hidden");
+  reservations.forEach((reservation) => {
+    const card = document.createElement("article");
+    card.className = "rounded-xl bg-cream p-4";
+    const title = document.createElement("h3");
+    title.className = "font-semibold text-wine";
+    title.textContent = formatDashboardDate(`${reservation.reservation_date}T00:00:00`);
+    const details = document.createElement("p");
+    details.className = "mt-2 text-sm text-walnut/70";
+    const partyCount = Number(reservation.party_size || 0);
+    const peopleText = isDashboardEnglish()
+      ? `${partyCount === 1 ? "person" : "people"}`
+      : `${partyCount === 1 ? "persona" : "personas"}`;
+    details.textContent = `${String(reservation.reservation_time || "").slice(0, 5)} · ${partyCount} ${peopleText} · ${reservation.city || ""}`;
+    const status = document.createElement("p");
+    status.className = "mt-2 text-xs font-semibold uppercase tracking-wide text-wine";
+    status.textContent = formatReservationStatus(reservation.status);
+    card.append(title, details, status);
+    list.append(card);
+  });
+}
+
+function renderOrders(orders) {
+  const list = document.getElementById("orders-list");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!orders.length) {
+    const empty = document.getElementById("orders-empty");
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  const empty = document.getElementById("orders-empty");
+  if (empty) empty.classList.add("hidden");
+  orders.forEach((order) => {
+    const card = document.createElement("article");
+    card.className = "rounded-xl bg-cream p-4";
+    const title = document.createElement("h3");
+    title.className = "font-semibold text-wine";
+    const dateLabel = isDashboardEnglish() ? "Order" : "Pedido";
+    title.textContent = `${dateLabel} · ${formatDashboardDate(order.createdAt)}`;
+    const lines = document.createElement("p");
+    lines.className = "mt-2 text-sm text-walnut/70";
+    lines.textContent = (order.items || []).map((item) => `${item.quantity} × ${item.dishName}`).join(" · ");
+    const money = new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", { style: "currency", currency: order.currency || "USD" }).format(Number(order.total) || 0);
+    const status = document.createElement("p");
+    status.className = "mt-2 text-xs font-semibold uppercase tracking-wide text-wine";
+    status.textContent = `${money} · ${formatOrderStatus(order.status, order.paymentStatus)}`;
+    card.append(title, lines, status);
+    list.append(card);
+  });
+}
+
+function applyDashboardLanguage() {
+  const english = localStorage.getItem("language") === "en";
+  const selector = document.getElementById("language-selector");
+  if (selector) {
+    selector.value = localStorage.getItem("language") || "es";
+  }
+
+  const copy = english ? {
+    profileTitle: "My profile",
+    logout: "Log out",
+    welcome: "Welcome back…",
+    balanceLabel: "Your Brasapoints",
+    balanceHint: "Points are added when you complete eligible orders.",
+    accountLabel: "Account",
+    profileEyebrow: "YOUR PROFILE",
+    profileSectionTitle: "Your details",
+    nameLabel: "Name",
+    emailLabel: "Email",
+    phoneLabel: "Phone",
+    preferencesLabel: "Preferences and allergies",
+    saveButton: "Save changes",
+    historyEyebrow: "HISTORY",
+    reservationsTitle: "Your reservations",
+    reserveButton: "Book a table",
+    reservationsEmpty: "You do not have any reservations linked to this account yet.",
+    ordersTitle: "Your online orders",
+    orderButton: "Order online",
+    ordersEmpty: "You do not have any online orders linked to this account yet.",
+    branding: "BRASACLUB"
+  } : {
+    profileTitle: "Mi perfil",
+    logout: "Cerrar sesión",
+    welcome: "Bienvenido de nuevo…",
+    balanceLabel: "Tus Brasapuntos",
+    balanceHint: "Los puntos se suman cuando completas pedidos elegibles.",
+    accountLabel: "Cuenta",
+    profileEyebrow: "TU PERFIL",
+    profileSectionTitle: "Tus datos",
+    nameLabel: "Nombre",
+    emailLabel: "Email",
+    phoneLabel: "Teléfono",
+    preferencesLabel: "Preferencias y alergias",
+    saveButton: "Guardar cambios",
+    historyEyebrow: "HISTORIAL",
+    reservationsTitle: "Tus reservas",
+    reserveButton: "Reservar mesa",
+    reservationsEmpty: "Todavía no tienes reservas asociadas a esta cuenta.",
+    ordersTitle: "Tus pedidos online",
+    orderButton: "Pedir online",
+    ordersEmpty: "Todavía no tienes pedidos online asociados a esta cuenta.",
+    branding: "BRASACLUB"
+  };
+
+  if (dashboardProfileTitle) {
+    dashboardProfileTitle.textContent = copy.profileTitle;
+  }
+
+  if (logoutButton) {
+    logoutButton.textContent = copy.logout;
+  }
+
+  const welcome = document.getElementById("account-welcome");
+  if (welcome) {
+    welcome.textContent = dashboardMemberName
+      ? english
+        ? `Welcome back, @${dashboardMemberName}.`
+        : `¡Bienvenido de nuevo, @${dashboardMemberName}!`
+      : copy.welcome;
+  }
+
+  const branding = document.getElementById("dashboard-branding");
+  if (branding) branding.textContent = copy.branding;
+  const balanceLabel = document.getElementById("dashboard-balance-label");
+  if (balanceLabel) balanceLabel.textContent = copy.balanceLabel;
+  const balanceHint = document.getElementById("dashboard-balance-hint");
+  if (balanceHint) balanceHint.textContent = copy.balanceHint;
+  const accountLabel = document.getElementById("dashboard-account-label");
+  if (accountLabel) accountLabel.textContent = copy.accountLabel;
+  const profileEyebrow = document.getElementById("dashboard-profile-eyebrow");
+  if (profileEyebrow) profileEyebrow.textContent = copy.profileEyebrow;
+  const profileSectionTitle = document.getElementById("dashboard-profile-section-title");
+  if (profileSectionTitle) profileSectionTitle.textContent = copy.profileSectionTitle;
+  const nameLabel = document.getElementById("member-name-label");
+  if (nameLabel) nameLabel.childNodes[0].textContent = copy.nameLabel;
+  const emailLabel = document.getElementById("member-email-label");
+  if (emailLabel) emailLabel.childNodes[0].textContent = copy.emailLabel;
+  const phoneLabel = document.getElementById("member-phone-label");
+  if (phoneLabel) phoneLabel.childNodes[0].textContent = copy.phoneLabel;
+  const preferencesLabel = document.getElementById("member-preferences-label");
+  if (preferencesLabel) preferencesLabel.childNodes[0].textContent = copy.preferencesLabel;
+  const saveButton = document.getElementById("member-profile-save");
+  if (saveButton) saveButton.textContent = copy.saveButton;
+  const historyEyebrow = document.getElementById("dashboard-history-eyebrow");
+  if (historyEyebrow) historyEyebrow.textContent = copy.historyEyebrow;
+  const reservationsTitle = document.getElementById("dashboard-reservations-title");
+  if (reservationsTitle) reservationsTitle.textContent = copy.reservationsTitle;
+  const reservationsButton = document.getElementById("dashboard-reservations-button");
+  if (reservationsButton) reservationsButton.textContent = copy.reserveButton;
+  const reservationsEmpty = document.getElementById("reservations-empty");
+  if (reservationsEmpty) reservationsEmpty.textContent = copy.reservationsEmpty;
+  const ordersEyebrow = document.getElementById("dashboard-orders-eyebrow");
+  if (ordersEyebrow) ordersEyebrow.textContent = copy.historyEyebrow;
+  const ordersTitle = document.getElementById("dashboard-orders-title");
+  if (ordersTitle) ordersTitle.textContent = copy.ordersTitle;
+  const ordersButton = document.getElementById("dashboard-orders-button");
+  if (ordersButton) ordersButton.textContent = copy.orderButton;
+  const ordersEmpty = document.getElementById("orders-empty");
+  if (ordersEmpty) ordersEmpty.textContent = copy.ordersEmpty;
+
+  if (dashboardData.reservations?.length || dashboardData.orders?.length) {
+    renderReservations(dashboardData.reservations || []);
+    renderOrders(dashboardData.orders || []);
+  }
+
+  document.title = english ? "My profile | Brasaland" : "Mi perfil | Brasaland";
+}
+
+logoutButton.addEventListener("click", () => {
   localStorage.removeItem("brasaland_session");
   window.location.href = "account.html";
 });
@@ -11,38 +243,6 @@ function showError(message) {
   errorElement.classList.remove("hidden");
 }
 
-function addReservation(reservation) {
-  const card = document.createElement("article");
-  card.className = "rounded-xl bg-cream p-4";
-  const title = document.createElement("h3");
-  title.className = "font-semibold text-wine";
-  title.textContent = new Date(`${reservation.reservation_date}T00:00:00`).toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" });
-  const details = document.createElement("p");
-  details.className = "mt-2 text-sm text-walnut/70";
-  details.textContent = `${reservation.reservation_time.slice(0, 5)} · ${reservation.party_size} personas · ${reservation.city}`;
-  const status = document.createElement("p");
-  status.className = "mt-2 text-xs font-semibold uppercase tracking-wide text-wine";
-  status.textContent = reservation.status === "NEW" ? "Pendiente de confirmación" : reservation.status;
-  card.append(title, details, status);
-  document.getElementById("reservations-list").append(card);
-}
-
-function addOrder(order) {
-  const card = document.createElement("article");
-  card.className = "rounded-xl bg-cream p-4";
-  const title = document.createElement("h3");
-  title.className = "font-semibold text-wine";
-  title.textContent = `Pedido · ${new Date(order.createdAt).toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" })}`;
-  const lines = document.createElement("p");
-  lines.className = "mt-2 text-sm text-walnut/70";
-  lines.textContent = order.items.map((item) => `${item.quantity} × ${item.dishName}`).join(" · ");
-  const money = new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", { style: "currency", currency: order.currency }).format(order.total);
-  const status = document.createElement("p");
-  status.className = "mt-2 text-xs font-semibold uppercase tracking-wide text-wine";
-  status.textContent = `${money} · ${order.status} · Pago: ${order.paymentStatus}`;
-  card.append(title, lines, status);
-  document.getElementById("orders-list").append(card);
-}
 
 async function loadAccount() {
   if (!session?.access_token) {
@@ -53,17 +253,60 @@ async function loadAccount() {
     const response = await fetch("/api/account", { headers: { Authorization: `Bearer ${session.access_token}` } });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "No pudimos cargar tu cuenta.");
-    document.getElementById("account-welcome").textContent = `Hola, ${result.member.name}. Aquí puedes consultar tu membresía, reservas y pedidos.`;
+    dashboardMemberName = result.member.name || "";
+    dashboardData = {
+      reservations: result.reservations || [],
+      orders: result.orders || [],
+    };
+    const english = localStorage.getItem("language") === "en";
+    document.getElementById("account-welcome").textContent = english ? `Welcome back, @${result.member.name}.` : `¡Bienvenido de nuevo, @${result.member.name}!`;
     document.getElementById("member-name").textContent = result.member.name;
     document.getElementById("member-email").textContent = result.member.email;
+    document.getElementById("member-name-input").value = result.member.name || "";
+    document.getElementById("member-email-input").value = result.member.email || "";
+    document.getElementById("member-phone-input").value = result.member.phone || "";
+    document.getElementById("member-preferences-input").value = result.member.preferences || "";
     document.getElementById("brasapoints-balance").textContent = String(result.member.brasapoints);
-    if (!result.reservations.length) document.getElementById("reservations-empty").classList.remove("hidden");
-    else result.reservations.forEach(addReservation);
-    if (!result.orders.length) document.getElementById("orders-empty").classList.remove("hidden");
-    else result.orders.forEach(addOrder);
+    renderReservations(dashboardData.reservations);
+    renderOrders(dashboardData.orders);
   } catch (error) {
     showError(error.message);
   }
 }
 
+document.addEventListener("languagechange", applyDashboardLanguage);
+applyDashboardLanguage();
 loadAccount();
+
+profileForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = document.getElementById("member-profile-save");
+  const feedback = document.getElementById("profile-feedback");
+  button.disabled = true;
+  feedback.classList.add("hidden");
+  try {
+    const response = await fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        action: "update-profile",
+        name: document.getElementById("member-name-input").value.trim(),
+        email: document.getElementById("member-email-input").value.trim(),
+        phone: document.getElementById("member-phone-input").value.trim(),
+        preferences: document.getElementById("member-preferences-input").value.trim(),
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "No pudimos guardar tus datos.");
+    feedback.textContent = localStorage.getItem("language") === "en" ? "Your profile was saved." : "Tus datos se guardaron correctamente.";
+    feedback.classList.remove("hidden", "text-red-700");
+    feedback.classList.add("text-green-800");
+    await loadAccount();
+  } catch (error) {
+    feedback.textContent = error.message;
+    feedback.classList.remove("hidden", "text-green-800");
+    feedback.classList.add("text-red-700");
+  } finally {
+    button.disabled = false;
+  }
+});

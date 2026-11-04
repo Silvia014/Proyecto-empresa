@@ -1,7 +1,11 @@
 function getOrderingApiUrl() {
   const configuredUrl = process.env.ORDERING_API_URL;
-  if (configuredUrl) return configuredUrl.replace(/\/+$/, "");
-  if (process.env.NODE_ENV !== "production") return "http://127.0.0.1:4000/api";
+  if (configuredUrl) {
+    const apiUrl = new URL(configuredUrl);
+    apiUrl.pathname = apiUrl.pathname.replace(/\/+$/, "") || "/api";
+    return apiUrl.toString().replace(/\/$/, "");
+  }
+  if (process.env.NODE_ENV !== "production") return "http://127.0.0.1:8000/api";
   throw new Error("ORDERING_API_URL is required in production");
 }
 
@@ -54,7 +58,7 @@ module.exports = async function handler(req, res) {
     return res.status(503).json({
       error: error.message.includes("ORDERING_API_URL")
         ? error.message
-        : "The ERP ordering service is offline or unreachable. In a second terminal run `cd restaurant-platform && npm run dev` (with its database configured), and keep it running on port 4000.",
+        : "The ERP ordering service is offline or unreachable. Keep the ERP API running on port 8000 and set ORDERING_API_URL=http://127.0.0.1:8000/api for local use.",
     });
   }
 };

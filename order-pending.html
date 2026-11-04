@@ -10,31 +10,43 @@
 <body>
   <main class="checkout-page">
     <section class="checkout-container">
-      <article id="pending-order" class="order-success">
-        <p class="section-eyebrow">BRASALAND ONLINE ORDER</p>
-        <p id="pending-state" class="order-payment-status">Payment pending · Order awaiting restaurant confirmation</p>
-        <h1>Order successfully sent</h1>
+      <article id="pending-order" class="order-success order-pending-card">
+        <p class="section-eyebrow" id="pending-eyebrow">BRASALAND ONLINE ORDER</p>
+        <p id="pending-state" class="order-payment-status">Payment pending · Awaiting confirmation</p>
+        <h1 id="pending-title">Order successfully sent</h1>
         <p id="pending-greeting">Your order was sent to the restaurant.</p>
-        <p id="pending-order-id" class="pending-order-id"></p>
-        <p id="pending-total" class="pending-total"></p>
-        <p id="pending-email" class="pending-email"></p>
-        <p id="pending-payment-copy">This is a receipt that your order reached the restaurant, not final order confirmation. The restaurant will check availability and email a payment link to complete and confirm it. You can ask to pay in cash instead. No payment has been taken yet.</p>
+        <div class="pending-receipt-summary">
+          <p id="pending-order-id" class="pending-order-id"></p>
+          <p id="pending-total" class="pending-total"></p>
+          <p id="pending-email" class="pending-email"></p>
+        </div>
+        <div class="payment-choice-intro">
+          <h2 id="payment-preference-title">Choose how you’d like to pay</h2>
+          <p id="pending-payment-copy">Your order has been sent. Select one payment option below.</p>
+        </div>
         <fieldset id="payment-preference-picker" class="payment-preference-picker">
-          <legend>How would you prefer to pay?</legend>
-          <p>The restaurant will confirm the order and payment method. No payment or confirmation has happened yet.</p>
           <div class="payment-preference-options">
-            <button type="button" data-payment-preference="CASH">Cash</button>
-            <button type="button" data-payment-preference="PAYMENT_LINK">Payment link</button>
-            <button type="button" data-payment-preference="BIZUM">Bizum</button>
+            <button type="button" class="payment-choice" data-payment-preference="PAYMENT_LINK" id="pay-link" aria-pressed="false">
+              <span class="payment-choice-icon" aria-hidden="true">▤</span>
+              <span class="payment-choice-title" id="pay-link-label">Pay by card</span>
+              <span class="payment-choice-description" id="pay-link-description">We’ll email you a payment link to complete and confirm your order.</span>
+              <span class="payment-choice-action" id="pay-link-action">Choose card</span>
+            </button>
+            <button type="button" class="payment-choice" data-payment-preference="CASH" id="pay-cash" aria-pressed="false">
+              <span class="payment-choice-icon" aria-hidden="true">$</span>
+              <span class="payment-choice-title" id="pay-cash-label">Pay with cash</span>
+              <span class="payment-choice-description" id="pay-cash-description">Pay in cash when your order arrives.</span>
+              <span class="payment-choice-action" id="pay-cash-action">Choose cash</span>
+            </button>
           </div>
-          <p id="payment-preference-feedback" role="status" aria-live="polite"></p>
+          <p id="payment-preference-feedback" class="payment-choice-feedback" role="status" aria-live="polite"></p>
         </fieldset>
-        <a href="order.html" class="checkout-button">Back to menu</a>
+        <a href="order.html" class="pending-menu-link" id="pending-menu-link">Back to menu</a>
       </article>
       <article id="missing-order" class="order-success hidden" role="alert">
-        <h1>Order details unavailable</h1>
-        <p>This page has no saved order details. Check your email for a restaurant confirmation, or return to the menu to place an order.</p>
-        <a href="order.html" class="checkout-button">Back to menu</a>
+        <h1 id="missing-title">Order details unavailable</h1>
+        <p id="missing-copy">This page has no saved order details. Return to the menu to place an order.</p>
+        <a href="order.html" class="checkout-button" id="missing-menu-link">Back to menu</a>
       </article>
     </section>
   </main>

@@ -1,5 +1,32 @@
 const { createAdminClient, getUserFromRequest } = require("../lib/api-supabase");
 
+async function findOrLinkCustomer(supabase, user) {
+  const email = String(user.email || "").trim().toLowerCase();
+  if (!email) return { data: null, error: null };
+  let result = await supabase.from("Customer")
+    .select("id, name, email, phone, preferences, BrasapointsAccount(balance, BrasapointsTransaction(id, type, points, description, createdAt, orderId))")
+    .eq("authUserId", user.id).maybeSingle();
+  if (result.error || result.data) return result;
+
+  // Older ERP customers predate account linking. Attach the matching verified
+  // Supabase Auth email through the server-only RPC before returning the profile.
+  const metadataName = user.user_metadata?.full_name || user.user_metadata?.name || "";
+  const { error: linkError } = await supabase.rpc("ensure_brasaland_customer", {
+    p_user_id: user.id,
+    p_name: metadataName || email.split("@")[0],
+    p_email: email,
+    p_phone: null,
+    p_country: null,
+    p_city: null,
+    p_create_membership: true,
+  });
+  if (linkError) return { data: null, error: linkError };
+  result = await supabase.from("Customer")
+    .select("id, name, email, phone, preferences, BrasapointsAccount(balance, BrasapointsTransaction(id, type, points, description, createdAt, orderId))")
+    .eq("authUserId", user.id).maybeSingle();
+  return result;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST" && req.method !== "GET") {
     return res.status(405).json({
@@ -14,11 +41,7 @@ module.exports = async function handler(req, res) {
       res.setHeader("Cache-Control", "private, no-store");
       const user = await getUserFromRequest(supabase, req);
       if (!user) return res.status(401).json({ error: "Inicia sesión para ver tu cuenta." });
-      const { data: customer, error: customerError } = await supabase
-        .from("Customer")
-        .select("id, name, email, phone, preferences, BrasapointsAccount(balance, BrasapointsTransaction(id, type, points, description, createdAt, orderId))")
-        .eq("authUserId", user.id)
-        .maybeSingle();
+      const { data: customer, error: customerError } = await findOrLinkCustomer(supabase, user);
       if (customerError) throw customerError;
       if (!customer) return res.status(404).json({ error: "No encontramos tu cuenta Brasaclub." });
       const { data: reservations, error: reservationsError } = await supabase
@@ -68,6 +91,8 @@ module.exports = async function handler(req, res) {
         });
         if (authError) throw authError;
       }
+      const { error: linkError } = await findOrLinkCustomer(supabase, user);
+      if (linkError) throw linkError;
       const { data: customer, error } = await supabase
         .from("Customer")
         .update({ name: name.trim(), email: normalizedEmail, phone: phone.trim() || null, preferences: preferences.trim() || null })

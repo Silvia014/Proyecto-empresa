@@ -9,45 +9,67 @@
 </head>
 <body class="bg-cream text-walnut antialiased">
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-      <a href="index.html" class="font-display text-2xl font-semibold text-wine">Brasaland</a>
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:gap-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="font-display text-2xl font-semibold text-wine">Brasaland</a>
+        <select
+          id="language-selector"
+          class="rounded-md border border-wine bg-transparent px-3 py-1 text-sm font-medium text-wine focus:border-wine focus:outline-none focus:ring-2 focus:ring-wine"
+          aria-label="Seleccionar idioma"
+        >
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
       <button id="logout-button" class="btn-secondary" type="button">Cerrar sesión</button>
     </div>
   </header>
   <main class="mx-auto max-w-5xl px-6 py-12 lg:py-16">
-    <p class="section-eyebrow">BRASACLUB</p>
-    <h1 class="mt-3 font-display text-4xl font-semibold text-wine">Tu cuenta Brasaland</h1>
-    <p id="account-welcome" class="mt-3 text-walnut/70" aria-live="polite">Cargando tu cuenta…</p>
+    <p id="dashboard-branding" class="section-eyebrow">BRASACLUB</p>
+    <h1 id="dashboard-profile-title" class="mt-3 font-display text-4xl font-semibold text-wine">Mi perfil</h1>
+    <p id="account-welcome" class="mt-3 text-walnut/70" aria-live="polite">Bienvenido de nuevo…</p>
     <p id="account-error" class="mt-6 hidden rounded-lg border border-wine/30 bg-wine/5 p-4 text-wine" role="alert"></p>
     <section class="mt-8 grid gap-5 sm:grid-cols-2">
       <article class="rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm">
-        <p class="text-sm text-walnut/60">Tus Brasapuntos</p>
+        <p id="dashboard-balance-label" class="text-sm text-walnut/60">Tus Brasapuntos</p>
         <p id="brasapoints-balance" class="mt-2 font-display text-4xl font-semibold text-wine">—</p>
-        <p class="mt-2 text-sm text-walnut/60">Los puntos se suman cuando completas pedidos elegibles.</p>
+        <p id="dashboard-balance-hint" class="mt-2 text-sm text-walnut/60">Los puntos se suman cuando completas pedidos elegibles.</p>
       </article>
       <article class="rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm">
-        <p class="text-sm text-walnut/60">Cuenta</p>
+        <p id="dashboard-account-label" class="text-sm text-walnut/60">Cuenta</p>
         <p id="member-name" class="mt-2 text-xl font-semibold text-wine">—</p>
         <p id="member-email" class="mt-1 text-sm text-walnut/70">—</p>
       </article>
     </section>
+    <form id="member-profile-form" class="mt-6 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
+      <div class="mb-5"><p id="dashboard-profile-eyebrow" class="section-eyebrow">TU PERFIL</p><h2 id="dashboard-profile-section-title" class="mt-2 font-display text-2xl font-semibold text-wine">Tus datos</h2></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label id="member-name-label" class="grid gap-1 text-sm font-medium text-walnut">Nombre<input id="member-name-input" class="rounded-lg border border-walnut/20 p-3 font-normal" type="text" autocomplete="name" maxlength="160" required></label>
+        <label id="member-email-label" class="grid gap-1 text-sm font-medium text-walnut">Email<input id="member-email-input" class="rounded-lg border border-walnut/20 p-3 font-normal" type="email" autocomplete="email" maxlength="254" required></label>
+        <label id="member-phone-label" class="grid gap-1 text-sm font-medium text-walnut">Teléfono<input id="member-phone-input" class="rounded-lg border border-walnut/20 p-3 font-normal" type="tel" autocomplete="tel" maxlength="80"></label>
+        <label id="member-preferences-label" class="grid gap-1 text-sm font-medium text-walnut sm:col-span-2">Preferencias y alergias<textarea id="member-preferences-input" class="rounded-lg border border-walnut/20 p-3 font-normal" rows="3" maxlength="1000"></textarea></label>
+      </div>
+      <button id="member-profile-save" class="btn-primary mt-5" type="submit">Guardar cambios</button>
+      <p id="profile-feedback" class="mt-3 hidden text-sm" role="status" aria-live="polite"></p>
+    </form>
     <section class="mt-10 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
       <div class="flex flex-wrap items-end justify-between gap-3">
-        <div><p class="section-eyebrow">HISTORIAL</p><h2 class="mt-2 font-display text-2xl font-semibold text-wine">Tus reservas</h2></div>
-        <a href="reserva.html" class="btn-primary">Reservar mesa</a>
+        <div><p id="dashboard-history-eyebrow" class="section-eyebrow">HISTORIAL</p><h2 id="dashboard-reservations-title" class="mt-2 font-display text-2xl font-semibold text-wine">Tus reservas</h2></div>
+        <a id="dashboard-reservations-button" href="reserva.html" class="btn-primary">Reservar mesa</a>
       </div>
       <p id="reservations-empty" class="mt-6 hidden text-sm text-walnut/65">Todavía no tienes reservas asociadas a esta cuenta.</p>
       <div id="reservations-list" class="mt-5 grid gap-3"></div>
     </section>
     <section class="mt-6 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
       <div class="flex flex-wrap items-end justify-between gap-3">
-        <div><p class="section-eyebrow">HISTORIAL</p><h2 class="mt-2 font-display text-2xl font-semibold text-wine">Tus pedidos online</h2></div>
-        <a href="order.html" class="btn-primary">Pedir online</a>
+        <div><p id="dashboard-orders-eyebrow" class="section-eyebrow">HISTORIAL</p><h2 id="dashboard-orders-title" class="mt-2 font-display text-2xl font-semibold text-wine">Tus pedidos online</h2></div>
+        <a id="dashboard-orders-button" href="order.html" class="btn-primary">Pedir online</a>
       </div>
       <p id="orders-empty" class="mt-6 hidden text-sm text-walnut/65">Todavía no tienes pedidos online asociados a esta cuenta.</p>
       <div id="orders-list" class="mt-5 grid gap-3"></div>
     </section>
   </main>
+  <script src="translations.js"></script>
   <script src="account-dashboard.js"></script>
 </body>
 </html>

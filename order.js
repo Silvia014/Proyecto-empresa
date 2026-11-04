@@ -1,14 +1,9 @@
 let products = [];
-let locations = [{
-  id: "brasaland",
-  name: "Brasaland",
-  city: "Madrid",
-  country: "Spain",
-  currency: "EUR",
-}];
-let selectedLocation = locations[0];
+let locations = [];
+let selectedLocation = { id: "", name: "", city: "", country: "", currency: "USD" };
 let selectedCategory = "all";
 let cart = [];
+let selectedRestaurant = localStorage.getItem("brasalandRestaurant") || "colombia";
 
 try {
   const saved = JSON.parse(localStorage.getItem("brasalandCart") || "[]");
@@ -16,333 +11,6 @@ try {
 } catch {
   localStorage.removeItem("brasalandCart");
 }
-
-const fallbackProducts = [
-  {
-    id: 1,
-    name: "Empanadas de Asado (2 pcs)",
-    category: "entrantes",
-    description: "Hand-cut prime ribeye, caramelized onions, and traditional spices in a crispy crust. Served with house chimichurri and ají casero.",
-    price: 12.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 2,
-    name: "Provolone al Horno",
-    category: "entrantes",
-    description: "Melted aged provolone cheese baked in a cast-iron skillet with oregano, roasted red peppers, and olive oil. Served with grilled sourdough.",
-    price: 13.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 3,
-    name: "Chorizo & Morcilla Board",
-    category: "entrantes",
-    description: "Artisanal chorizo and traditional blood sausage grilled over oak charcoal. Served with mini corn arepas and lime wedges.",
-    price: 15,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 4,
-    name: "Arepitas con Hogao & Queso",
-    category: "entrantes",
-    description: "Mini white corn cakes grilled over open flames, topped with traditional Colombian hogao sauce and melted fresh cheese.",
-    price: 11,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 5,
-    name: "Grilled Bone Marrow / Tuétano a la Brasa",
-    category: "entrantes",
-    description: "Roasted marrow bones sprinkled with sea salt, lemon zest, and fresh parsley. Served with grilled garlic crostini.",
-    price: 14,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 6,
-    name: "Classic Caesar a la Brasa",
-    category: "ensaladas",
-    description: "Lightly charred romaine heart lettuce, garlic-herb croutons, shaved Parmigiano-Reggiano, and house anchovy dressing.",
-    price: 13.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 7,
-    name: "Burrata & Charred Tomato",
-    category: "ensaladas",
-    description: "Creamy burrata paired with smoky wood-fired tomatoes, fresh basil, toasted pine nuts, and a balsamic reduction.",
-    price: 15.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 8,
-    name: "Arugula, Mango & Avocado",
-    category: "ensaladas",
-    description: "Fresh baby arugula, sweet Colombian mango slices, avocado, toasted almonds, and a passion fruit (maracuyá) vinaigrette.",
-    price: 15,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 9,
-    name: "Bife de Lomo / Filet Mignon (250g / 9oz)",
-    category: "carnes",
-    description: "Lean, exceptionally tender center-cut tenderloin with garlic herb butter.",
-    price: 29,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 10,
-    name: "Ojo de Bife / Ribeye (350g / 12oz)",
-    category: "carnes",
-    description: "Richly marbled cut offering maximum tenderness and deep, smoky flavor.",
-    price: 32.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 11,
-    name: "Bife de Chorizo / New York Strip (350g / 12oz)",
-    category: "carnes",
-    description: "Classic thick-cut sirloin with a rich outer cap of flavor.",
-    price: 31,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 12,
-    name: "Punta de Anca / Picanha (300g / 10oz)",
-    category: "carnes",
-    description: "Top sirloin cap, highly popular across the Americas, grilled hot with a crunchy sea salt crust.",
-    price: 34,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 13,
-    name: "Entraña / Skirt Steak (300g / 10oz)",
-    category: "carnes",
-    description: "Traditional Latin American favorite, intensely flavorful and juicy.",
-    price: 28.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 14,
-    name: "Tomahawk Steak (1kg / 35oz) — For Two / Para Compartir",
-    category: "carnes",
-    description: "On-the-bone long ribeye steak cooked on our open-flame grill. Served with garlic butter and signature sauces.",
-    price: 49,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 15,
-    name: "Costillas de Cerdo al BBQ / Pork Ribs",
-    category: "carnes",
-    description: "Full or half rack of tender pork ribs glazed with house-made guava-barbecue sauce.",
-    price: 26,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 16,
-    name: "The Smoky Brasa Burger",
-    category: "hamburguesas",
-    description: "200g beef patty, smoked cheddar, crispy bacon, caramelized onions, and chipotle mayo on a toasted brioche bun.",
-    price: 18.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 17,
-    name: "The Gaucho Burger",
-    category: "hamburguesas",
-    description: "200g beef patty, grilled provolone, roasted red pepper, arugula, and fresh house chimichurri.",
-    price: 18,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 18,
-    name: "The Colombian Criolla",
-    category: "hamburguesas",
-    description: "200g beef patty, melted costeño-style cheese, crushed plantain chips (patacón crumble), fried egg, and garlic hogao mayo.",
-    price: 19,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 19,
-    name: "Yuca Frita con Suero Costeño",
-    category: "acompanamientos",
-    description: "Crispy cassava fries served with authentic sour cream.",
-    price: 7.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 20,
-    name: "Patacones con Hogao",
-    category: "acompanamientos",
-    description: "Twice-fried green plantain disks topped with savory tomato-onion sauce.",
-    price: 7,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 21,
-    name: "Triple-Cooked Hand-Cut Fries",
-    category: "acompanamientos",
-    description: "Crispy skin-on potatoes with rosemary sea salt.",
-    price: 6,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 22,
-    name: "Charred Asparagus",
-    category: "acompanamientos",
-    description: "Fire-grilled with lemon zest and Maldon salt.",
-    price: 8,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 23,
-    name: "Maduro con Queso",
-    category: "acompanamientos",
-    description: "Sweet roasted ripe plantain topped with melted cheese.",
-    price: 6.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 24,
-    name: "Mashed Potatoes with Smoked Garlic",
-    category: "acompanamientos",
-    description: "Creamy Yukon Gold potatoes infused with roasted garlic.",
-    price: 7,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 25,
-    name: "Volcán de Arequipe / Dulce de Leche",
-    category: "postres",
-    description: "Warm molten lava cake filled with rich caramelized milk, served with vanilla bean ice cream.",
-    price: 9,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 26,
-    name: "Ostras de Piña a la Brasa",
-    category: "postres",
-    description: "Wood-fired pineapple rings glazed with rum and brown sugar, topped with coconut sorbet.",
-    price: 9.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 27,
-    name: "Tres Leches Cake",
-    category: "postres",
-    description: "Traditional sponge cake soaked in three milks, topped with toasted meringue and fresh berries.",
-    price: 8.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 28,
-    name: "Flan Tradicional de la Casa",
-    category: "postres",
-    description: "Classic vanilla custard served with extra arequipe and whipped cream.",
-    price: 8,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 29,
-    name: "Aguardiente Sour",
-    category: "bebidas",
-    description: "Colombian Aguardiente, lime juice, simple syrup, egg white, and Angostura bitters.",
-    price: 11,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 30,
-    name: "Smoked Old Fashioned",
-    category: "bebidas",
-    description: "Bourbon, Angostura bitters, sugar cube, infused with applewood smoke.",
-    price: 12.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 31,
-    name: "Charred Maracuyá Margarita",
-    category: "bebidas",
-    description: "Tequila, fire-roasted passion fruit juice, agave, and a chili-salt rim.",
-    price: 12,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 32,
-    name: "Red & White Sangria",
-    category: "bebidas",
-    description: "Wine, brandy, fresh tropical fruits, and cinnamon.",
-    price: 10.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 33,
-    name: "Local & Imported Beers",
-    category: "bebidas",
-    description: "Club Colombia, BBC, Craft IPAs, Bud Light, Stella Artois.",
-    price: 7,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 34,
-    name: "Natural Tropical Juices",
-    category: "bebidas",
-    description: "Lulo, Maracuyá, Mango, Guanábana served in water or milk.",
-    price: 6,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 35,
-    name: "Limonada de Coco",
-    category: "bebidas",
-    description: "Creamy coconut and fresh lime smoothie.",
-    price: 5.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-  {
-    id: 36,
-    name: "Mineral Water (Still / Sparkling)",
-    category: "bebidas",
-    description: "Still or sparkling mineral water served ice-cold.",
-    price: 3.5,
-    currency: "EUR",
-    locationId: "brasaland",
-  },
-];
 
 const productsContainer = document.getElementById("products-container");
 const categoriesContainer = document.getElementById("order-categories");
@@ -496,9 +164,7 @@ function addToCart(id) {
 function loadMenu(locationId = selectedLocation.id, reconcileCart = false) {
   const location = locations.find((item) => String(item.id) === String(locationId)) || selectedLocation || locations[0];
   selectedLocation = location;
-  products = fallbackProducts
-    .filter((item) => String(item.locationId) === String(location.id))
-    .map((item) => ({ ...item, id: String(item.id), locationId: String(item.locationId), currency: item.currency || location.currency }));
+  products = location.menuItems || [];
 
   if (reconcileCart && cart.length) {
     const current = new Map(products.map((item) => [String(item.id), item]));
@@ -524,9 +190,53 @@ function loadMenu(locationId = selectedLocation.id, reconcileCart = false) {
 }
 
 async function initializeCatalog() {
-  const savedLocationId = localStorage.getItem("brasalandLocationId") || selectedLocation.id;
-  loadMenu(savedLocationId, cart.length > 0);
-  setCatalogMessage("");
+  try {
+    locations = await fetchJson("/api/ordering");
+    if (!Array.isArray(locations) || !locations.length) throw new Error("No ordering locations are configured.");
+    const radios = [...document.querySelectorAll('input[name="restaurant-choice"]')];
+    const savedId = localStorage.getItem("brasalandLocationId");
+    let location = locations.find((row) => String(row.id) === savedId);
+    if (!location) location = locations.find((row) => selectedRestaurant === "orlando" ? /orlando/i.test(row.city) : /bogot/i.test(row.city)) || locations[0];
+    selectedRestaurant = /orlando/i.test(location.city) ? "orlando" : "colombia";
+    radios.forEach((radio) => { radio.checked = radio.value === selectedRestaurant; });
+    await chooseRestaurant(location, cart.length > 0);
+    radios.forEach((radio) => radio.addEventListener("change", async () => {
+      if (!radio.checked) return;
+      const next = locations.find((row) => radio.value === "orlando" ? /orlando/i.test(row.city) : /bogot/i.test(row.city));
+      if (!next) return;
+      if (cart.length && !window.confirm("Changing restaurant clears your current cart. Continue?")) {
+        radios.forEach((item) => { item.checked = item.value === selectedRestaurant; });
+        return;
+      }
+      cart = [];
+      localStorage.removeItem("brasalandCart");
+      await chooseRestaurant(next, false);
+    }));
+    setCatalogMessage("");
+  } catch (error) {
+    setCatalogMessage(error.message || "The restaurant menu could not be loaded.");
+  }
+}
+
+async function chooseRestaurant(location, reconcileCart) {
+  selectedRestaurant = /orlando/i.test(location.city) ? "orlando" : "colombia";
+  const live = await fetchJson(`/api/ordering?locationId=${encodeURIComponent(location.id)}`);
+  selectedLocation = { ...location, menuItems: live.map((item) => ({ ...item, id: String(item.id), locationId: String(location.id), currency: item.currency || location.currency })) };
+  const priorCart = cart;
+  products = selectedLocation.menuItems;
+  if (reconcileCart && priorCart.length) {
+    const current = new Map(products.map((item) => [String(item.id), item]));
+    const updated = priorCart.map((item) => current.has(String(item.id)) ? { ...current.get(String(item.id)), quantity: Number(item.quantity) } : null);
+    if (updated.some((item) => !item)) {
+      cart = [];
+      localStorage.removeItem("brasalandCart");
+      setCatalogMessage("We refreshed the live menu. Your old cart items were removed; add the current items again.");
+    } else cart = updated;
+  }
+  localStorage.setItem("brasalandRestaurant", selectedRestaurant);
+  localStorage.setItem("brasalandLocationId", String(location.id));
+  selectedCategory = "all";
+  renderCategoryButtons(); renderProducts(); renderCart();
 }
 
 clearCartButton?.addEventListener("click", () => {

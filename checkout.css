@@ -146,6 +146,21 @@
   resize: vertical;
 }
 
+.delivery-address-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.delivery-address-fields input:last-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 560px) {
+  .delivery-address-fields { grid-template-columns: 1fr; }
+  .delivery-address-fields input:last-child { grid-column: auto; }
+}
+
 
 /* ==========================================
    PICKUP / DELIVERY
@@ -319,4 +334,110 @@
 
 .back-to-menu:hover {
   text-decoration: underline;
+}
+.checkout-restaurant-summary {
+  margin: 10px 0 18px;
+  padding: 12px 14px;
+  border-left: 3px solid #a68048;
+  border-radius: 4px 8px 8px 4px;
+  background: #f2e8d7;
+  color: #49352d;
+  font-weight: 600;
+}
+
+/* Order received / payment choice */
+.order-pending-card {
+  max-width: 760px;
+  padding: clamp(24px, 5vw, 52px);
+  color: #33251f;
+}
+
+.order-pending-card .section-eyebrow {
+  margin-bottom: 12px;
+  color: #9a7541;
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.order-pending-card .order-payment-status {
+  display: inline-flex;
+  margin: 0 auto 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #f8eedc;
+  color: #76521e;
+  font-size: .72rem;
+  letter-spacing: .07em;
+}
+
+.order-pending-card h1 {
+  margin: 4px 0 10px;
+  color: #5a1f2b;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  line-height: 1.1;
+}
+
+.order-pending-card #pending-greeting {
+  margin: 0 auto;
+  color: #65564e;
+  line-height: 1.6;
+}
+
+.pending-receipt-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+  margin: 24px 0 30px;
+  padding: 16px 18px;
+  border: 1px solid #eee3d5;
+  border-radius: 12px;
+  background: #fbf8f3;
+  text-align: left;
+}
+
+.pending-receipt-summary p { margin: 0; line-height: 1.5; }
+.pending-receipt-summary .pending-email { grid-column: 1 / -1; color: #6d5d54; font-size: .91rem; overflow-wrap: anywhere; }
+.pending-receipt-summary .pending-order-id { color: #6d5d54; font-size: .86rem; overflow-wrap: anywhere; }
+.pending-receipt-summary .pending-total { color: #5a1f2b; font-size: 1.15rem; font-weight: 700; text-align: right; }
+
+.payment-choice-intro { margin-bottom: 16px; text-align: left; }
+.payment-choice-intro h2 { margin: 0 0 6px; color: #3c2d27; font-size: 1.2rem; }
+.payment-choice-intro p { margin: 0; color: #71625a; font-size: .94rem; line-height: 1.55; }
+
+.payment-preference-picker { margin: 0; padding: 0; border: 0; }
+.payment-preference-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.payment-choice {
+  display: flex;
+  min-height: 192px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1.5px solid #e4d9cc;
+  border-radius: 14px;
+  background: #fff;
+  color: #3a2c26;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+}
+.payment-choice:hover { transform: translateY(-2px); border-color: #9b6972; box-shadow: 0 8px 20px rgba(73, 26, 37, .09); }
+.payment-choice:focus-visible { outline: 3px solid rgba(124, 65, 79, .3); outline-offset: 3px; }
+.payment-choice:disabled { cursor: wait; opacity: .65; }
+.payment-choice.is-selected { border-color: #5a1f2b; background: #fcf7f4; box-shadow: 0 0 0 2px rgba(90, 31, 43, .1); }
+.payment-choice-icon { display: grid; width: 40px; height: 40px; margin-bottom: 14px; place-items: center; border-radius: 11px; background: #f4e9e6; color: #5a1f2b; font-size: 1.25rem; font-weight: 700; }
+.payment-choice-title { color: #5a1f2b; font-size: 1.08rem; font-weight: 700; }
+.payment-choice-description { margin-top: 7px; color: #71625a; font-size: .88rem; line-height: 1.5; }
+.payment-choice-action { margin-top: auto; padding-top: 16px; color: #5a1f2b; font-size: .86rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.payment-choice-feedback { min-height: 24px; margin: 14px 0 0; color: #315d3d; font-size: .92rem; font-weight: 600; line-height: 1.5; text-align: left; }
+.pending-menu-link { display: inline-block; margin-top: 10px; color: #5a1f2b; font-size: .92rem; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 560px) {
+  .order-pending-card { margin: 20px auto; padding: 24px 18px; }
+  .pending-receipt-summary { grid-template-columns: 1fr; }
+  .pending-receipt-summary .pending-total { text-align: left; }
+  .payment-preference-options { grid-template-columns: 1fr; }
+  .payment-choice { min-height: 0; }
 }

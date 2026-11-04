@@ -44,6 +44,7 @@
         <section class="checkout-details">
 
           <h2>Your details</h2>
+          <p id="checkout-restaurant-summary" class="checkout-restaurant-summary" role="status"></p>
 
           <form id="checkout-form">
 
@@ -93,25 +94,14 @@
             <div class="order-type">
 
               <label>
-                <input
-                  type="radio"
-                  name="order-type"
-                  value="pickup"
-                  checked
-                >
-
-                Pick up at the restaurant
+                <input type="radio" name="order-type" value="pickup" checked>
+                Pick up at the selected restaurant
               </label>
 
 
               <label>
-                <input
-                  type="radio"
-                  name="order-type"
-                  value="delivery"
-                >
-
-                Delivery
+                <input type="radio" name="order-type" value="delivery">
+                Delivery within 20 km of <span id="delivery-city-label">the restaurant</span>
               </label>
 
             </div>
@@ -124,15 +114,16 @@
               class="hidden"
             >
 
-              <label for="address">
-                Delivery address
+              <label>
+                Delivery address (must be within 20 km)
               </label>
-
-              <input
-                type="text"
-                id="address"
-                placeholder="Street, number, city"
-              >
+              <div class="delivery-address-fields">
+                <input type="text" id="address-street" placeholder="Street" aria-label="Street" autocomplete="address-line1">
+                <input type="text" id="address-number" placeholder="Number" aria-label="Number" autocomplete="off">
+                <input type="text" id="address-postcode" placeholder="Postcode" aria-label="Postcode" autocomplete="postal-code">
+                <input type="text" id="address-city" placeholder="City" aria-label="City" autocomplete="address-level2">
+                <input type="text" id="address-country" placeholder="Country" aria-label="Country" autocomplete="country-name">
+              </div>
 
             </div>
 
