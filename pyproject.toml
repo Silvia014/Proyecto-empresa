@@ -13,6 +13,7 @@ dependencies = [
     "email-validator>=2.3.0",
     "fastapi>=0.128.8",
     "libpass[bcrypt]>=1.9.3",
+    "pandas>=2.3.3",
     "psycopg2-binary>=2.9.12",
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.1",

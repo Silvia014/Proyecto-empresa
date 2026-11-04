@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from ..auth.supabase_dependencies import get_current_inventory_user
 from ..database import get_db
 
-from .models import InventoryItem, InventoryMovement, InventoryLot
+from .models import InventoryItem, InventoryMovement, InventoryLot, Location
 from .schemas import (
     ProductCreate,
     ProductResponse,
@@ -13,13 +13,25 @@ from .schemas import (
     AdjustmentCreate,
     InventoryMovementSummaryResponse,
 )
-from .services import calculate_stock, calculate_stocks
+from .services import calculate_stock, calculate_stocks, invalidate_stock_cache
+from ..telemetry import record_internal_event
 
 
 router = APIRouter(
     prefix="/inventory",
     tags=["Inventory"],
 )
+
+
+def _country_code(country: str | None) -> str | None:
+    if not country:
+        return None
+    normalized = country.strip().lower()
+    if normalized in {"colombia", "co", "col"}:
+        return "CO"
+    if normalized in {"united states", "united states of america", "usa", "us", "florida"}:
+        return "US"
+    return country.upper() if len(country) == 2 else None
 
 
 # ---------------------------------------------------------
@@ -94,6 +106,7 @@ def create_product(
 
     session.add(item)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(item)
 
     return {
@@ -184,12 +197,76 @@ def create_inbound(
         movement_type="inbound",
         quantity=movement.quantity,
         reason=movement.reason,
+        supplier_id=movement.supplier_id,
+        unit_cost=movement.unit_cost,
         user_uuid=str(current_user["id"]),
     )
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
+
+    location = session.get(Location, item.location_id)
+    record_internal_event(
+        "inbound_order_created",
+        str(current_user["id"]),
+        {
+            "location_id": item.location_id,
+            "country": _country_code(location.country if location else None),
+            "product_id": item.id,
+            "product_category": item.category,
+            "quantity": record.quantity,
+            "unit": item.unit_of_measure,
+            "currency": location.currency if location else None,
+            "supplier_id": record.supplier_id,
+            "order_id": record.id,
+            "unit_cost": record.unit_cost,
+            "total_cost": (
+                round(record.quantity * record.unit_cost, 2)
+                if record.unit_cost is not None else None
+            ),
+        },
+    )
+
+    # Compare only like-for-like prices: same product and supplier.
+    if record.supplier_id is not None and record.unit_cost is not None:
+        previous = session.exec(
+            select(InventoryMovement)
+            .where(
+                InventoryMovement.item_id == item.id,
+                InventoryMovement.supplier_id == record.supplier_id,
+                InventoryMovement.unit_cost.is_not(None),
+                InventoryMovement.movement_type == "inbound",
+                InventoryMovement.id != record.id,
+            )
+            .order_by(InventoryMovement.created_at.desc())
+        ).first()
+        threshold_percent = 10.0
+        if previous and previous.unit_cost and previous.unit_cost > 0:
+            variance = (
+                (record.unit_cost - previous.unit_cost)
+                / previous.unit_cost * 100
+            )
+            if variance >= threshold_percent:
+                record_internal_event(
+                    "ingredient_price_variance_detected",
+                    str(current_user["id"]),
+                    {
+                        "location_id": item.location_id,
+                        "country": _country_code(location.country if location else None),
+                        "product_id": item.id,
+                        "product_category": item.category,
+                        "quantity": record.quantity,
+                        "unit": item.unit_of_measure,
+                        "currency": location.currency if location else None,
+                        "supplier_id": record.supplier_id,
+                        "current_unit_cost": record.unit_cost,
+                        "reference_unit_cost": previous.unit_cost,
+                        "variance_percent": round(variance, 2),
+                        "threshold_percent": threshold_percent,
+                    },
+                )
 
     return {
         "id": record.id,
@@ -263,7 +340,65 @@ def create_outbound(
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
+
+    location = session.get(Location, item.location_id)
+    record_internal_event(
+        "outbound_order_created",
+        str(current_user["id"]),
+        {
+            "location_id": item.location_id,
+            "country": _country_code(location.country if location else None),
+            "product_id": item.id,
+            "product_category": item.category,
+            "quantity": record.quantity,
+            "unit": item.unit_of_measure,
+            "currency": location.currency if location else None,
+            "order_id": record.id,
+            "reason": (record.reason or "consumption").strip().lower(),
+        },
+    )
+
+    # Emit telemetry when an outbound movement represents recognized waste.
+    waste_reasons = {"expired", "kitchen_error", "theft_suspected"}
+    normalized_reason = (record.reason or "").strip().lower()
+
+    if normalized_reason in waste_reasons:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "stock_waste_registered",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": _country_code(location.country if location else None),
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": record.quantity,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "order_id": None,
+                "reason": normalized_reason,
+            },
+        )
+
+    new_stock = calculate_stock(session, movement.item_id)
+    if current_stock > item.reorder_point and new_stock <= item.reorder_point:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "stock_threshold_triggered",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": _country_code(location.country if location else None),
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": new_stock,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "threshold_quantity": item.reorder_point,
+            },
+        )
 
     return {
         "id": record.id,
@@ -319,6 +454,22 @@ def create_adjustment(
     new_stock = current_stock + movement.quantity
 
     if new_stock < 0:
+        location = session.get(Location, item.location_id)
+        record_internal_event(
+            "direct_stock_edit_rejected",
+            str(current_user["id"]),
+            {
+                "location_id": item.location_id,
+                "country": _country_code(location.country if location else None),
+                "product_id": item.id,
+                "product_category": item.category,
+                "quantity": movement.quantity,
+                "unit": item.unit_of_measure,
+                "currency": location.currency if location else None,
+                "rejection_code": "adjustment_would_make_stock_negative",
+                "source": "inventory_adjustment",
+            },
+        )
         raise HTTPException(
             status_code=400,
             detail=(
@@ -339,6 +490,7 @@ def create_adjustment(
 
     session.add(record)
     session.commit()
+    invalidate_stock_cache()
     session.refresh(record)
 
     return {

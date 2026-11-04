@@ -1,5 +1,6 @@
 from sqlmodel import Session, SQLModel, create_engine
 from fastapi import HTTPException
+from app.inventory.services import calculate_stock, invalidate_stock_cache
 
 from app.inventory.models import (
     InventoryItem,
@@ -12,6 +13,7 @@ from app.inventory.services import calculate_stock
 
 
 def create_test_session():
+    invalidate_stock_cache()
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -23,6 +25,7 @@ def create_test_session():
 
 
 def create_test_item(session: Session) -> InventoryItem:
+    invalidate_stock_cache()
     location = Location(
         id="TEST-01",
         name="Test Location",
@@ -48,6 +51,7 @@ def create_test_item(session: Session) -> InventoryItem:
 
 
 def test_calculate_stock():
+    invalidate_stock_cache()
     session = create_test_session()
     item = create_test_item(session)
 
@@ -87,6 +91,7 @@ def test_calculate_stock():
 
 
 def test_outbound_cannot_create_negative_stock():
+    invalidate_stock_cache()
     session = create_test_session()
     item = create_test_item(session)
 
@@ -122,6 +127,7 @@ def test_outbound_cannot_create_negative_stock():
 
 
 def test_stock_stays_unchanged_after_rejected_outbound():
+    invalidate_stock_cache()
     session = create_test_session()
     item = create_test_item(session)
 

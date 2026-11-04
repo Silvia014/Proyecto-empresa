@@ -72,6 +72,12 @@ def update_supplier_rate(
     supplier_id: int,
     rate_per_unit: float,
 ) -> Optional[dict]:
+    """Update a supplier's directory-level indicative rate.
+
+    This is not a product-specific price observation, so it must not emit
+    ingredient_price_variance_detected. That event is emitted from inbound
+    inventory receipts when the same product/supplier has a comparable cost.
+    """
     with Session(engine) as session:
         supplier = session.get(SupplierDirectoryRecord, supplier_id)
 

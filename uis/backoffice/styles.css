@@ -471,3 +471,57 @@ tbody tr:hover {
     background: var(--warning-bg);
     color: var(--warning);
 }
+/* TELEMETRY DASHBOARD */
+
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.telemetry-card {
+    min-width: 0;
+    padding: 22px;
+    background: var(--cream-light);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.telemetry-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.telemetry-card [id] {
+    overflow-wrap: anywhere;
+}
+
+.telemetry-card ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.telemetry-card li {
+    margin-bottom: 8px;
+}
+
+.telemetry-empty {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+#telemetry-status {
+    margin: 16px 0;
+    color: var(--muted);
+}
+
+#telemetry-status.error {
+    color: var(--burgundy);
+}
+
+@media (max-width: 800px) {
+    .telemetry-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -63,11 +63,13 @@
             <div class="form-group">
                 <label for="reason">Reason</label>
 
-                <input
-                    id="reason"
-                    type="text"
-                    value="Consumption"
-                >
+                <select id="reason">
+                    <option value="Consumption">Consumption</option>
+                    <option value="Sales">Sales</option>
+                    <option value="expired">Expired</option>
+                    <option value="kitchen_error">Kitchen error</option>
+                    <option value="theft_suspected">Suspected theft</option>
+                </select>
             </div>
 
             <div class="form-actions">
@@ -88,6 +90,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../lib/supabase-config.js"></script>
+<script src="../lib/telemetry.js"></script>
 <script src="../lib/inventory.js"></script>
 
 <script>
