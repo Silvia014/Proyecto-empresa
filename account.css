@@ -279,3 +279,372 @@
   }
 
 }
+
+/* ---------------------------------------------------------
+   CLIENT ACCOUNT PORTAL
+--------------------------------------------------------- */
+
+.account-portal {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+}
+
+.portal-heading-row,
+.portal-heading-inline,
+.points-feature-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.portal-heading-row {
+  margin-bottom: 30px;
+}
+
+.portal-heading {
+  margin-top: 8px;
+  color: #5a1f2b;
+  font-family: "Fraunces", serif;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.08;
+}
+
+.portal-lead {
+  margin-top: 12px;
+  color: rgba(34, 27, 22, .68);
+}
+
+.portal-refresh,
+.portal-save {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #5a1f2b;
+  border-radius: 8px;
+  color: #5a1f2b;
+  font-weight: 600;
+}
+
+.portal-refresh:hover,
+.portal-save:hover {
+  background: #5a1f2b;
+  color: #fffaf1;
+}
+
+.portal-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, .78fr) minmax(0, 1.55fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.portal-sidebar,
+.portal-main-column {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.points-feature {
+  overflow: hidden;
+  padding: 26px;
+  border-radius: 18px 18px 18px 5px;
+  background: #5a1f2b;
+  color: #fff8ed;
+  box-shadow: 0 16px 36px rgba(73, 26, 37, .16);
+}
+
+.points-feature-top {
+  color: #f0d9b2;
+  font-size: .92rem;
+  font-weight: 600;
+}
+
+.points-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgba(240, 217, 178, .55);
+  border-radius: 50%;
+  color: #f0d9b2;
+  font-family: "Fraunces", serif;
+}
+
+.points-number {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-top: 26px;
+  font-family: "Fraunces", serif;
+  font-size: clamp(3rem, 6vw, 4.4rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.points-number small {
+  color: rgba(255, 248, 237, .76);
+  font-family: Inter, sans-serif;
+  font-size: .88rem;
+  font-weight: 500;
+}
+
+.points-progress {
+  height: 7px;
+  margin-top: 23px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .18);
+}
+
+.points-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #e2c28d;
+  transition: width .35s ease;
+}
+
+.points-progress-copy {
+  margin-top: 12px;
+  color: rgba(255, 248, 237, .8);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+
+.points-earning-copy {
+  margin-top: 14px;
+  color: rgba(255, 248, 237, .69);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.points-redeem {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid rgba(240, 217, 178, .38);
+  border-radius: 8px;
+  color: #f0d9b2;
+  font-size: .88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.points-redeem:disabled {
+  cursor: not-allowed;
+  opacity: .75;
+}
+
+.portal-profile,
+.portal-panel {
+  padding: 23px;
+  border: 1px solid rgba(59, 29, 29, .1);
+  border-radius: 14px;
+  background: #fffdfa;
+}
+
+.portal-section-heading h2 {
+  margin-top: 6px;
+  color: #5a1f2b;
+  font-family: "Fraunces", serif;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+.portal-section-heading > p:last-child:not(.section-eyebrow) {
+  margin-top: 7px;
+  color: rgba(34, 27, 22, .65);
+  font-size: .92rem;
+}
+
+.portal-profile label {
+  display: block;
+  margin: 16px 0 6px;
+  color: #45332d;
+  font-size: .84rem;
+  font-weight: 600;
+}
+
+.portal-profile input,
+.portal-profile textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ded4c7;
+  border-radius: 7px;
+  background: #fff;
+  color: #221b16;
+  font: inherit;
+  font-size: .92rem;
+}
+
+.portal-profile input[readonly] {
+  background: #f7f2e9;
+  color: #685950;
+}
+
+.portal-profile input:focus,
+.portal-profile textarea:focus {
+  border-color: #7c414f;
+  outline: 3px solid rgba(124, 65, 79, .14);
+}
+
+.portal-save {
+  width: 100%;
+  margin-top: 16px;
+  background: #5a1f2b;
+  color: #fff8ed;
+}
+
+.portal-panel {
+  padding: 25px;
+}
+
+.portal-suggestions {
+  border-color: rgba(166, 128, 72, .25);
+  background: #f2e8d7;
+}
+
+.portal-heading-inline {
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.portal-text-link {
+  color: #5a1f2b;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.portal-record-list,
+.recommendation-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.portal-record {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(59, 29, 29, .1);
+}
+
+.portal-record:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.portal-record-title {
+  color: #4a272d;
+  font-weight: 650;
+}
+
+.portal-record-meta,
+.portal-empty {
+  margin-top: 5px;
+  color: rgba(34, 27, 22, .64);
+  font-size: .87rem;
+  line-height: 1.5;
+}
+
+.portal-record-value {
+  color: #5a1f2b;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.portal-status {
+  display: inline-flex;
+  margin-top: 7px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: #f1eadf;
+  color: #624e40;
+  font-size: .73rem;
+  font-weight: 700;
+}
+
+.portal-feedback,
+.portal-error {
+  margin: 0 0 18px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: .92rem;
+}
+
+.portal-feedback {
+  background: #e8f1e9;
+  color: #315d3d;
+}
+
+.portal-error {
+  background: #f8e9e7;
+  color: #7e2835;
+}
+
+.points-feature :focus-visible,
+.portal-profile :focus-visible,
+.portal-refresh:focus-visible,
+.portal-save:focus-visible,
+.portal-text-link:focus-visible {
+  outline: 3px solid #cda86d;
+  outline-offset: 3px;
+}
+
+@media (max-width: 850px) {
+  .portal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .account-portal {
+    padding: 4px 0;
+  }
+
+  .portal-heading-row {
+    align-items: start;
+  }
+
+  .portal-heading-row,
+  .portal-heading-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portal-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-panel,
+  .portal-profile,
+  .points-feature {
+    padding: 20px;
+  }
+
+  .portal-record {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-record-value {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .points-progress span {
+    transition: none;
+  }
+}

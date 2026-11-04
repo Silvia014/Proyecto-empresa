@@ -6,12 +6,8 @@ from pathlib import Path
 from fastapi.responses import JSONResponse
 from .database import create_db_and_tables, get_db
 from .incidents.models import IncidentRecord
-<<<<<<< HEAD
 from .telemetry import router as telemetry_router, record_internal_event
-=======
-from .telemetry import router as telemetry_router
 from app.telemetry_report import router as telemetry_report_router
->>>>>>> ffa9a06 (push para lectura del agente)
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
@@ -32,6 +28,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .inventory.routes import router as inventory_router
+from .ordering.routes import router as ordering_router
 
 from .crud import (
     create_supplier,
@@ -131,6 +128,7 @@ app.include_router(profiles_router)
 app.include_router(auth_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
+app.include_router(ordering_router)
 app.include_router(telemetry_router)
 
 app.add_middleware(

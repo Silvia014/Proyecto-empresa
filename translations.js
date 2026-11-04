@@ -9,7 +9,8 @@ const translations = {
       contact: "Contacto",
       careers: "Trabaja con nosotros",
       reserve: "Reservar mesa",
-      order: "Pedir online"
+      order: "Pedir online",
+      profile: "Mi perfil"
     },
 
     hero: {
@@ -17,7 +18,7 @@ const translations = {
       title: "Una mesa con la cuidada hospitalidad de un establecimiento de gran lujo",
       subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en nuestra larga trayectoria en la hostelería de lujo: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
       button: "Reservar mesa",
-      button2: "Conócenos",
+      button2: "Brasaclub",
       order: "Pedir online"
     },
 
@@ -26,7 +27,8 @@ const translations = {
       subtitle: "Elige tus platos favoritos, añádelos al carrito y disfruta de Brasaland donde quieras.",
       categories: {
         all: "Todos",
-        entrantes: "Entrantes",
+        entrantes: "Entradas",
+        ensaladas: "Ensaladas",
         carnes: "Carnes",
         hamburguesas: "Hamburguesas",
         acompanamientos: "Acompañamientos",
@@ -52,7 +54,7 @@ const translations = {
         subtotal: "Subtotal",
         total: "Total"
       },
-      checkout: "Continuar al pago",
+      checkout: "Continuar pedido",
       secure: "Podrás revisar tus datos antes de realizar el pago.",
       add: "+ Añadir",
       unit: "unidad",
@@ -63,52 +65,148 @@ const translations = {
       checkoutEmpty: "Tu carrito está vacío.",
       products: {
         1: {
-          name: "Provoleta Brasaland",
-          description: "Queso provolone fundido, tomate seco y un toque de orégano."
+          name: "Empanadas de Asado (2 pcs)",
+          description: "Prime ribeye cortado a mano, cebolla caramelizada y especias tradicionales en masa crujiente. Servidas con chimichurri de la casa y ají casero."
         },
         2: {
-          name: "Empanadas Argentinas",
-          description: "Selección de empanadas artesanales recién horneadas."
+          name: "Provolone al Horno",
+          description: "Queso provolone curado derretido al horno en sartén, con orégano, pimientos asados y aceite de oliva. Servido con pan de masa madre a la parrilla."
         },
         3: {
-          name: "Entraña a la Parrilla",
-          description: "Entraña seleccionada a la brasa, acompañada de chimichurri."
+          name: "Chorizo & Morcilla Board",
+          description: "Chorizo artesanal y morcilla tradicional a la parrilla sobre carbón de roble. Servido con arepas de maíz mini y limones."
         },
         4: {
-          name: "Bife de Chorizo",
-          description: "Corte argentino premium preparado a la parrilla."
+          name: "Arepitas con Hogao & Queso",
+          description: "Mini arepas de maíz blanco a la plancha, con hogao tradicional colombiano y queso fresco derretido."
         },
         5: {
-          name: "Burger Brasaland",
-          description: "Carne a la parrilla, queso, cebolla caramelizada y salsa especial."
+          name: "Grilled Bone Marrow / Tuétano a la Brasa",
+          description: "Huesos con tuétano asados, sal marina, ralladura de limón y perejil fresco. Servidos con crostini de ajo a la parrilla."
         },
         6: {
-          name: "Burger Clásica",
-          description: "Carne de vacuno, queso, lechuga, tomate y nuestra salsa de la casa."
+          name: "Classic Caesar a la Brasa",
+          description: "Corazón de romaine ligeramente ahumado, croutons de ajo y hierbas, Parmigiano-Reggiano y aderezo de anchoas de la casa."
         },
         7: {
-          name: "Patatas Bravas",
-          description: "Patatas crujientes con salsa brava casera."
+          name: "Burrata & Charred Tomato",
+          description: "Burrata cremosa con tomates ahumados a la madera, albahaca fresca, piñones tostados y reducción de vinagre balsámico."
         },
         8: {
-          name: "Verduras a la Brasa",
-          description: "Selección de verduras de temporada cocinadas a la parrilla."
+          name: "Arugula, Mango & Avocado",
+          description: "Rúcula baby, mango colombiano, aguacate, almendras tostadas y vinagreta de maracuyá."
         },
         9: {
-          name: "Brownie",
-          description: "Brownie de chocolate servido templado."
+          name: "Bife de Lomo / Filet Mignon (250g / 9oz)",
+          description: "Centro tierno y muy suave, con mantequilla de ajo y hierbas."
         },
         10: {
-          name: "Tarta de Queso",
-          description: "Tarta cremosa de queso con base crujiente."
+          name: "Ojo de Bife / Ribeye (350g / 12oz)",
+          description: "Corte muy marmoleado, jugoso y con profundo sabor ahumado."
         },
         11: {
-          name: "Coca-Cola",
-          description: "Refresco frío."
+          name: "Bife de Chorizo / New York Strip (350g / 12oz)",
+          description: "Lomo grueso con un exterior sabroso y muy aromático."
         },
         12: {
-          name: "Agua Mineral",
-          description: "Agua mineral natural."
+          name: "Punta de Anca / Picanha (300g / 10oz)",
+          description: "Corte de lomo con gran demanda en América, asado y terminado con costra de sal marina."
+        },
+        13: {
+          name: "Entraña / Skirt Steak (300g / 10oz)",
+          description: "Corte tradicional latinoamericano, intensamente sabroso y jugoso."
+        },
+        14: {
+          name: "Tomahawk Steak (1kg / 35oz) — For Two / Para Compartir",
+          description: "Solomillo largo a la brasa sobre fuego abierto, servido con mantequilla de ajo y salsas de la casa."
+        },
+        15: {
+          name: "Costillas de Cerdo al BBQ / Pork Ribs",
+          description: "Rack completo o medio con costillas tiernas glaseadas con salsa BBQ de guayaba casera."
+        },
+        16: {
+          name: "The Smoky Brasa Burger",
+          description: "Carne 200g, cheddar ahumado, bacon crujiente, cebolla caramelizada y chipotle mayo en brioche tostado."
+        },
+        17: {
+          name: "The Gaucho Burger",
+          description: "Carne 200g, provolone a la parrilla, pimiento asado, rúcula y chimichurri de la casa."
+        },
+        18: {
+          name: "The Colombian Criolla",
+          description: "Carne 200g, queso costeño derretido, patacón triturado, huevo frito y hogao mayo con ajo."
+        },
+        19: {
+          name: "Yuca Frita con Suero Costeño",
+          description: "Yuca frita crujiente acompañada de suero costeño auténtico."
+        },
+        20: {
+          name: "Patacones con Hogao",
+          description: "Plátano verde frito dos veces con salsa de tomate y cebolla."
+        },
+        21: {
+          name: "Triple-Cooked Hand-Cut Fries",
+          description: "Papas con piel crujientes y sal marina de romero."
+        },
+        22: {
+          name: "Charred Asparagus",
+          description: "Espárragos a la parrilla con ralladura de limón y sal Maldon."
+        },
+        23: {
+          name: "Maduro con Queso",
+          description: "Plátano maduro asado y cubierto con queso derretido."
+        },
+        24: {
+          name: "Mashed Potatoes with Smoked Garlic",
+          description: "Puré de papa Yukon Gold con ajo ahumado y crema."
+        },
+        25: {
+          name: "Volcán de Arequipe / Dulce de Leche",
+          description: "Pastel caliente con centro fundido de arequipe y helado de vainilla."
+        },
+        26: {
+          name: "Ostras de Piña a la Brasa",
+          description: "Rodajas de piña a la madera con ron, azúcar moreno y sorbete de coco."
+        },
+        27: {
+          name: "Tres Leches Cake",
+          description: "Bizcocho empapado en tres leches, terminado con merengue tostado y bayas frescas."
+        },
+        28: {
+          name: "Flan Tradicional de la Casa",
+          description: "Flan clásico de vainilla con arequipe extra y nata."
+        },
+        29: {
+          name: "Aguardiente Sour",
+          description: "Aguardiente colombiano, jugo de lima, jarabe, clara de huevo y bitters Angostura."
+        },
+        30: {
+          name: "Smoked Old Fashioned",
+          description: "Bourbon, bitters Angostura, cubito de azúcar e infusión ahumada con manzana."
+        },
+        31: {
+          name: "Charred Maracuyá Margarita",
+          description: "Tequila, jugo de maracuyá asado, agave y borde con sal de chile."
+        },
+        32: {
+          name: "Red & White Sangria",
+          description: "Vino, brandy, frutas tropicales frescas y canela."
+        },
+        33: {
+          name: "Local & Imported Beers",
+          description: "Club Colombia, BBC, IPA artesanales, Bud Light y Stella Artois."
+        },
+        34: {
+          name: "Natural Tropical Juices",
+          description: "Lulo, maracuyá, mango y guanábana en agua o leche."
+        },
+        35: {
+          name: "Limonada de Coco",
+          description: "Limonada cremosa de coco con lima fresca."
+        },
+        36: {
+          name: "Mineral Water (Still / Sparkling)",
+          description: "Agua mineral natural o con gas, servida bien fría."
         }
       },
       brasapoints: {
@@ -137,6 +235,7 @@ const translations = {
       title: "Qué hacemos",
       subtitle: "Cocina de temporada, servida sin errores",
       description: "Trabajamos directamente con productores locales para diseñar una carta que cambia con las estaciones. Pero lo que de verdad nos diferencia es cómo gestionamos tu visita: control de aforo real, tiempos de mesa pensados para que nadie espere de más, y un equipo formado para anticipar lo que necesitas antes de que lo pidas.",
+      menuButton: "Ver menu",
 
       feature1: {
         title: "Reserva confirmada al instante — recibes la confirmación por email en el momento."
@@ -217,7 +316,8 @@ const translations = {
         }
       ],
       ctaClub: "Únete a Brasaland Club",
-      ctaOrder: "Pedir online"
+      ctaOrder: "Pedir online",
+      ctaBookTable: "Reservar mesa"
     },
 
     contacto: {
@@ -563,6 +663,7 @@ const translations = {
             subtitle: "Crea tu cuenta y empieza a acumular puntos.",
             name: "Nombre completo",
             email: "Email",
+            phone: "Teléfono",
             password: "Contraseña",
             submit: "Crear cuenta",
             switch: {
@@ -582,6 +683,18 @@ const translations = {
               text: "¿Todavía no tienes cuenta?",
               create: "Crear cuenta"
             }
+          },
+          portal: {
+            logout: "Cerrar sesión", eyebrow: "BRASACLUB", title: "Tu cuenta Brasaland",
+            refresh: "Actualizar", balance: "Brasapuntos disponibles", pointsUnit: "puntos",
+            earningRule: "Por cada 100 € de gasto elegible se obtienen 100 puntos.",
+            redeemSoon: "Canjear en el próximo pedido · próximamente", profileEyebrow: "TU PERFIL",
+            profileTitle: "Tus datos", name: "Nombre", email: "Correo electrónico", phone: "Teléfono",
+            preferences: "Preferencias y alergias", preferencesPlaceholder: "Cuéntanos tus preferencias o alergias",
+            save: "Guardar preferencias", forYou: "PARA TI", suggestions: "Ideas para tu próxima visita",
+            suggestionsIntro: "Basadas en tus pedidos anteriores.", history: "TU HISTORIAL", orders: "Pedidos online",
+            orderNow: "Pedir online", reservations: "Reservas", bookTable: "Reservar mesa",
+            pointsHistoryEyebrow: "BRASAPUNTOS", pointsHistory: "Actividad de puntos"
           }
         },
 
@@ -595,7 +708,8 @@ const translations = {
       contact: "Contact",
       careers: "Careers",
       reserve: "Book a Table",
-      order: "Order Online"
+      order: "Order Online",
+      profile: "My profile"
     },
 
     hero: {
@@ -603,7 +717,7 @@ const translations = {
       title: "A table with the refined hospitality of a luxury establishment",
       subtitle: "At Brasaland, we cook seasonal dishes and serve every table with the same high standards of hospitality we developed through our long experience in luxury hospitality: punctual, warm, and frictionless. Booking takes less than a minute.",
       button: "Book a Table",
-      button2: "Learn More",
+      button2: "Brasaclub",
       order: "Order Online"
     },
 
@@ -613,6 +727,7 @@ const translations = {
       categories: {
         all: "All",
         entrantes: "Starters",
+        ensaladas: "Salads",
         carnes: "Grill",
         hamburguesas: "Burgers",
         acompanamientos: "Sides",
@@ -649,52 +764,148 @@ const translations = {
       checkoutEmpty: "Your cart is empty.",
       products: {
         1: {
-          name: "Brasaland Provoleta",
-          description: "Melted provolone cheese with sun-dried tomato and a touch of oregano."
+          name: "Empanadas de Asado (2 pcs)",
+          description: "Hand-cut prime ribeye, caramelized onions, and traditional spices in a crispy crust. Served with house chimichurri and ají casero."
         },
         2: {
-          name: "Argentinian Empanadas",
-          description: "Selection of freshly baked artisanal empanadas."
+          name: "Provolone al Horno",
+          description: "Melted aged provolone cheese baked in a cast-iron skillet with oregano, roasted red peppers, and olive oil. Served with grilled sourdough."
         },
         3: {
-          name: "Grilled Skirt Steak",
-          description: "Selected skirt steak grilled over fire and served with chimichurri."
+          name: "Chorizo & Morcilla Board",
+          description: "Artisanal chorizo and traditional blood sausage grilled over oak charcoal. Served with mini corn arepas and lime wedges."
         },
         4: {
-          name: "Sirloin Steak",
-          description: "Premium Argentinian cut prepared on the grill."
+          name: "Arepitas con Hogao & Queso",
+          description: "Mini white corn cakes grilled over open flames, topped with traditional Colombian hogao sauce and melted fresh cheese."
         },
         5: {
-          name: "Brasaland Burger",
-          description: "Grilled beef, cheese, caramelized onion, and signature sauce."
+          name: "Grilled Bone Marrow / Tuétano a la Brasa",
+          description: "Roasted marrow bones sprinkled with sea salt, lemon zest, and fresh parsley. Served with grilled garlic crostini."
         },
         6: {
-          name: "Classic Burger",
-          description: "Beef patty, cheese, lettuce, tomato, and our house sauce."
+          name: "Classic Caesar a la Brasa",
+          description: "Lightly charred romaine heart lettuce, garlic-herb croutons, shaved Parmigiano-Reggiano, and house anchovy dressing."
         },
         7: {
-          name: "Patatas Bravas",
-          description: "Crispy potatoes with homemade brava sauce."
+          name: "Burrata & Charred Tomato",
+          description: "Creamy burrata paired with smoky wood-fired tomatoes, fresh basil, toasted pine nuts, and a balsamic reduction."
         },
         8: {
-          name: "Grilled Vegetables",
-          description: "Seasonal vegetables cooked over the grill."
+          name: "Arugula, Mango & Avocado",
+          description: "Fresh baby arugula, sweet Colombian mango slices, avocado, toasted almonds, and a passion fruit vinaigrette."
         },
         9: {
-          name: "Brownie",
-          description: "Warm served chocolate brownie."
+          name: "Bife de Lomo / Filet Mignon (250g / 9oz)",
+          description: "Lean, exceptionally tender center-cut tenderloin with garlic herb butter."
         },
         10: {
-          name: "Cheesecake",
-          description: "Creamy cheesecake with a crisp base."
+          name: "Ojo de Bife / Ribeye (350g / 12oz)",
+          description: "Richly marbled cut offering maximum tenderness and deep, smoky flavor."
         },
         11: {
-          name: "Coca-Cola",
-          description: "Cold soft drink."
+          name: "Bife de Chorizo / New York Strip (350g / 12oz)",
+          description: "Classic thick-cut sirloin with a rich outer cap of flavor."
         },
         12: {
-          name: "Mineral Water",
-          description: "Natural mineral water."
+          name: "Punta de Anca / Picanha (300g / 10oz)",
+          description: "Top sirloin cap, highly popular across the Americas, grilled hot with a crunchy sea salt crust."
+        },
+        13: {
+          name: "Entraña / Skirt Steak (300g / 10oz)",
+          description: "Traditional Latin American favorite, intensely flavorful and juicy."
+        },
+        14: {
+          name: "Tomahawk Steak (1kg / 35oz) — For Two / Para Compartir",
+          description: "On-the-bone long ribeye steak cooked on our open-flame grill. Served with garlic butter and signature sauces."
+        },
+        15: {
+          name: "Costillas de Cerdo al BBQ / Pork Ribs",
+          description: "Full or half rack of tender pork ribs glazed with house-made guava-barbecue sauce."
+        },
+        16: {
+          name: "The Smoky Brasa Burger",
+          description: "200g beef patty, smoked cheddar, crispy bacon, caramelized onions, and chipotle mayo on a toasted brioche bun."
+        },
+        17: {
+          name: "The Gaucho Burger",
+          description: "200g beef patty, grilled provolone, roasted red pepper, arugula, and fresh house chimichurri."
+        },
+        18: {
+          name: "The Colombian Criolla",
+          description: "200g beef patty, melted costeño-style cheese, crushed plantain chips (patacón crumble), fried egg, and garlic hogao mayo."
+        },
+        19: {
+          name: "Yuca Frita con Suero Costeño",
+          description: "Crispy cassava fries served with authentic sour cream."
+        },
+        20: {
+          name: "Patacones con Hogao",
+          description: "Twice-fried green plantain disks topped with savory tomato-onion sauce."
+        },
+        21: {
+          name: "Triple-Cooked Hand-Cut Fries",
+          description: "Crispy skin-on potatoes with rosemary sea salt."
+        },
+        22: {
+          name: "Charred Asparagus",
+          description: "Fire-grilled with lemon zest and Maldon salt."
+        },
+        23: {
+          name: "Maduro con Queso",
+          description: "Sweet roasted ripe plantain topped with melted cheese."
+        },
+        24: {
+          name: "Mashed Potatoes with Smoked Garlic",
+          description: "Creamy Yukon Gold potatoes infused with roasted garlic."
+        },
+        25: {
+          name: "Volcán de Arequipe / Dulce de Leche",
+          description: "Warm molten lava cake filled with rich caramelized milk, served with vanilla bean ice cream."
+        },
+        26: {
+          name: "Ostras de Piña a la Brasa",
+          description: "Wood-fired pineapple rings glazed with rum and brown sugar, topped with coconut sorbet."
+        },
+        27: {
+          name: "Tres Leches Cake",
+          description: "Traditional sponge cake soaked in three milks, topped with toasted meringue and fresh berries."
+        },
+        28: {
+          name: "Flan Tradicional de la Casa",
+          description: "Classic vanilla custard served with extra arequipe and whipped cream."
+        },
+        29: {
+          name: "Aguardiente Sour",
+          description: "Colombian Aguardiente, lime juice, simple syrup, egg white, and Angostura bitters."
+        },
+        30: {
+          name: "Smoked Old Fashioned",
+          description: "Bourbon, Angostura bitters, sugar cube, infused with applewood smoke."
+        },
+        31: {
+          name: "Charred Maracuyá Margarita",
+          description: "Tequila, fire-roasted passion fruit juice, agave, and a chili-salt rim."
+        },
+        32: {
+          name: "Red & White Sangria",
+          description: "Wine, brandy, fresh tropical fruits, and cinnamon."
+        },
+        33: {
+          name: "Local & Imported Beers",
+          description: "Club Colombia, BBC, Craft IPAs, Bud Light, Stella Artois."
+        },
+        34: {
+          name: "Natural Tropical Juices",
+          description: "Lulo, Maracuyá, Mango, Guanábana served in water or milk."
+        },
+        35: {
+          name: "Limonada de Coco",
+          description: "Creamy coconut and fresh lime smoothie."
+        },
+        36: {
+          name: "Mineral Water (Still / Sparkling)",
+          description: "Still or sparkling mineral water served ice-cold."
         }
       },
       brasapoints: {
@@ -737,6 +948,7 @@ const translations = {
             subtitle: "Create your account and start earning points.",
             name: "Full name",
             email: "Email",
+            phone: "Phone",
             password: "Password",
             submit: "Create account",
             switch: {
@@ -756,6 +968,18 @@ const translations = {
               text: "Don't have an account yet?",
               create: "Create account"
             }
+          },
+          portal: {
+            logout: "Sign out", eyebrow: "BRASACLUB", title: "Your Brasaland account",
+            refresh: "Refresh", balance: "Available Brasapoints", pointsUnit: "points",
+            earningRule: "Earn 100 points for every €100 of eligible spend.",
+            redeemSoon: "Redeem on your next order · coming soon", profileEyebrow: "YOUR PROFILE",
+            profileTitle: "Your details", name: "Name", email: "Email address", phone: "Phone",
+            preferences: "Preferences and allergies", preferencesPlaceholder: "Tell us about your preferences or allergies",
+            save: "Save preferences", forYou: "FOR YOU", suggestions: "Ideas for your next visit",
+            suggestionsIntro: "Based on your previous orders.", history: "YOUR HISTORY", orders: "Online orders",
+            orderNow: "Order online", reservations: "Reservations", bookTable: "Book a table",
+            pointsHistoryEyebrow: "BRASAPOINTS", pointsHistory: "Points activity"
           }
         },
 
@@ -763,6 +987,7 @@ const translations = {
       title: "What We Do",
       subtitle: "Seasonal Cuisine, Served Flawlessly",
       description: "We work directly with local producers to create a seasonal menu. What truly sets us apart is the way we manage your visit: real-time capacity control, perfectly timed table service, and a team trained to anticipate your needs before you ask.",
+      menuButton: "View menu",
 
       feature1: {
         title: "Instant reservation confirmation — receive your confirmation email immediately."
@@ -843,7 +1068,8 @@ const translations = {
         }
       ],
       ctaClub: "Join Brasaland Club",
-      ctaOrder: "Order online"
+      ctaOrder: "Order online",
+      ctaBookTable: "Book a Table"
     },
 
     contacto: {
@@ -1221,6 +1447,19 @@ function setLanguage(lang) {
       element.placeholder = value;
     }
   });
+
+  const menuPdfButton = document.getElementById("about-menu-button");
+
+  if (menuPdfButton) {
+    menuPdfButton.href =
+      lang === "es"
+        ? "Fuego_Brasa_Menu_Spanish.pdf"
+        : "Fuego_Brasa_Menu_English.pdf";
+    menuPdfButton.setAttribute(
+      "aria-label",
+      lang === "es" ? "Ver menú" : "View menu"
+    );
+  }
 
   // Update page title
   document.title =

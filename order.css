@@ -542,3 +542,25 @@
 .clear-cart-button:active {
   opacity: 0.6;
 }
+.restaurant-choice {
+  margin: 24px 0;
+  padding: 20px 22px;
+  border: 1px solid rgba(90, 31, 43, .16);
+  border-radius: 14px;
+  background: #fffdfa;
+}
+.restaurant-choice-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 16px;
+}
+.restaurant-choice-options label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #4b3730;
+  font-weight: 600;
+}
+.restaurant-choice-options input { accent-color: #5a1f2b; }
+#restaurant-choice-message { margin-top: 10px; color: #7a3442; font-size: .9rem; }

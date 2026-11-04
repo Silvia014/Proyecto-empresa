@@ -28,7 +28,7 @@
 
 <!-- ===================== ENCABEZADO ===================== -->
   <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:gap-6 lg:px-8">
       <div class="flex items-center gap-3">
         <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="header.brand"> 
           Brasaland
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Navegación de escritorio -->
-      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:flex">
+      <nav aria-label="Navegación principal" class="hidden items-center gap-8 lg:ml-8 lg:flex">
         <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
         <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
         <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
@@ -52,6 +52,7 @@
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
         <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+        <a id="order-account-link" href="account.html" class="nav-link" data-i18n="nav.profile">Mi perfil</a>
       </nav>
 
       <!-- Botón de menú móvil -->
@@ -103,6 +104,7 @@
         data-i18n="nav.order">
       Pedir online
       </a>
+      <a id="order-account-link-mobile" href="account.html" class="nav-link" data-i18n="nav.profile">Mi perfil</a>
           </nav>
         </header>
 
@@ -171,77 +173,16 @@
 
 
 
-    <!-- CATEGORÍAS -->
-
-    <section
-      class="order-categories"
-      aria-label="Categorías del menú"
-    >
-
-      <button
-        class="category-button active"
-        data-category="all"
-        type="button"
-        data-i18n="order.categories.all"
-      >
-        Todos
-      </button>
-
-      <button
-        class="category-button"
-        data-category="entrantes"
-        type="button"
-        data-i18n="order.categories.entrantes"
-      >
-        Entrantes
-      </button>
-
-      <button
-        class="category-button"
-        data-category="carnes"
-        type="button"
-        data-i18n="order.categories.carnes"
-      >
-        Carnes
-      </button>
-
-      <button
-        class="category-button"
-        data-category="hamburguesas"
-        type="button"
-        data-i18n="order.categories.hamburguesas"
-      >
-        Hamburguesas
-      </button>
-
-      <button
-        class="category-button"
-        data-category="acompanamientos"
-        type="button"
-        data-i18n="order.categories.acompanamientos"
-      >
-        Acompañamientos
-      </button>
-
-      <button
-        class="category-button"
-        data-category="postres"
-        type="button"
-        data-i18n="order.categories.postres"
-      >
-        Postres
-      </button>
-
-      <button
-        class="category-button"
-        data-category="bebidas"
-        type="button"
-        data-i18n="order.categories.bebidas"
-      >
-        Bebidas
-      </button>
-
+    <section class="restaurant-choice" aria-labelledby="restaurant-choice-title">
+      <h2 id="restaurant-choice-title" class="font-display text-2xl font-semibold text-wine">Choose your restaurant</h2>
+      <p class="mt-2 text-walnut/70">The menu is shared. Choose the kitchen that will prepare your order.</p>
+      <div class="restaurant-choice-options">
+        <label><input type="radio" name="restaurant-choice" value="colombia" checked> Colombia · Bogotá</label>
+        <label><input type="radio" name="restaurant-choice" value="orlando"> United States · Orlando</label>
+      </div>
+      <p id="restaurant-choice-message" role="status" aria-live="polite"></p>
     </section>
+    <section id="order-categories" class="order-categories" aria-label="Menu categories"></section>
 
 
 
@@ -394,7 +335,7 @@
             </span>
 
             <strong id="cart-subtotal">
-              €0.00
+              —
             </strong>
 
           </div>
@@ -409,7 +350,7 @@
             </span>
 
             <strong id="cart-total">
-              €0.00
+              —
             </strong>
 
           </div>
@@ -422,7 +363,7 @@
           >
 
             <span data-i18n="order.checkout">
-              Continuar al pago
+              Continuar pedido
             </span>
 
             <span aria-hidden="true">
@@ -445,7 +386,7 @@
             class="order-secure-text"
             data-i18n="order.secure"
           >
-            Podrás revisar tus datos antes de realizar el pago.
+            No payment is taken now. After you submit, the restaurant will confirm availability and send a payment link; you can ask to pay cash instead.
           </p>
 
         </div>
@@ -514,6 +455,8 @@
   <script src="main.js"></script>
 
   <script src="translations.js"></script>
+
+  <script src="order-account.js"></script>
 
   <script src="order.js"></script>
 

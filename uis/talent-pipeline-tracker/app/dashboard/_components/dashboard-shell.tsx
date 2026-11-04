@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import IntakeHub from "./intake-hub";
 import {
   getCrmSectionBySlug,
   getCrmSections,
@@ -35,10 +36,6 @@ export default function DashboardShell({
   const [previewSlug, setPreviewSlug] = useState(initialSectionSlug);
 
   useEffect(() => {
-    setPreviewSlug(initialSectionSlug);
-  }, [initialSectionSlug]);
-
-  useEffect(() => {
     async function loadDashboardContext() {
       try {
         const {
@@ -59,7 +56,7 @@ export default function DashboardShell({
 
         const { data: locationData, error: locationError } = await supabase
           .from("Location")
-          .select("id, name");
+          .select("id, name, city, country");
 
         if (locationError) {
           throw locationError;
@@ -288,7 +285,10 @@ export default function DashboardShell({
               </div>
             </section>
 
-            <section className="grid gap-4 md:grid-cols-3">
+            {activeSection.slug === "brasapuntos" ? <IntakeHub /> :
+             activeSection.slug === "reservations" ? <IntakeHub view="reservations" /> :
+             activeSection.slug === "candidates" ? <IntakeHub view="candidates" /> : <>
+            {activeSection.metrics.length > 0 && <section className="grid gap-4 md:grid-cols-3">
               {activeSection.metrics.map((metric) => (
                 <article
                   key={metric.label}
@@ -301,7 +301,7 @@ export default function DashboardShell({
                   </p>
                 </article>
               ))}
-            </section>
+            </section>}
 
             <section className="rounded-3xl bg-white p-6 shadow-sm lg:p-8">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -315,12 +315,10 @@ export default function DashboardShell({
                   </h4>
                 </div>
 
-                <p className="text-sm text-gray-500">
-                  Data preview for {activeSection.title.toLowerCase()}
-                </p>
+                <p className="text-sm text-gray-500">Live database records</p>
               </div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {activeSection.records.length > 0 ? <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {activeSection.records.map((record) => (
                   <article
                     key={`${activeSection.slug}-${record.name}`}
@@ -331,9 +329,7 @@ export default function DashboardShell({
                         {record.name}
                       </h5>
 
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#5a1f2b]">
-                        {record.status}
-                      </span>
+                      {record.status && <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#5a1f2b]">{record.status}</span>}
                     </div>
 
                     <p className="mt-3 text-sm leading-6 text-gray-600">
@@ -341,8 +337,11 @@ export default function DashboardShell({
                     </p>
                   </article>
                 ))}
-              </div>
+              </div> : <p className="mt-6 rounded-xl bg-[#f5f0e8] p-5 text-sm text-gray-600">
+                {activeSection.slug === "locations" ? "No locations are currently stored in the database." : "No live database records are connected to this module yet."}
+              </p>}
             </section>
+            </>}
           </div>
         </div>
       </section>

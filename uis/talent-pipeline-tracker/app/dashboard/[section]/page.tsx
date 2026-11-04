@@ -14,6 +14,7 @@ export default async function DashboardSectionPage({
 
   return (
     <DashboardShell
+      key={section}
       initialSectionSlug={isCrmSectionSlug(section) ? section : "suppliers"}
     />
   );
