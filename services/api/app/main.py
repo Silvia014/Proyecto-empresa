@@ -29,6 +29,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from .inventory.routes import router as inventory_router
 from .ordering.routes import router as ordering_router
+from services.reporting.routes import router as reporting_router
 
 from .crud import (
     create_supplier,
@@ -42,6 +43,7 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 
 app = FastAPI(title="Brasaland Supplier Directory API")
 app.include_router(telemetry_report_router)
+app.include_router(reporting_router)
 logger = logging.getLogger("api.timing")
 
 @app.middleware("http")
