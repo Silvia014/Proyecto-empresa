@@ -7,3 +7,6 @@ results.csv
 # Python generated files
 __pycache__/
 *.py[cod]
+
+# Generated business pipeline evaluation snapshots
+data/eval/pipeline-*.json
