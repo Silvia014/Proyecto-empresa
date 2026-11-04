@@ -23,13 +23,24 @@ router.get("/customers/:id/orders", requirePermission("CRM", "READ"), async (req
 });
 
 router.post("/orders", requirePermission("CRM", "WRITE"), async (req, res) => {
-  const { customerId, locationId, items, totalUsd, totalCop } = req.body;
+  const { customerId, locationId, items } = req.body || {};
+  const location = await prisma.location.findUnique({ where: { id: locationId }, select: { currency: true } });
+  if (!location) return res.status(404).json({ error: "Restaurant location not found." });
+
+  const currency = location.currency.toUpperCase();
+  const submittedTotal = currency === "COP" ? Number(req.body?.totalCop) : Number(req.body?.totalUsd);
+  if (!Number.isFinite(submittedTotal) || submittedTotal < 0) {
+    return res.status(400).json({ error: "A valid order total is required." });
+  }
+
+  const total = submittedTotal;
   const order = await prisma.order.create({
     data: {
       customerId,
       locationId,
-      totalUsd,
-      totalCop,
+      currency,
+      subtotal: total,
+      total,
       items: { create: items },
     },
     include: { items: true },

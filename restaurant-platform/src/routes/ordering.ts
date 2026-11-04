@@ -128,7 +128,7 @@ export function orderingRouter(io: SocketIOServer) {
     try {
       const order = await prisma.order.findUnique({ where: { id: req.params.id }, select: { id: true, paymentStatus: true, customer: { select: { email: true } } } });
       if (!order) return res.status(404).json({ error: "Order not found." });
-      if (order.customer.email.toLowerCase() !== email) return res.status(403).json({ error: "This order does not match that email address." });
+      if (!order.customer.email || order.customer.email.toLowerCase() !== email) return res.status(403).json({ error: "This order does not match that email address." });
       if (order.paymentStatus !== "PENDING") return res.status(409).json({ error: "Payment preference can only be changed while payment is pending." });
       await prisma.order.update({ where: { id: order.id }, data: { paymentPreference } });
       return res.json({ ok: true, paymentPreference });
