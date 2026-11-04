@@ -468,8 +468,13 @@ def save_pipeline_eval_snapshot(run_id: str, transformed: dict):
 
 
 def get_latest_pipeline_run() -> dict | None:
-    """Return the most recent audit row."""
+    """Return the most recent audit row, or None before the first run."""
     with get_engine().connect() as connection:
+        table_exists = connection.execute(
+            text("SELECT to_regclass('reporting.pipeline_runs')")
+        ).scalar_one()
+        if table_exists is None:
+            return None
         row = connection.execute(text("""
             SELECT *
             FROM reporting.pipeline_runs
@@ -500,6 +505,11 @@ def get_weekly_location_performance(
 
     where_clause = "WHERE " + " AND ".join(filters) if filters else ""
     with get_engine().connect() as connection:
+        table_exists = connection.execute(
+            text("SELECT to_regclass('reporting.weekly_location_performance')")
+        ).scalar_one()
+        if table_exists is None:
+            return {"week_start": week_start, "locations": []}
         if week_start is None:
             latest = connection.execute(text("""
                 SELECT MAX(week_start)
