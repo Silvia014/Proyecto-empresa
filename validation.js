@@ -162,6 +162,8 @@ function setupForm() {
       apellidos: form.apellidos.value.trim(),
       email: form.email.value.trim(),
       telefono: form.telefono.value.trim(),
+      pais: form.pais?.value || "colombia",
+      ciudad: form.ciudad?.value || "",
       personas: Number(form.personas.value),
       dia: form.dia.value,
       hora: form.hora.value,
@@ -298,19 +300,45 @@ async function enviarReserva(datos) {
     return { ok: true, local: true, reserva: datos };
   }
 
-  const respuesta = await fetch("/api/reservas", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(datos),
-  });
-
-  if (!respuesta.ok) {
-    const error = await respuesta.json();
-    throw new Error(error.error || "Error al enviar la reserva");
+  let respuesta;
+  try {
+    respuesta = await fetch("/api/reservas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+  } catch {
+    throw new Error("No se pudo conectar con el servicio de reservas. Si estás probando en local, inicia el proyecto con `npx vercel dev`.");
   }
 
-  return await respuesta.json();
+  const contentType = respuesta.headers.get("content-type") || "";
+  const responseText = await respuesta.text();
+  let resultado = null;
+  if (responseText && contentType.includes("application/json")) {
+    try {
+      resultado = JSON.parse(responseText);
+    } catch {
+      resultado = null;
+    }
+  }
+
+  if (!respuesta.ok) {
+    if (respuesta.status === 405) {
+      throw new Error("El servidor devolvió HTTP 405 para /api/reservas. Detén Live Server, ejecuta `npx vercel dev` en la raíz del proyecto y abre la URL que imprime Vercel Dev.");
+    }
+    if (resultado?.error) throw new Error(resultado.error);
+    if (respuesta.status >= 500) {
+      throw new Error(`El backend local falló (HTTP ${respuesta.status}). Revisa el terminal donde ejecutaste \`npx vercel dev\`; si faltan paquetes, ejecuta \`npm install\` en la raíz del proyecto y reinícialo.`);
+    }
+    if (!contentType.includes("application/json")) {
+      throw new Error(`El servicio de reservas no está disponible (HTTP ${respuesta.status}). Comprueba que el sitio se abrió desde Vercel Dev y que /api/reservas está activo.`);
+    }
+    throw new Error("No se pudo guardar la reserva. Inténtalo de nuevo.");
+  }
+
+  if (!resultado) {
+    throw new Error("El servicio de reservas devolvió una respuesta vacía o no válida. Comprueba que estás usando el servidor del proyecto.");
+  }
+  return resultado;
 }
 

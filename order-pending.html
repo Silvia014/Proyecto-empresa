@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order received | Brasaland</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <main class="checkout-page">
+    <section class="checkout-container">
+      <article id="pending-order" class="order-success">
+        <p class="section-eyebrow">BRASALAND ONLINE ORDER</p>
+        <p id="pending-state" class="order-payment-status">Payment pending · Order awaiting restaurant confirmation</p>
+        <h1>Order successfully sent</h1>
+        <p id="pending-greeting">Your order was sent to the restaurant.</p>
+        <p id="pending-order-id" class="pending-order-id"></p>
+        <p id="pending-total" class="pending-total"></p>
+        <p id="pending-email" class="pending-email"></p>
+        <p id="pending-payment-copy">This is a receipt that your order reached the restaurant, not final order confirmation. The restaurant will check availability and email a payment link to complete and confirm it. You can ask to pay in cash instead. No payment has been taken yet.</p>
+        <fieldset id="payment-preference-picker" class="payment-preference-picker">
+          <legend>How would you prefer to pay?</legend>
+          <p>The restaurant will confirm the order and payment method. No payment or confirmation has happened yet.</p>
+          <div class="payment-preference-options">
+            <button type="button" data-payment-preference="CASH">Cash</button>
+            <button type="button" data-payment-preference="PAYMENT_LINK">Payment link</button>
+            <button type="button" data-payment-preference="BIZUM">Bizum</button>
+          </div>
+          <p id="payment-preference-feedback" role="status" aria-live="polite"></p>
+        </fieldset>
+        <a href="order.html" class="checkout-button">Back to menu</a>
+      </article>
+      <article id="missing-order" class="order-success hidden" role="alert">
+        <h1>Order details unavailable</h1>
+        <p>This page has no saved order details. Check your email for a restaurant confirmation, or return to the menu to place an order.</p>
+        <a href="order.html" class="checkout-button">Back to menu</a>
+      </article>
+    </section>
+  </main>
+  <script src="order-pending.js"></script>
+</body>
+</html>

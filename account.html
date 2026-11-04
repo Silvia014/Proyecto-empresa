@@ -43,6 +43,7 @@
         <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
         <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
         <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+        <button id="account-logout" type="button" class="btn-secondary hidden" data-i18n="account.portal.logout">Cerrar sesión</button>
       </nav>
 
       <!-- Botón de menú móvil -->
@@ -94,13 +95,14 @@
       data-i18n="nav.order">
     Pedir online
     </a>
+    <button id="account-logout-mobile" type="button" class="btn-secondary hidden" data-i18n="account.portal.logout">Cerrar sesión</button>
         </nav>
       </header>
 
   <!-- CONTENIDO -->
   <main class="account-page">
 
-    <section class="account-container">
+    <section id="account-auth-view" class="account-container">
 
       <div class="account-intro">
         <p class="section-eyebrow" data-i18n="account.brasapoints.eyebrow">
@@ -156,6 +158,9 @@
               required
               autocomplete="email"
             />
+
+            <label for="register-phone" data-i18n="account.register.phone">Teléfono</label>
+            <input type="tel" id="register-phone" name="phone" autocomplete="tel" />
 
 
             <label for="register-password" data-i18n="account.register.password">
@@ -312,6 +317,86 @@
 
     </section>
 
+    <section id="account-portal" class="account-portal hidden" aria-labelledby="portal-heading">
+      <div class="portal-heading-row">
+        <div>
+          <p class="section-eyebrow" data-i18n="account.portal.eyebrow">BRASACLUB</p>
+          <h1 id="portal-heading" class="portal-heading" data-i18n="account.portal.title">Tu cuenta Brasaland</h1>
+          <p id="portal-welcome" class="portal-lead" aria-live="polite">Tu actividad y beneficios en un solo lugar.</p>
+        </div>
+        <button id="portal-refresh" type="button" class="portal-refresh" data-i18n="account.portal.refresh">Actualizar</button>
+      </div>
+
+      <p id="portal-feedback" class="portal-feedback hidden" role="status" aria-live="polite"></p>
+      <p id="portal-error" class="portal-error hidden" role="alert"></p>
+
+      <div class="portal-layout">
+        <aside class="portal-sidebar">
+          <article class="points-feature">
+            <div class="points-feature-top">
+              <span data-i18n="account.portal.balance">Brasapuntos disponibles</span>
+              <span class="points-mark" aria-hidden="true">B</span>
+            </div>
+            <p class="points-number"><span id="portal-points">—</span><small data-i18n="account.portal.pointsUnit">puntos</small></p>
+            <div class="points-progress" role="progressbar" aria-label="Progreso hacia la recompensa" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="portal-progress-fill"></span></div>
+            <p id="portal-progress-copy" class="points-progress-copy">Cada 100 puntos desbloquean un 10% de descuento.</p>
+            <p class="points-earning-copy" data-i18n="account.portal.earningRule">Por cada 100 € de gasto elegible se obtienen 100 puntos.</p>
+            <button id="portal-redeem" type="button" class="points-redeem" disabled data-i18n="account.portal.redeemSoon">Canjear en el próximo pedido · próximamente</button>
+          </article>
+
+          <form id="portal-profile-form" class="portal-profile">
+            <div class="portal-section-heading">
+              <p class="section-eyebrow" data-i18n="account.portal.profileEyebrow">TU PERFIL</p>
+              <h2 data-i18n="account.portal.profileTitle">Tus datos</h2>
+            </div>
+            <label for="portal-name" data-i18n="account.portal.name">Nombre</label>
+            <input id="portal-name" type="text" autocomplete="name" maxlength="160" />
+            <label for="portal-email" data-i18n="account.portal.email">Correo electrónico</label>
+            <input id="portal-email" type="email" autocomplete="email" maxlength="254" />
+            <label for="portal-phone" data-i18n="account.portal.phone">Teléfono</label>
+            <input id="portal-phone" type="tel" autocomplete="tel" />
+            <label for="portal-preferences" data-i18n="account.portal.preferences">Preferencias y alergias</label>
+            <textarea id="portal-preferences" rows="4" maxlength="1000" data-i18n-placeholder="account.portal.preferencesPlaceholder" placeholder="Cuéntanos tus preferencias o alergias"></textarea>
+            <button type="submit" class="portal-save" data-i18n="account.portal.save">Guardar preferencias</button>
+          </form>
+        </aside>
+
+        <div class="portal-main-column">
+          <section class="portal-panel portal-suggestions">
+            <div class="portal-section-heading">
+              <p class="section-eyebrow" data-i18n="account.portal.forYou">PARA TI</p>
+              <h2 data-i18n="account.portal.suggestions">Ideas para tu próxima visita</h2>
+              <p data-i18n="account.portal.suggestionsIntro">Basadas en tus pedidos anteriores.</p>
+            </div>
+            <div id="portal-recommendations" class="recommendation-list"></div>
+          </section>
+
+          <section class="portal-panel">
+            <div class="portal-section-heading portal-heading-inline">
+              <div><p class="section-eyebrow" data-i18n="account.portal.history">TU HISTORIAL</p><h2 data-i18n="account.portal.orders">Pedidos online</h2></div>
+              <a href="order.html" class="portal-text-link" data-i18n="account.portal.orderNow">Pedir online</a>
+            </div>
+            <div id="portal-orders" class="portal-record-list"></div>
+          </section>
+
+          <section class="portal-panel">
+            <div class="portal-section-heading portal-heading-inline">
+              <div><p class="section-eyebrow" data-i18n="account.portal.history">TU HISTORIAL</p><h2 data-i18n="account.portal.reservations">Reservas</h2></div>
+              <a href="reserva.html" class="portal-text-link" data-i18n="account.portal.bookTable">Reservar mesa</a>
+            </div>
+            <div id="portal-reservations" class="portal-record-list"></div>
+          </section>
+
+          <section class="portal-panel">
+            <div class="portal-section-heading">
+              <p class="section-eyebrow" data-i18n="account.portal.pointsHistoryEyebrow">BRASAPUNTOS</p>
+              <h2 data-i18n="account.portal.pointsHistory">Actividad de puntos</h2>
+            </div>
+            <div id="portal-transactions" class="portal-record-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

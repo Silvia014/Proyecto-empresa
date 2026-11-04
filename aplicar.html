@@ -206,11 +206,12 @@
         </div>
 
         <div>
-          <label for="cv_url" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.cv">
-            Enlace a tu CV <span aria-hidden="true">*</span>
+          <label for="cv_file" class="mb-2 block text-sm font-medium text-walnut" data-i18n="reserva.aplicar.form.cv">
+            Sube tu CV <span aria-hidden="true">*</span>
           </label>
-          <input id="cv_url" name="cv_url" type="text" class="candidate-input" required aria-describedby="error-cv_url" data-i18n-placeholder="reserva.aplicar.form.cvPlaceholder" />
-          <p id="error-cv_url" class="candidate-field-error hidden"></p>
+          <input id="cv_file" name="cv_file" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="candidate-input" required aria-describedby="error-cv_file cv-help" />
+          <p id="cv-help" class="mt-1 text-xs text-walnut/60" data-i18n="reserva.aplicar.form.cvHelp">PDF, DOC o DOCX · máximo 3 MB</p>
+          <p id="error-cv_file" class="candidate-field-error hidden"></p>
         </div>
 
         <div>

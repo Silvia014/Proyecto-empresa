@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mi Brasaclub | Brasaland</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="account.css" />
+</head>
+<body class="bg-cream text-walnut antialiased">
+  <header class="sticky top-0 z-40 border-b border-walnut/10 bg-cream/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+      <a href="index.html" class="font-display text-2xl font-semibold text-wine">Brasaland</a>
+      <button id="logout-button" class="btn-secondary" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+  <main class="mx-auto max-w-5xl px-6 py-12 lg:py-16">
+    <p class="section-eyebrow">BRASACLUB</p>
+    <h1 class="mt-3 font-display text-4xl font-semibold text-wine">Tu cuenta Brasaland</h1>
+    <p id="account-welcome" class="mt-3 text-walnut/70" aria-live="polite">Cargando tu cuenta…</p>
+    <p id="account-error" class="mt-6 hidden rounded-lg border border-wine/30 bg-wine/5 p-4 text-wine" role="alert"></p>
+    <section class="mt-8 grid gap-5 sm:grid-cols-2">
+      <article class="rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm">
+        <p class="text-sm text-walnut/60">Tus Brasapuntos</p>
+        <p id="brasapoints-balance" class="mt-2 font-display text-4xl font-semibold text-wine">—</p>
+        <p class="mt-2 text-sm text-walnut/60">Los puntos se suman cuando completas pedidos elegibles.</p>
+      </article>
+      <article class="rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm">
+        <p class="text-sm text-walnut/60">Cuenta</p>
+        <p id="member-name" class="mt-2 text-xl font-semibold text-wine">—</p>
+        <p id="member-email" class="mt-1 text-sm text-walnut/70">—</p>
+      </article>
+    </section>
+    <section class="mt-10 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div><p class="section-eyebrow">HISTORIAL</p><h2 class="mt-2 font-display text-2xl font-semibold text-wine">Tus reservas</h2></div>
+        <a href="reserva.html" class="btn-primary">Reservar mesa</a>
+      </div>
+      <p id="reservations-empty" class="mt-6 hidden text-sm text-walnut/65">Todavía no tienes reservas asociadas a esta cuenta.</p>
+      <div id="reservations-list" class="mt-5 grid gap-3"></div>
+    </section>
+    <section class="mt-6 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div><p class="section-eyebrow">HISTORIAL</p><h2 class="mt-2 font-display text-2xl font-semibold text-wine">Tus pedidos online</h2></div>
+        <a href="order.html" class="btn-primary">Pedir online</a>
+      </div>
+      <p id="orders-empty" class="mt-6 hidden text-sm text-walnut/65">Todavía no tienes pedidos online asociados a esta cuenta.</p>
+      <div id="orders-list" class="mt-5 grid gap-3"></div>
+    </section>
+  </main>
+  <script src="account-dashboard.js"></script>
+</body>
+</html>

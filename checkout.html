@@ -31,7 +31,7 @@
         <h1>Complete your order</h1>
 
         <p>
-          Enter your details and review your order before confirming it.
+          Enter your details and review your order. The restaurant will confirm availability and send you a payment link to complete and confirm the order. If you prefer, ask the restaurant to take payment in cash.
         </p>
 
       </div>
@@ -78,6 +78,12 @@
               id="customer-phone"
               required
             >
+
+            <div id="checkout-member-prompt" class="checkout-member-card">
+              <p><strong>Are you a Brasaclub member?</strong> Sign in before placing your order so we can link it to your account.</p>
+              <a href="account.html?next=checkout.html">Sign in or join Brasaclub</a>
+            </div>
+            <p id="checkout-member-active" class="checkout-member-active hidden" role="status" aria-live="polite"></p>
 
 
             <!-- ORDER TYPE -->
@@ -159,7 +165,7 @@
             <span>Total</span>
 
             <strong id="checkout-total">
-              €0.00
+              —
             </strong>
 
           </div>
@@ -170,7 +176,7 @@
             form="checkout-form"
             class="checkout-button"
           >
-            Confirm order
+            Send order to restaurant
           </button>
 
         </aside>

@@ -13,6 +13,48 @@
   margin: 0 auto;
 }
 
+.checkout-feedback {
+  margin-top: 16px;
+  color: #356b4c;
+}
+
+.checkout-feedback.error {
+  color: #8a2839;
+}
+
+.checkout-member-card,
+.checkout-member-active {
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border: 1px solid rgba(90, 31, 43, .18);
+  border-radius: 10px;
+  background: #f8f2e7;
+  color: #49342e;
+  font-size: .92rem;
+  line-height: 1.55;
+}
+
+.checkout-member-card a {
+  display: inline-block;
+  margin-top: 8px;
+  color: #5a1f2b;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.checkout-member-active {
+  border-color: rgba(75, 117, 78, .24);
+  background: #edf4ec;
+  color: #315d3d;
+}
+
+.order-payment-status {
+  color: #8a5b20;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 
 /* ==========================================
    HEADER
@@ -97,7 +139,7 @@
 .checkout-details input:focus,
 .checkout-details textarea:focus {
   outline: none;
-  border-color: #7c4a2d;
+  border-color: #7C414F;
 }
 
 .checkout-details textarea {
@@ -197,7 +239,7 @@
   border: none;
   border-radius: 8px;
 
-  background: #7c4a2d;
+  background: #7C414F;
   color: white;
 
   font-size: 1rem;
@@ -269,7 +311,7 @@
   display: inline-block;
   margin-bottom: 20px;
 
-  color: #7c4a2d;
+  color: #7C414F;
   font-weight: 600;
 
   text-decoration: none;

@@ -2,7 +2,6 @@ import { Router } from "express";
 import type { Server as SocketIOServer } from "socket.io";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { getStripe, toStripeAmount } from "../lib/stripe";
 
 const checkoutSchema = z.object({
   locationId: z.string().min(1),
@@ -20,7 +19,11 @@ const checkoutSchema = z.object({
         quantity: z.number().int().min(1).max(50),
       })
     )
-    .min(1),
+    .min(1)
+    .refine((items) => new Set(items.map((item) => item.menuItemId)).size === items.length, {
+      message: "Cada artículo solo puede aparecer una vez",
+    }),
+  notes: z.string().max(2000).optional(),
 });
 
 export function orderingRouter(io: SocketIOServer) {
@@ -31,8 +34,9 @@ export function orderingRouter(io: SocketIOServer) {
     if (!parsed.success) {
       return res.status(400).json({ error: "Datos de pedido inválidos", details: parsed.error.flatten() });
     }
-    const { locationId, fulfillment, deliveryAddress, customer, items } = parsed.data;
+    const { locationId, fulfillment, deliveryAddress, customer, items, notes } = parsed.data;
 
+    try {
     if (fulfillment === "delivery" && !deliveryAddress) {
       return res.status(400).json({ error: "Falta la dirección de entrega" });
     }
@@ -54,15 +58,17 @@ export function orderingRouter(io: SocketIOServer) {
       return { menuItem, quantity: i.quantity };
     });
 
-    const total = lineItemsData.reduce((sum, li) => sum + li.menuItem.price * li.quantity, 0);
-    const fxRate = Number(process.env.FX_USD_TO_COP || 4000);
-    const totalUsd = location.currency === "USD" ? total : total / fxRate;
-    const totalCop = location.currency === "COP" ? total : total * fxRate;
+    const subtotal = lineItemsData.reduce((sum, li) => sum + li.menuItem.price * li.quantity, 0);
 
-    let dbCustomer = await prisma.customer.findFirst({ where: { email: customer.email } });
+    let dbCustomer = await prisma.customer.findFirst({ where: { email: customer.email.toLowerCase() } });
     if (!dbCustomer) {
       dbCustomer = await prisma.customer.create({
-        data: { name: customer.name, email: customer.email, phone: customer.phone },
+        data: { name: customer.name, email: customer.email.toLowerCase(), phone: customer.phone },
+      });
+    } else {
+      dbCustomer = await prisma.customer.update({
+        where: { id: dbCustomer.id },
+        data: { name: customer.name, phone: customer.phone },
       });
     }
 
@@ -70,8 +76,10 @@ export function orderingRouter(io: SocketIOServer) {
       data: {
         customerId: dbCustomer.id,
         locationId,
-        totalUsd,
-        totalCop,
+        currency: location.currency,
+        subtotal,
+        total: subtotal,
+        customerNotes: notes?.trim() || null,
         source: "ONLINE",
         status: "RECEIVED",
         paymentStatus: "PENDING",
@@ -82,6 +90,7 @@ export function orderingRouter(io: SocketIOServer) {
             dishName: li.menuItem.name,
             quantity: li.quantity,
             unitPrice: li.menuItem.price,
+            subtotal: li.menuItem.price * li.quantity,
             menuItemId: li.menuItem.id,
           })),
         },
@@ -89,40 +98,43 @@ export function orderingRouter(io: SocketIOServer) {
       include: { items: true },
     });
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(503).json({
-        error: "STRIPE_SECRET_KEY no configurada. Añádela al .env del backend para aceptar pagos.",
-        orderId: order.id,
-      });
-    }
-
     try {
-      const stripe = getStripe();
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        payment_method_types: ["card"],
-        customer_email: customer.email,
-        line_items: lineItemsData.map((li) => ({
-          quantity: li.quantity,
-          price_data: {
-            currency: location.currency,
-            unit_amount: toStripeAmount(li.menuItem.price, location.currency),
-            product_data: { name: li.menuItem.name },
-          },
-        })),
-        success_url: `${process.env.ORDERING_APP_URL}/success?order=${order.id}`,
-        cancel_url: `${process.env.ORDERING_APP_URL}/cancel?order=${order.id}`,
-        metadata: { orderId: order.id },
-      });
+      io.emit("order:created", { ...order, customer: dbCustomer, location });
+    } catch (emitError) {
+      console.error("Order saved but live notification failed:", emitError);
+    }
+    return res.status(201).json({
+      orderId: order.id,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paymentOptions: ["PAYMENT_LINK", "CASH"],
+      total: order.total,
+      currency: order.currency,
+      message: "Pedido recibido. El restaurante te contactará para pagar mediante enlace o en efectivo.",
+    });
+    } catch (error) {
+      console.error("Online order persistence failed:", error);
+      return res.status(500).json({ error: "No se pudo guardar el pedido en el ERP. Inténtalo de nuevo." });
+    }
+  });
 
-      await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } });
-
-      io.emit("order:created", { ...order, paymentStatus: "PENDING" });
-
-      res.status(201).json({ orderId: order.id, checkoutUrl: session.url });
-    } catch (err) {
-      console.error(err);
-      res.status(502).json({ error: "No se pudo crear la sesión de pago con Stripe" });
+  router.patch("/:id/payment-preference", async (req, res) => {
+    const allowed = ["CASH", "PAYMENT_LINK", "BIZUM"];
+    const paymentPreference = req.body?.paymentPreference;
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    if (!allowed.includes(paymentPreference) || !email) {
+      return res.status(400).json({ error: "Choose cash, payment link, or Bizum." });
+    }
+    try {
+      const order = await prisma.order.findUnique({ where: { id: req.params.id }, select: { id: true, paymentStatus: true, customer: { select: { email: true } } } });
+      if (!order) return res.status(404).json({ error: "Order not found." });
+      if (order.customer.email.toLowerCase() !== email) return res.status(403).json({ error: "This order does not match that email address." });
+      if (order.paymentStatus !== "PENDING") return res.status(409).json({ error: "Payment preference can only be changed while payment is pending." });
+      await prisma.order.update({ where: { id: order.id }, data: { paymentPreference } });
+      return res.json({ ok: true, paymentPreference });
+    } catch (error) {
+      console.error("Payment preference update failed:", error);
+      return res.status(500).json({ error: "Could not save the payment preference." });
     }
   });
 

@@ -142,6 +142,7 @@ model Customer {
   id          String   @id @default(uuid())
   name        String
   email       String?
+  authUserId  String?  @unique
   phone       String?
   country     String?
   city        String?
@@ -150,10 +151,52 @@ model Customer {
   updatedAt   DateTime @updatedAt
 
   orders             Order[]
+  reservations       Reservation[]
   brasapointsAccount BrasapointsAccount?
 
   @@index([email])
   @@index([phone])
+}
+
+model Reservation {
+  id                  String   @id @default(uuid())
+  customerId          String   @map("customer_id")
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  firstName           String   @map("first_name")
+  lastName            String   @map("last_name")
+  email               String
+  phone               String
+  country             String
+  city                String
+  partySize           Int      @map("party_size")
+  reservationDate     DateTime @db.Date @map("reservation_date")
+  reservationTime     DateTime @db.Time(0) @map("reservation_time")
+  locationPreference  String?  @map("location_preference")
+  notes               String?
+  referralSource      String?  @map("referral_source")
+  status              String   @default("NEW")
+  createdAt           DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@index([createdAt])
+  @@index([customerId, reservationDate])
+  @@map("reservations")
+}
+
+model CandidateApplication {
+  id               String   @id @default(uuid())
+  fullName         String   @map("full_name")
+  email            String
+  phone            String
+  position         String
+  linkedinUrl      String?  @map("linkedin_url")
+  experienceYears  Int      @default(0) @map("experience_years")
+  cvPath           String   @map("cv_path")
+  cvFilename       String   @map("cv_filename")
+  status           String   @default("RECEIVED")
+  createdAt        DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@index([createdAt])
+  @@map("candidate_applications")
 }
 
 enum OrderStatus {
@@ -214,11 +257,13 @@ model Order {
   source          OrderSource @default(ONLINE)
   fulfillment     String      @default("pickup")
   deliveryAddress String?
+  customerNotes   String?
 
   // -----------------------------
   // PAGO
   // -----------------------------
   paymentStatus         PaymentStatus @default(PENDING)
+  paymentPreference     String?
   stripeSessionId       String?       @unique
   stripePaymentIntentId String?
 
