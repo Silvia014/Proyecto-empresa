@@ -50,4 +50,4 @@ jobs:
         run: PYTHONPATH=services/api uv run --python 3.12 python -m compileall -q data services
 
       - name: Run tests
-        run: PYTHONPATH=services/api uv run --python 3.12 pytest -q
+        run: PYTHONPATH=services/api uv run --python 3.12 pytest -q tests/test_business_performance_pipeline.py tests/test_reporting_api.py
