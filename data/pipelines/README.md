@@ -79,6 +79,15 @@ uv run prefect deploy --all
 
 The configured Monday schedule remains inactive until its timezone/time and production worker are approved. Prefect schedules create scheduled flow runs; a running worker is required to execute them.
 
+## Install and lock dependencies
+
+The Prefect 3 runtime is declared in the root project and API requirements. After pulling this branch, regenerate the lockfile and sync the environment:
+
+```bash
+uv lock
+uv sync --python 3.12 --dev
+```
+
 ## Verification
 
 \`\`\`bash
