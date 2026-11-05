@@ -3,6 +3,13 @@ const { createAdminClient } = require("../lib/api-supabase");
 const COUNTRY_CITY = { colombia: "Bogotá", usa: "Orlando" };
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function timeToMinutes(value) {
+  if (typeof value !== "string") return Number.NaN;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return Number.NaN;
+  return hours * 60 + minutes;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -26,11 +33,15 @@ module.exports = async function handler(req, res) {
   today.setHours(0, 0, 0, 0);
   const latestDate = new Date(today);
   latestDate.setMonth(latestDate.getMonth() + 3);
-  if (reservationDate < today || reservationDate > latestDate || reservationDate.getDay() === 1) {
+  if (reservationDate < today || reservationDate > latestDate) {
     return res.status(400).json({ error: "La fecha de reserva no está disponible." });
   }
-  const closingTime = [5, 6].includes(reservationDate.getDay()) ? "23:59" : "23:00";
-  if (body.hora < "13:00" || body.hora > closingTime) {
+
+  const openMinutes = timeToMinutes("11:00");
+  const closeMinutes = timeToMinutes("22:00");
+  const selectedMinutes = timeToMinutes(body.hora);
+
+  if (!Number.isFinite(selectedMinutes) || selectedMinutes < openMinutes || selectedMinutes > closeMinutes) {
     return res.status(400).json({ error: "La hora seleccionada no está dentro del horario de servicio." });
   }
   if (body.nombre.trim().length > 100 || body.apellidos.trim().length > 120 || body.telefono.trim().length > 40) {

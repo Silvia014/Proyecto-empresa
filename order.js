@@ -21,6 +21,7 @@ const cartSummary = document.getElementById("cart-summary");
 const cartCount = document.getElementById("cart-count");
 const headerCartCount = document.getElementById("header-cart-count");
 const cartSubtotal = document.getElementById("cart-subtotal");
+const cartDeliveryFee = document.getElementById("cart-delivery-fee");
 const cartTotal = document.getElementById("cart-total");
 const checkoutButton = document.getElementById("checkout-button");
 const clearCartButton = document.getElementById("clear-cart-button");
@@ -69,6 +70,15 @@ function saveCart() {
 
 const USD_TO_COP_RATE = 4100;
 const USD_TO_EUR_RATE = 0.92;
+const DELIVERY_FEE_USD = 5;
+
+function getDeliveryFee(currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
+  const normalizedCurrency = String(currency || "USD").toUpperCase();
+  if (normalizedCurrency === "COP") {
+    return DELIVERY_FEE_USD * USD_TO_COP_RATE;
+  }
+  return DELIVERY_FEE_USD;
+}
 
 function convertCurrencyValue(value, fromCurrency = "USD", toCurrency = "USD") {
   const numericValue = Number(value) || 0;
@@ -204,7 +214,9 @@ function renderProducts() {
 function renderCart() {
   if (!cartItems || !emptyCart || !cartSummary) return;
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const deliveryFee = getDeliveryFee(selectedLocation?.currency || cart[0]?.currency || "USD");
+  const total = subtotal + deliveryFee;
   if (cartCount) cartCount.textContent = String(count);
   if (headerCartCount) headerCartCount.textContent = `${count} ${count === 1 ? translation("cart.product", "item") : translation("cart.products", "items")}`;
   if (!cart.length) {
@@ -222,7 +234,8 @@ function renderCart() {
       <div class="quantity-controls"><button class="quantity-button" type="button" data-change-id="${escapeHtml(item.id)}" data-change="-1" aria-label="Remove one">−</button>
       <span class="quantity-value">${item.quantity}</span><button class="quantity-button plus" type="button" data-change-id="${escapeHtml(item.id)}" data-change="1" aria-label="Add one">+</button></div></div></article>`;
   }).join("");
-  if (cartSubtotal) cartSubtotal.textContent = formatPrice(total);
+  if (cartSubtotal) cartSubtotal.textContent = formatPrice(subtotal);
+  if (cartDeliveryFee) cartDeliveryFee.textContent = formatPrice(deliveryFee);
   if (cartTotal) cartTotal.textContent = formatPrice(total);
   cartItems.querySelectorAll("[data-remove-id]").forEach((button) => button.addEventListener("click", () => {
     cart = cart.filter((item) => String(item.id) !== button.dataset.removeId); saveCart(); renderCart();

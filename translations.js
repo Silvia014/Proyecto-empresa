@@ -14,9 +14,9 @@ const translations = {
     },
 
     hero: {
-      location: "Tu restaurante de brasas en Bogotá y Orlando",
-      title: "Una mesa con la cuidada hospitalidad de un establecimiento de gran lujo",
-      subtitle: "En Brasaland cocinamos producto de temporada y servimos cada mesa con el mismo estándar de atención que aprendimos en nuestra larga trayectoria en la hostelería de lujo: puntual, cálido y sin fricciones. Reservar te toma menos de un minuto.",
+      location: "Sirviendo las mejores carnes a la brasa en Colombia y Estados Unidos.",
+      title: "El sabor de la brasa, en cada bocado",
+      subtitle: "Fundada en Medellín en 2008, Brasaland comenzó como un sueño familiar: compartir el auténtico sabor de la carne a la brasa con calidad constante y servicio cálido. Hoy somos 14 restaurantes en dos países, pero mantenemos la misma receta de éxito.",
       button: "Reservar mesa",
       button2: "Brasaclub",
       order: "Pedir online"
@@ -52,6 +52,7 @@ const translations = {
       },
       summary: {
         subtotal: "Subtotal",
+        delivery: "Tarifa de entrega",
         total: "Total"
       },
       checkout: "Continuar pedido",
@@ -253,10 +254,10 @@ const translations = {
     experiencia: {
       title: "Nuestra experiencia",
       subtitle: "De un servicio y cocina premium a tu mesa",
-      description: "Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&B en hoteles boutique gran lujo. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos aquí, en un restaurante que cualquiera puede reservar sin necesidad de estar alojado en un hotel.",
+      description: "Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&B en hoteles boutique gran lujo. Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos aquí.",
 
       experience1: "años de experiencia combinada en hostelería en hoteles gran lujo",
-      experience2: "restaurantes de prestigio donde formamos parte del equipo directivo de sala",
+      experience2: "miembros del equipo, incluyendo el equipo directivo",
       experience3: "de reservas atendidas sin tiempo de espera adicional",
       experience4: "restaurantes hermanos, con recetas y estándares compartidos"
     },
@@ -284,7 +285,7 @@ const translations = {
       items: [
         {
           question: "¿Dónde está ubicado Brasaland?",
-          answer: "Brasaland es un restaurante de carnes a la brasa pensado para quienes tienen un gran apetito, con ubicaciones en Orlando, Florida, y Bogotá, Colombia."
+          answer: "Brasaland es un restaurante de carnes a la brasa pensado para quienes tienen un gran apetito, con ubicaciones en Orlando y Miami en Florida, Estados Unidos y en Bogotá, Medellín y Cali, en Colombia."
         },
         {
           question: "¿Puedo pedir online?",
@@ -393,7 +394,9 @@ const translations = {
         hora: "Hora de la reserva",
         ubicacion: "Preferencia de ubicación",
         preferencias: "Preferencias",
-        comoNosConociste: "¿Cómo nos conociste?"
+        comoNosConociste: "¿Cómo nos conociste?",
+        termsConsent: "Acepto los términos y condiciones y la política de privacidad.",
+        offersConsent: "Quiero recibir ofertas y novedades por email."
       },
 
       options: {
@@ -414,7 +417,7 @@ const translations = {
 
       placeholders: {
       telefono: "+57 4 123 4567",
-      preferencias: "Alergias, celebraciones, preferencias alimentarias..."
+      preferencias: "Alergias, Preferencias alimentarias: vegetariano, sin gluten, otros. Celebraciones o cualquier tipo de evento.",
       },
 
 
@@ -430,6 +433,7 @@ const translations = {
       footerCopyright: "Brasaland. Todos los derechos reservados.",
 
       errors: {
+        termsRequired: "Debes aceptar los términos y condiciones para continuar.",
         nombreRequired: "Escribe tu nombre.",
         nombreShort: "El nombre es demasiado corto.",
         nombreLetters: "El nombre solo puede contener letras.",
@@ -713,9 +717,9 @@ const translations = {
     },
 
     hero: {
-      location: "Your grill restaurant in Bogotá and Orlando",
-      title: "A table with the refined hospitality of a luxury establishment",
-      subtitle: "At Brasaland, we cook seasonal dishes and serve every table with the same high standards of hospitality we developed through our long experience in luxury hospitality: punctual, warm, and frictionless. Booking takes less than a minute.",
+      location: "Serving the finest charcoal-grilled meats in Colombia and the United States.",
+      title: "The taste of the grill, in every bite",
+      subtitle: "Founded in Medellín in 2008, Brasaland began as a family dream: to share the authentic flavour of charcoal-grilled meat, with consistent quality and warm service. Today we have 14 restaurants across two countries, but we still follow the same recipe for success.",
       button: "Book a Table",
       button2: "Brasaclub",
       order: "Order Online"
@@ -751,6 +755,7 @@ const translations = {
       },
       summary: {
         subtotal: "Subtotal",
+        delivery: "Delivery fee",
         total: "Total"
       },
       checkout: "Continue to checkout",
@@ -1005,10 +1010,10 @@ const translations = {
     experiencia: {
       title: "Our Experience",
       subtitle: "Premium Hospitality at Your Table",
-      description: "Before opening Brasaland, part of our team led service and F&B operations in luxury boutique hotels. That same discreet, attentive and flawless standard is what we bring here, in a restaurant anyone can book without staying in a hotel.",
+      description: "Before opening Brasaland, part of our team led service and F&B operations in luxury boutique hotels. That same discreet, attentive and flawless standard is what we bring here.",
 
       experience1: "years of combined hospitality experience in luxury hotels",
-      experience2: "prestigious restaurants where we were part of the management team",
+      experience2: "staff members, including the management team",
       experience3: "of reservations served with no additional waiting time",
       experience4: "sister restaurants sharing recipes and service standards"
     },
@@ -1036,7 +1041,7 @@ const translations = {
       items: [
         {
           question: "Where is Brasaland located?",
-          answer: "Brasaland is a grilled-meat restaurant for people with a big appetite, with locations in Orlando, Florida, and Bogotá, Colombia."
+          answer: "Brasaland is a charcoal-grilled steakhouse designed for those with a hearty appetite, with branches in Orlando and Miami, Florida, USA, and in Bogotá, Medellín and Cali, Colombia."
         },
         {
           question: "Can I order online?",
@@ -1148,7 +1153,9 @@ const translations = {
         hora: "Reservation time",
         ubicacion: "Seating preference",
         preferencias: "Preferences",
-        comoNosConociste: "How did you hear about us?"
+        comoNosConociste: "How did you hear about us?",
+        termsConsent: "I accept the terms and conditions and the privacy policy.",
+        offersConsent: "I want to receive offers and updates by email."
       },
 
       options: {
@@ -1169,7 +1176,7 @@ const translations = {
 
       placeholders: {
         telefono: "+1 123 456 7890",
-        preferencias: "Allergies, celebrations, dietary preferences..."
+        preferencias: "Allergies, dietary preferences: vegetarian, gluten-free, others. Celebrations or any other type of event."
         },
 
       hoursNote: "Mon-Sun 11:00 AM - 10:00 PM — open all week.",
@@ -1183,6 +1190,7 @@ const translations = {
       footerCopyright: "Brasaland. All rights reserved.",
 
       errors: {
+        termsRequired: "You must accept the terms and conditions to continue.",
         nombreRequired: "Enter your first name.",
         nombreShort: "First name is too short.",
         nombreLetters: "First name can only contain letters.",
