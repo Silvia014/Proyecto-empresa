@@ -49,13 +49,17 @@ function getFallbackOrderingData(locationId) {
 }
 
 function getOrderingApiUrl() {
-  const configuredUrl = process.env.ORDERING_API_URL?.trim();
+  // The ordering API is deployed independently on Hostinger. Keep an explicit
+  // env override for local/staging environments, while production has a safe
+  // HTTPS default so the public site does not depend on a Vercel env var.
+  const configuredUrl = process.env.ORDERING_API_URL?.trim()
+    || (process.env.NODE_ENV === "production" ? "https://api.brasaland.site/api" : "");
   const isProduction = process.env.NODE_ENV === "production";
 
   if (!configuredUrl) {
     if (!isProduction) return "http://127.0.0.1:8000/api";
     throw configurationError(
-      "Online ordering is not configured. Set ORDERING_API_URL to the public HTTPS URL of the deployed ERP API in Vercel, then redeploy."
+      "Online ordering is not configured. Set ORDERING_API_URL to the public HTTPS URL of the deployed ordering API, then redeploy."
     );
   }
 
@@ -68,7 +72,7 @@ function getOrderingApiUrl() {
 
   if (isProduction && (apiUrl.protocol !== "https:" || isLocalHost(apiUrl.hostname))) {
     throw configurationError(
-      "Production ordering cannot use localhost. Set ORDERING_API_URL to the public HTTPS URL of the deployed ERP API in Vercel, then redeploy."
+      "Production ordering cannot use localhost. Set ORDERING_API_URL to the public HTTPS URL of the deployed ordering API, then redeploy."
     );
   }
 
@@ -90,9 +94,7 @@ module.exports = async function handler(req, res) {
     if (req.method === "GET") {
       const requestUrl = new URL(req.url, "http://localhost");
       const locationId = requestUrl.searchParams.get("locationId");
-      const path = locationId
-        ? `/menu?locationId=${encodeURIComponent(locationId)}`
-        : "/menu/locations";
+      const path = `/ordering${locationId ? `?locationId=${encodeURIComponent(locationId)}` : ""}`;
 
       try {
         const baseUrl = getOrderingApiUrl();
@@ -118,7 +120,7 @@ module.exports = async function handler(req, res) {
     const baseUrl = getOrderingApiUrl();
 
     if (req.method === "POST") {
-      return await forwardRequest(`${baseUrl}/ordering/checkout`, {
+      return await forwardRequest(`${baseUrl}/ordering`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(req.body || {}),
@@ -130,7 +132,7 @@ module.exports = async function handler(req, res) {
       if (!orderId || !email || !["CASH", "PAYMENT_LINK", "BIZUM"].includes(paymentPreference)) {
         return res.status(400).json({ error: "Choose cash, payment link, or Bizum." });
       }
-      return await forwardRequest(`${baseUrl}/ordering/${encodeURIComponent(orderId)}/payment-preference`, {
+      return await forwardRequest(`${baseUrl}/ordering`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ email, paymentPreference }),
@@ -145,7 +147,7 @@ module.exports = async function handler(req, res) {
       error: error.code === "ORDERING_API_CONFIG"
         ? error.message
         : process.env.NODE_ENV === "production"
-          ? "The ERP ordering service could not be reached. Check that ORDERING_API_URL points to the deployed Vercel ERP API, then redeploy."
+          ? "The ordering service could not be reached. Check that ORDERING_API_URL points to the deployed ordering API."
           : "The ERP ordering service is offline or unreachable. Start it on port 8000 or set ORDERING_API_URL to your local ERP API URL.",
     });
   }

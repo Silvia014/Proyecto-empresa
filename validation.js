@@ -186,13 +186,19 @@ function setupForm() {
       comoNosConociste: form.como_nos_conociste?.value || "",
       acepta_terminos: form.acepta_terminos?.checked || false,
       acepta_ofertas: form.acepta_ofertas?.checked || false,
+      idioma: document.documentElement.lang === "en" ? "en" : "es",
     };
 
     btnEnviar.disabled = true;
     btnEnviar.textContent = t("reserva.buttons.submitting") || "Enviando...";
 
     try {
-      await enviarReserva(datos);
+      const resultado = await enviarReserva(datos);
+      const confirmationText = document.querySelector('[data-i18n="reserva.confirmationText"]');
+      if (confirmationText) {
+        const messageKey = resultado.confirmationEmailSent ? "reserva.confirmationText" : "reserva.confirmationEmailFailed";
+        confirmationText.textContent = t(messageKey) || confirmationText.textContent;
+      }
       mostrar(confirmacion);
       confirmacion.scrollIntoView({ behavior: "smooth", block: "center" });
       limpiarFormularioCompleto(form);

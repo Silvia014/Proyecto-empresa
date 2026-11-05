@@ -1,38 +1,38 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { canAccess } from "@/lib/staff-access";
+import { getStaffActor, isDenied } from "@/lib/staff-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const allowedStaff = new Set((process.env.CRM_STAFF_USER_IDS || "").split(",").map((id) => id.trim()).filter(Boolean));
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!serviceKey || !supabaseUrl || !allowedStaff.size) {
-    return NextResponse.json({ error: "Staff intake access is not configured." }, { status: 503 });
-  }
-  if (!token) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
-
-  const supabase = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-  const { data: authData, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !authData.user || !allowedStaff.has(authData.user.id)) {
-    return NextResponse.json({ error: "Staff access required." }, { status: 403 });
-  }
+  const actor = await getStaffActor(request);
+  if (isDenied(actor)) return actor;
+  const { service: supabase, role } = actor;
 
   const requestedView = new URL(request.url).searchParams.get("view");
   const view = requestedView === "reservations" || requestedView === "candidates" ? requestedView : "all";
+  if (view === "reservations" && !canAccess(role, "reservations")) {
+    return NextResponse.json({ error: "You do not have access to online reservations." }, { status: 403 });
+  }
+  if (view === "candidates" && !canAccess(role, "candidates")) {
+    return NextResponse.json({ error: "You do not have access to job applications." }, { status: 403 });
+  }
+  const includeReservations = view === "reservations" || (view === "all" && canAccess(role, "reservations"));
+  const includeCandidates = view === "candidates" || (view === "all" && canAccess(role, "candidates"));
+  const includeMembers = view === "all" && canAccess(role, "brasapuntos");
+  const includeOrders = view === "all" && canAccess(role, "orders");
   const emptyResult = { data: [], error: null };
   const [reservationResult, candidateResult, memberResult, orderResult] = await Promise.all([
-    view !== "candidates" ? supabase.from("reservations")
+    includeReservations ? supabase.from("reservations")
       .select("id, first_name, last_name, email, phone, country, city, party_size, reservation_date, reservation_time, location_preference, notes, status, created_at")
       .order("created_at", { ascending: false }).limit(50) : Promise.resolve(emptyResult),
-    view !== "reservations" ? supabase.from("candidate_applications")
+    includeCandidates ? supabase.from("candidate_applications")
       .select("id, full_name, email, phone, position, experience_years, cv_path, cv_filename, status, created_at")
       .order("created_at", { ascending: false }).limit(50) : Promise.resolve(emptyResult),
-    view === "all" ? supabase.from("BrasapointsAccount")
+    includeMembers ? supabase.from("BrasapointsAccount")
       .select('balance, createdAt, Customer!inner(id, name, email)')
       .order("createdAt", { ascending: false }).limit(8) : Promise.resolve(emptyResult),
-    view === "all" ? supabase.from("Order")
+    includeOrders ? supabase.from("Order")
       .select('id, createdAt, total, currency, status, paymentStatus, fulfillment, Customer(name, email), Location(name), OrderItem(dishName, quantity)')
       .eq("source", "ONLINE")
       .order("createdAt", { ascending: false }).limit(8) : Promise.resolve(emptyResult),
@@ -74,6 +74,10 @@ export async function GET(request: Request) {
     };
   });
   return NextResponse.json({
-    reservations: reservationResult.data || [], candidates, members, orders, updatedAt: new Date().toISOString(),
+    reservations: includeReservations ? reservationResult.data || [] : [],
+    candidates: includeCandidates ? candidates : [],
+    members: includeMembers ? members : [],
+    orders: includeOrders ? orders : [],
+    updatedAt: new Date().toISOString(),
   }, { headers: { "Cache-Control": "no-store" } });
 }

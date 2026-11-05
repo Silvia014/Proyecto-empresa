@@ -35,7 +35,8 @@ function setPortalView() {
 }
 
 async function accountRequest(payload, session) {
-  const response = await fetch("/api/account", {
+  const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+  const response = await fetch(apiUrl, {
     method: payload ? "POST" : "GET",
     headers: {
       ...(payload ? { "Content-Type": "application/json" } : {}),
@@ -47,7 +48,11 @@ async function accountRequest(payload, session) {
   const text = await response.text();
   let result = null;
   try { result = text ? JSON.parse(text) : null; } catch { /* provide a readable server error below */ }
-  if (!response.ok) throw new Error(result?.error || copy("No pudimos conectar con tu cuenta. Inténtalo de nuevo.", "We could not connect to your account. Please try again."));
+  if (!response.ok) {
+    const error = new Error(result?.error || copy("No pudimos conectar con tu cuenta. Inténtalo de nuevo.", "We could not connect to your account. Please try again."));
+    error.status = response.status;
+    throw error;
+  }
   if (!result) throw new Error(copy("El servidor devolvió una respuesta vacía. Revisa la terminal de Vercel Dev.", "The server returned an empty response. Check the Vercel Dev terminal."));
   return result;
 }
@@ -392,9 +397,22 @@ window.setInterval(() => {
   }
 }, 30_000);
 
-const initialSession = readSession();
-if (initialSession?.access_token && redirectToCheckoutIfRequested()) {
-  // Existing member returned to checkout without an extra login.
-} else if (initialSession?.access_token) {
-  void loadPortal();
+async function initializeAccountRoute() {
+  const initialSession = readSession();
+  if (!initialSession?.access_token) return;
+  try {
+    const data = await accountRequest(null, initialSession);
+    if (redirectToCheckoutIfRequested()) return;
+    setPortalView();
+    renderPortal(data);
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) localStorage.removeItem("brasaland_session");
+    authView.classList.remove("hidden");
+    portal.classList.add("hidden");
+    showAuthMessage(error.status === 401
+      ? copy("Tu sesión ha caducado. Inicia sesión de nuevo.", "Your session has expired. Please sign in again.")
+      : error.message);
+  }
 }
+
+void initializeAccountRoute();

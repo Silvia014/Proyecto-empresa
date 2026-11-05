@@ -39,7 +39,8 @@ try {
         document.querySelectorAll("[data-payment-preference]").forEach((choice) => { choice.disabled = true; });
           feedback.textContent = english ? "Saving your choice…" : "Guardando tu elección…";
         try {
-          const response = await fetch("/api/ordering", {
+          const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/ordering") : "/api/ordering";
+          const response = await fetch(apiUrl, {
             method: "PATCH",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({ orderId: savedOrder.orderId, email: savedOrder.customerEmail, paymentPreference: button.dataset.paymentPreference }),

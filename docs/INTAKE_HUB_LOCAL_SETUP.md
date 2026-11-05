@@ -20,7 +20,13 @@ The ignored root `.env.local` must contain `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY` for the Vercel API functions. The API helper also reads
 these keys from the root `.env.local` if Vercel Dev did not load them into its
 environment. Restart `npx vercel dev` after editing that file. The reservation
-form sends to `/api/reservas`; candidate applications send metadata and a CV (PDF, DOC,
+form sends to `/api/reservas`; after the reservation is saved, that handler sends
+an email acknowledgement through Resend. Add `RESEND_API_KEY` and
+`RESEND_FROM_EMAIL` to the ignored root `.env.local` and to the deployed API's
+server environment. `RESEND_FROM_EMAIL` must use a sender address on a domain
+verified in Resend. If email delivery is unavailable, the reservation remains
+saved and the page tells the customer that the email was not sent. Candidate
+applications send metadata and a CV (PDF, DOC,
 or DOCX, maximum 3 MB) to `/api/candidate`; Brasaclub registration creates a
 customer record and a zero-balance Brasapoints account. A reservation guest is
 matched to that customer by normalized email when they later register.

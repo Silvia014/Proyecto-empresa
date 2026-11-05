@@ -381,6 +381,7 @@ const translations = {
 
       confirmationTitle: "¡Reserva recibida!",
       confirmationText: "Te hemos enviado una copia de la confirmación a tu email. Nuestro equipo comprobará la disponibilidad y se pondrá en contacto contigo si hay algún cambio.",
+      confirmationEmailFailed: "Tu solicitud quedó registrada, pero no pudimos enviar el correo de confirmación. Comprueba que el email esté bien escrito o contacta con el restaurante.",
 
       labels: {
         nombre: "Nombre",
@@ -1140,6 +1141,7 @@ const translations = {
 
       confirmationTitle: "Reservation received!",
       confirmationText: "We've sent a copy of the confirmation to your email. Our team will check availability and contact you if anything changes.",
+      confirmationEmailFailed: "Your request was saved, but we could not send the confirmation email. Check your email address or contact the restaurant.",
 
       labels: {
         nombre: "First name",

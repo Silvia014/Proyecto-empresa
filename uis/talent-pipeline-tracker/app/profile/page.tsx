@@ -1,21 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile = {
-  email: string;
-  name: string;
-  phone: string;
-  address: string;
-};
-
 export default function ProfilePage() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -29,17 +21,29 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
 
         if (authError) {
           throw authError;
         }
 
-        if (!user) {
+        if (!session) {
           router.push("/login");
+          return;
+        }
+
+        const staffResponse = await fetch("/api/staff/me", {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: "no-store",
+        });
+        if (!staffResponse.ok) {
+          await supabase.auth.signOut();
+          router.replace("/login");
+          return;
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.replace("/login");
           return;
         }
 
@@ -51,7 +55,6 @@ export default function ProfilePage() {
           address: typeof metadata.address === "string" ? metadata.address : "",
         };
 
-        setProfile(nextProfile);
         setEmail(nextProfile.email);
         setName(nextProfile.name);
         setPhone(nextProfile.phone);
@@ -97,7 +100,6 @@ export default function ProfilePage() {
         address,
       };
 
-      setProfile(nextProfile);
       setEmail(nextProfile.email);
       setMessage("Profile updated successfully.");
     } catch (err) {

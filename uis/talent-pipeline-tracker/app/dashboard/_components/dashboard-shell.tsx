@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import IntakeHub from "./intake-hub";
+import CandidatesFrame from "../candidates/CandidatesFrame";
+import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
   getCrmSectionBySlug,
   getCrmSections,
@@ -13,9 +15,8 @@ import {
 
 type User = {
   email?: string;
-  user_metadata?: {
-    role?: string;
-  };
+  role: StaffRole;
+  displayName: string | null;
 };
 
 type DashboardShellProps = {
@@ -27,7 +28,7 @@ export default function DashboardShell({
 }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,21 +39,28 @@ export default function DashboardShell({
   useEffect(() => {
     async function loadDashboardContext() {
       try {
-        const {
-          data: { user: authUser },
-          error: authError,
-        } = await supabase.auth.getUser();
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
 
         if (authError) {
           throw authError;
         }
 
-        if (!authUser) {
+        if (!session) {
           router.push("/login");
           return;
         }
 
-        setUser(authUser);
+        const response = await fetch("/api/staff/me", {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: "no-store",
+        });
+        const staff = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          await supabase.auth.signOut();
+          router.replace("/login");
+          throw new Error(staff.error || "This account does not have staff access.");
+        }
+        setUser({ email: staff.email, role: staff.role, displayName: staff.displayName });
 
         const { data: locationData, error: locationError } = await supabase
           .from("Location")
@@ -76,9 +84,19 @@ export default function DashboardShell({
     loadDashboardContext();
   }, [router, supabase]);
 
-  const sections = useMemo(() => getCrmSections(locations), [locations]);
+  const sections = useMemo(() => getCrmSections(locations).filter((section) =>
+    user ? canAccess(user.role, section.slug as StaffPermission) : false
+  ), [locations, user]);
   const activeSection =
-    getCrmSectionBySlug(previewSlug, locations) ?? sections[0];
+    getCrmSectionBySlug(previewSlug, locations) && sections.some((section) => section.slug === previewSlug)
+      ? getCrmSectionBySlug(previewSlug, locations)!
+      : sections[0] ?? getCrmSectionBySlug("locations", locations)!;
+
+  useEffect(() => {
+    const current = sections.find((section) => section.route === pathname) ||
+      (pathname.startsWith("/dashboard/inventory/") && sections.some((section) => section.slug === "inventory") ? true : undefined);
+    if (pathname.startsWith("/dashboard/") && !current) router.replace("/dashboard");
+  }, [pathname, previewSlug, router, sections]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -127,15 +145,18 @@ export default function DashboardShell({
               Brasaland CRM
             </h1>
 
-            <p className="mt-1 text-sm text-gray-500">Backoffice</p>
+            <p className="mt-1 text-sm text-gray-500">Backoffice · {roleLabels[user.role]}</p>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="w-full rounded-lg border border-[#5a1f2b] px-4 py-2 text-sm font-medium text-[#5a1f2b] hover:bg-[#5a1f2b] hover:text-white sm:w-auto"
-          >
-            Logout
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {(user.role === "admin" || user.role === "superadmin") && <Link href="/register" className="rounded-lg border border-[#5a1f2b] px-4 py-2 text-center text-sm font-medium text-[#5a1f2b] hover:bg-[#5a1f2b] hover:text-white">Create staff account</Link>}
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-lg border border-[#5a1f2b] px-4 py-2 text-sm font-medium text-[#5a1f2b] hover:bg-[#5a1f2b] hover:text-white sm:w-auto"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -145,7 +166,7 @@ export default function DashboardShell({
             <p className="text-sm text-gray-500">Welcome back</p>
 
             <h2 className="mt-1 break-all text-3xl font-semibold text-gray-900">
-              {user.email}
+              {user.displayName || user.email}
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm text-gray-600">
@@ -285,9 +306,9 @@ export default function DashboardShell({
               </div>
             </section>
 
-            {activeSection.slug === "brasapuntos" ? <IntakeHub /> :
-             activeSection.slug === "reservations" ? <IntakeHub view="reservations" /> :
-             activeSection.slug === "candidates" ? <IntakeHub view="candidates" /> : <>
+            {activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
+             activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
+             activeSection?.slug === "candidates" ? <CandidatesFrame /> : <>
             {activeSection.metrics.length > 0 && <section className="grid gap-4 md:grid-cols-3">
               {activeSection.metrics.map((metric) => (
                 <article

@@ -4,6 +4,7 @@ const successState = document.getElementById("success-state");
 const submitErrorState = document.getElementById("submit-error-state");
 const submitErrorMessage = document.getElementById("submit-error-message");
 const submitRetryButton = document.getElementById("submit-retry-button");
+const applicationConfirmationMessage = document.getElementById("application-confirmation-message");
 const MAX_CV_SIZE = 3 * 1024 * 1024;
 const allowedExtensions = [".pdf", ".doc", ".docx"];
 
@@ -68,6 +69,7 @@ async function handleSubmit(event) {
         position: form.elements.position.value.trim(),
         linkedin_url: form.elements.linkedin_url.value.trim(),
         experience_years: Number(form.elements.experience_years.value || 0),
+        language: document.documentElement.lang === "en" ? "en" : "es",
         cv_filename: file.name,
         cv_type: inferredType,
         cv_base64: await readFileAsBase64(file),
@@ -79,6 +81,17 @@ async function handleSubmit(event) {
     if (response.status === 405) throw new Error("El servidor rechazó /api/candidate (HTTP 405). Detén Live Server, inicia `npx vercel dev` en la raíz del proyecto y abre la URL que imprime Vercel.");
     if (!result) throw new Error(`El servidor devolvió una respuesta vacía o no válida (HTTP ${response.status}). Comprueba el terminal de Vercel Dev.`);
     if (!response.ok) throw new Error(result.error || "No se pudo enviar tu candidatura.");
+    if (applicationConfirmationMessage) {
+      const emailAddress = form.elements.email.value.trim();
+      const english = document.documentElement.lang === "en";
+      applicationConfirmationMessage.textContent = result.confirmationEmailSent
+        ? (english
+          ? `We sent a receipt confirmation to ${emailAddress}. Our team will review your application and contact you if your profile matches an open position.`
+          : `Enviamos la confirmación de recibo a ${emailAddress}. Nuestro equipo revisará tu candidatura y te contactará si tu perfil encaja con una vacante.`)
+        : (english
+          ? "We received your application, but could not send the confirmation email. Please check your email address or contact Brasaland."
+          : "Recibimos tu candidatura, pero no pudimos enviar el email de confirmación. Revisa tu dirección o contacta con Brasaland.");
+    }
     form.classList.add("hidden");
     successState.classList.remove("hidden");
   } catch (error) {

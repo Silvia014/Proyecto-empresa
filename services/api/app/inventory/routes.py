@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
-from ..auth.supabase_dependencies import get_current_inventory_user
+from ..auth.supabase_dependencies import require_permission
 from ..database import get_db
 
 from .models import InventoryItem, InventoryMovement, InventoryLot, Location
@@ -41,7 +41,7 @@ def _country_code(country: str | None) -> str | None:
 @router.get("/products", response_model=list[ProductResponse])
 def list_products(
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     items = session.exec(
         select(InventoryItem)
@@ -75,7 +75,7 @@ def list_products(
 def create_product(
     product: ProductCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     if product.category not in {
         "meat",
@@ -127,7 +127,7 @@ def create_product(
 def get_product(
     item_id: int,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     item = session.get(InventoryItem, item_id)
 
@@ -164,7 +164,7 @@ def get_product(
 def create_inbound(
     movement: MovementCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -297,7 +297,7 @@ def create_inbound(
 def create_outbound(
     movement: MovementCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -448,7 +448,7 @@ def create_outbound(
 def create_adjustment(
     movement: AdjustmentCreate,
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     item = session.get(InventoryItem, movement.item_id)
 
@@ -537,7 +537,7 @@ def create_adjustment(
 @router.get("/orders", response_model=list[InventoryMovementSummaryResponse])
 def list_orders(
     session: Session = Depends(get_db),
-    current_user=Depends(get_current_inventory_user),
+    current_user=Depends(require_permission("inventory")),
 ):
     movements = session.exec(
         select(InventoryMovement, InventoryItem)

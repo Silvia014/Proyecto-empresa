@@ -18,7 +18,8 @@ const chosenLocationId = localStorage.getItem("brasalandLocationId") || cart[0]?
 async function apiJson(url, options = {}) {
   let response;
   try {
-    response = await fetch(url, { cache: "no-store", ...options });
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl(url) : url;
+    response = await fetch(apiUrl, { cache: "no-store", ...options });
   } catch {
     throw new Error("Could not reach the project API. Stop Live Server, run `npx vercel dev` from the project root, then open the URL printed by Vercel Dev.");
   }

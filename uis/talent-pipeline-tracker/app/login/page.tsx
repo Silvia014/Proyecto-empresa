@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
@@ -14,7 +14,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("staffCreated") !== "1") return;
+    const existing = params.get("existing") === "1";
+    const emailSent = params.get("emailSent") === "1";
+    setInfo(existing
+      ? (emailSent ? "Staff access was enabled for the existing account. A confirmation email was sent." : "Staff access was enabled for the existing account. Email delivery is not configured yet.")
+      : (emailSent ? "Staff account created and confirmation email sent." : "Staff account created, but confirmation email was not sent. Configure Resend in Vercel and retry by creating an eligible account.")
+    );
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,13 +35,24 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-        const { error: authError } = await supabase.auth.signInWithPassword({
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (authError) {
           throw new Error("Incorrect email or password.");
+        }
+
+        const accessToken = authData.session?.access_token;
+        const staffResponse = await fetch("/api/staff/me", {
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+          cache: "no-store",
+        });
+        const staffResult = await staffResponse.json().catch(() => ({}));
+        if (!staffResponse.ok) {
+          await supabase.auth.signOut();
+          throw new Error(staffResult.error || "This account does not have staff access. Ask an administrator.");
         }
 
         router.push("/dashboard");
@@ -56,6 +79,7 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {info && <p role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{info}</p>}
           <div>
             <label
               htmlFor="email"
@@ -194,15 +218,7 @@ export default function LoginPage() {
           Forgot your password?
         </a>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/register"
-            className="font-medium text-[#5a1f2b] hover:underline"
-          >
-            Register
-          </a>
-        </p>
+        <p className="mt-6 text-center text-sm text-gray-600">Staff accounts are created by an administrator.</p>
       </div>
     </main>
   );
