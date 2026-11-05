@@ -43,8 +43,8 @@ export default function CandidatesFrame() {
 
   useEffect(() => { sendToken(); }, [sendToken]);
 
-  return <section className="overflow-hidden rounded-3xl bg-white p-2 shadow-sm sm:p-4">
+  return <section className="overflow-hidden rounded-2xl bg-white shadow-sm">
     {!ready && <p className="p-6 text-sm text-gray-600">Verifying staff access…</p>}
-    {ready && <iframe ref={frame} title="Job applications and CVs" src="/backoffice/candidates.html" onLoad={sendToken} className="w-full rounded-2xl border-0" style={{ minHeight: "950px" }} />}
+    {ready && <iframe ref={frame} title="Job applications and CVs" src="/backoffice/candidates.html" onLoad={sendToken} className="block w-full border-0" style={{ minHeight: "820px" }} />}
   </section>;
 }
