@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Términos de Uso | Brasaland</title>
+  <meta name="description" content="Términos de uso de Brasaland en español e inglés." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { background: #f7f1e8; }
+    .legal-shell { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+    .legal-card { background: rgba(255,255,255,0.8); border: 1px solid rgba(34,27,22,0.08); border-radius: 1.5rem; box-shadow: 0 18px 38px rgba(34,27,22,0.05); padding: clamp(1.5rem, 4vw, 3rem); }
+    .legal-card h2 { color: #6E2C3B; margin-bottom: 0.75rem; }
+    .legal-card p, .legal-card li { color: rgba(34,27,22,0.78); line-height: 1.8; }
+    .legal-card ul { padding-left: 1.2rem; }
+    .legal-card .meta { display: flex; flex-wrap: wrap; gap: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.9rem; color: rgba(34,27,22,0.7); }
+    .lang-panel { display: none; }
+    .lang-panel.active { display: block; }
+    .section { padding-top: 1.75rem; margin-top: 1.75rem; border-top: 1px solid rgba(34,27,22,0.08); }
+    .section:first-of-type { padding-top: 0; margin-top: 0; border-top: 0; }
+    .section h2 { font-size: clamp(1.5rem, 2vw, 2.1rem); }
+  </style>
+</head>
+<body class="antialiased">
+  <header class="sticky top-0 z-40 bg-cream/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:gap-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="font-display text-2xl font-semibold text-wine" data-i18n="brand">Brasaland</a>
+        <select id="language-selector" class="rounded-md border border-wine bg-transparent px-3 py-1 text-sm font-medium text-wine focus:border-wine focus:outline-none focus:ring-2 focus:ring-wine" aria-label="Seleccionar idioma">
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
+
+      <nav aria-label="Navegación principal" class="hidden items-center gap-3 lg:ml-8 lg:flex lg:gap-5 xl:gap-6">
+        <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+        <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+        <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+        <a href="index.html#faq" class="nav-link" data-i18n="nav.faq">FAQ</a>
+        <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+        <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+        <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+        <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+      </nav>
+
+      <button id="menu-toggle" type="button" class="inline-flex items-center justify-center rounded-md p-2 text-walnut lg:hidden" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir menú de navegación">
+        <svg id="icon-open" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+        </svg>
+        <svg id="icon-close" class="hidden h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <nav id="menu-movil" aria-label="Navegación móvil" class="hidden fixed right-0 top-0 z-50 h-screen w-72 flex-col gap-2 border-l border-walnut/10 bg-cream px-6 pb-6 pt-24 shadow-2xl lg:hidden">
+      <a href="index.html" class="nav-link" data-i18n="nav.home">Inicio</a>
+      <a href="index.html#sobre-nosotros" class="nav-link" data-i18n="nav.about">Qué hacemos</a>
+      <a href="index.html#experiencia" class="nav-link" data-i18n="nav.experience">Nuestra experiencia</a>
+      <a href="index.html#faq" class="nav-link" data-i18n="nav.faq">FAQ</a>
+      <a href="index.html#contacto" class="nav-link" data-i18n="nav.contact">Contacto</a>
+      <a href="aplicar.html" class="nav-link" data-i18n="nav.careers">Trabaja con nosotros</a>
+      <a href="reserva.html" class="btn-primary" data-i18n="nav.reserve">Reservar mesa</a>
+      <a href="order.html" class="btn-secondary" data-i18n="nav.order">Pedir online</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="bg-walnut py-20 text-cream">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <p class="section-eyebrow text-brass-bright">Brasaland</p>
+        <h1 class="mt-4 max-w-3xl font-display text-4xl font-semibold text-cream sm:text-5xl lg:text-6xl" data-i18n="page.title">Términos de Uso</h1>
+        <p class="mt-6 max-w-2xl text-lg leading-relaxed text-cream/85" data-i18n="page.subtitle">Al usar Brasaland, aceptas las condiciones que describen cómo puedes acceder, reservar, comprar y participar en nuestras experiencias online y en restaurante.</p>
+      </div>
+    </section>
+
+    <div class="legal-shell">
+      <article class="legal-card">
+        <div class="lang-panel active" data-lang-panel="es">
+          <div class="meta">
+            <span><strong>Última actualización:</strong> 5 de noviembre de 2026</span>
+            <span><strong>Versión:</strong> ES / EN</span>
+          </div>
+
+          <section class="section">
+            <h2>1. Aceptación de los términos</h2>
+            <p>El acceso y uso de la web de Brasaland implica la aceptación de estos Términos de Uso. Si no aceptas estas condiciones, no debes usar nuestros servicios ni realizar reservas o pedidos.</p>
+          </section>
+
+          <section class="section">
+            <h2>2. Servicios ofrecidos</h2>
+            <p>Brasaland ofrece información sobre el restaurante, reservas de mesa, pedidos online, gestión de cuenta y programas de fidelidad. Los servicios pueden variar según ubicación, disponibilidad y horario.</p>
+          </section>
+
+          <section class="section">
+            <h2>3. Registro y cuentas</h2>
+            <p>Para acceder a determinadas funciones, podrías necesitar crear una cuenta. Debes proporcionar información veraz, mantener tus credenciales protegidas y ser responsable del uso de tu cuenta.</p>
+          </section>
+
+          <section class="section">
+            <h2>4. Reservas y pedidos</h2>
+            <p>Las reservas y pedidos están sujetos a disponibilidad, horario, condiciones de consumo y cambios o cancelaciones en función del servicio contratado. Brasaland se reserva el derecho a rechazar o cancelar pedidos o reservas por motivos de seguridad, error técnico o cumplimiento legal.</p>
+          </section>
+
+          <section class="section">
+            <h2>5. Conducta del usuario</h2>
+            <p>No debes usar el sitio para fines ilegales, fraudulentos, abusivos o que puedan dañar a otros usuarios, proveedores o la reputación de Brasaland. Cualquier uso indebido puede dar lugar a la suspensión del acceso.</p>
+          </section>
+
+          <section class="section">
+            <h2>6. Propiedad intelectual</h2>
+            <p>Todo el contenido de la web, incluido texto, diseño, imágenes, logotipos y marcas, pertenece a Brasaland o a sus proveedores autorizados. Queda prohibida la reproducción, distribución o uso sin autorización previa.</p>
+          </section>
+
+          <section class="section">
+            <h2>7. Limitación de responsabilidad</h2>
+            <p>Brasaland no será responsable de daños indirectos, pérdidas o perjuicios derivados del uso del sitio, salvo en los casos en que la ley lo exija o exista una obligación contractual expresa.</p>
+          </section>
+
+          <section class="section">
+            <h2>8. Contacto</h2>
+            <p>Si tienes dudas sobre estos términos, puedes escribir a <a href="mailto:roldansilvi@gmail.com">hola@brasaland.com</a>.</p>
+          </section>
+        </div>
+
+        <div class="lang-panel" data-lang-panel="en">
+          <div class="meta">
+            <span><strong>Last updated:</strong> November 5, 2026</span>
+            <span><strong>Version:</strong> ES / EN</span>
+          </div>
+
+          <section class="section">
+            <h2>1. Acceptance of terms</h2>
+            <p>Accessing and using the Brasaland website means accepting these Terms of Use. If you do not agree with these conditions, you should not use our services or make reservations or purchases.</p>
+          </section>
+
+          <section class="section">
+            <h2>2. Services offered</h2>
+            <p>Brasaland provides information about the restaurant, table reservations, online ordering, account management, and loyalty programmes. Services may vary depending on location, availability, and opening hours.</p>
+          </section>
+
+          <section class="section">
+            <h2>3. Registration and accounts</h2>
+            <p>Certain features may require creating an account. You must provide accurate information, keep your credentials secure, and remain responsible for the use of your account.</p>
+          </section>
+
+          <section class="section">
+            <h2>4. Reservations and orders</h2>
+            <p>Reservations and orders are subject to availability, schedule, consumption conditions, and possible changes or cancellations according to the service. Brasaland reserves the right to reject or cancel reservations or orders for reasons of security, technical error, or legal compliance.</p>
+          </section>
+
+          <section class="section">
+            <h2>5. User conduct</h2>
+            <p>You must not use the site for illegal, fraudulent, abusive, or damaging purposes that may affect other users, suppliers, or Brasaland's reputation. Misuse may result in suspension of access.</p>
+          </section>
+
+          <section class="section">
+            <h2>6. Intellectual property</h2>
+            <p>All website content, including text, design, images, logos, and trademarks, belongs to Brasaland or its authorized providers. Reproduction, distribution, or use without prior authorization is prohibited.</p>
+          </section>
+
+          <section class="section">
+            <h2>7. Limitation of liability</h2>
+            <p>Brasaland shall not be liable for indirect damages, losses, or harm arising from use of the website, except where required by law or under an express contractual obligation.</p>
+          </section>
+
+          <section class="section">
+            <h2>8. Contact</h2>
+            <p>If you have questions about these terms, contact us at <a href="mailto:roldansilvi@gmail.com">hola@brasaland.com</a>.</p>
+          </section>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="mt-12 bg-walnut text-cream/80 lg:mt-16">
+    <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+      <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <p class="font-display text-xl font-semibold text-cream" data-i18n="brand">Brasaland</p>
+          <p class="mt-3 text-sm leading-relaxed text-cream/60" data-i18n="footer.blurb">Cocina de temporada en Bogotá y Miami, con el estándar de servicio de la hostelería de hotel boutique.</p>
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.navTitle">Navegación</p>
+          <ul class="mt-3 space-y-2 text-sm text-cream/60">
+            <li><a href="index.html" class="hover:text-cream" data-i18n="nav.home">Inicio</a></li>
+            <li><a href="index.html#sobre-nosotros" class="hover:text-cream" data-i18n="nav.about">Qué hacemos</a></li>
+            <li><a href="index.html#experiencia" class="hover:text-cream" data-i18n="nav.experience">Nuestra experiencia</a></li>
+            <li><a href="index.html#contacto" class="hover:text-cream" data-i18n="nav.contact">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.reservationsTitle">Reservas</p>
+          <ul class="mt-3 space-y-2 text-sm text-cream/60">
+            <li><a href="reserva.html" class="hover:text-cream" data-i18n="nav.reserve">Reservar mesa</a></li>
+            <li><a href="order.html" class="hover:text-cream" target="_blank" rel="noopener" data-i18n="nav.order">Pedir online</a></li>
+            <li><a href="tel:+5741234567" class="hover:text-cream">+57 4 123 4567</a></li>
+            <li><a href="tel:+13051234567" class="hover:text-cream">+1 305 123 4567</a></li>
+            <li><a href="mailto:roldansilvi@gmail.com" class="hover:text-cream">hola@brasaland.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-cream" data-i18n="footer.legalTitle">Legal</p>
+          <ul class="mt-3 space-y-2 text-sm text-cream/60">
+            <li><a href="politica-de-privacidad.html" class="hover:text-cream" data-i18n="footer.privacyLink">Política de privacidad</a></li>
+            <li><a href="terminos-de-uso.html" class="hover:text-cream" data-i18n="footer.termsLink">Términos de uso</a></li>
+            <li><a href="politica-de-cookies.html" class="hover:text-cream" data-i18n="footer.cookiesLink">Política de cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-10 flex w-full items-center justify-between gap-4 border-t border-cream/10 pt-6 text-xs text-cream/50">
+        <div data-i18n="footer.copyright">© 2026 Brasaland. Todos los derechos reservados.</div>
+        <div class="ml-auto flex items-center gap-4 text-cream/70">
+          <a href="https://www.instagram.com/brasaland" class="hover:text-cream" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://www.facebook.com/brasaland" class="hover:text-cream" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+  <script>
+    const selector = document.getElementById('language-selector');
+    const panels = document.querySelectorAll('[data-lang-panel]');
+    const textNodes = document.querySelectorAll('[data-i18n]');
+    const translations = {
+      es: {
+        brand: 'Brasaland',
+        'nav.home': 'Inicio',
+        'nav.about': 'Qué hacemos',
+        'nav.experience': 'Nuestra experiencia',
+        'nav.faq': 'FAQ',
+        'nav.contact': 'Contacto',
+        'nav.careers': 'Trabaja con nosotros',
+        'nav.reserve': 'Reservar mesa',
+        'nav.order': 'Pedir online',
+        'page.title': 'Términos de Uso',
+        'page.subtitle': 'Al usar Brasaland, aceptas las condiciones que describen cómo puedes acceder, reservar, comprar y participar en nuestras experiencias online y en restaurante.',
+        'footer.blurb': 'Cocina de temporada en Bogotá y Miami, con el estándar de servicio de la hostelería de hotel boutique.',
+        'footer.navTitle': 'Navegación',
+        'footer.reservationsTitle': 'Reservas',
+        'footer.legalTitle': 'Legal',
+        'footer.privacyLink': 'Política de privacidad',
+        'footer.termsLink': 'Términos de uso',
+        'footer.cookiesLink': 'Política de cookies',
+        'footer.copyright': '© 2026 Brasaland. Todos los derechos reservados.'
+      },
+      en: {
+        brand: 'Brasaland',
+        'nav.home': 'Home',
+        'nav.about': 'What we do',
+        'nav.experience': 'Our experience',
+        'nav.faq': 'FAQ',
+        'nav.contact': 'Contact',
+        'nav.careers': 'Work with us',
+        'nav.reserve': 'Book a table',
+        'nav.order': 'Order online',
+        'page.title': 'Terms of Use',
+        'page.subtitle': 'By using Brasaland, you accept the conditions that describe how you can access, book, purchase, and participate in our online and restaurant experiences.',
+        'footer.blurb': 'Seasonal cuisine in Bogotá and Miami, with the service standard of boutique hotel hospitality.',
+        'footer.navTitle': 'Navigation',
+        'footer.reservationsTitle': 'Reservations',
+        'footer.legalTitle': 'Legal',
+        'footer.privacyLink': 'Privacy policy',
+        'footer.termsLink': 'Terms of use',
+        'footer.cookiesLink': 'Cookie policy',
+        'footer.copyright': '© 2026 Brasaland. All rights reserved.'
+      }
+    };
+
+    const setLang = (lang) => {
+      const selected = translations[lang] || translations.es;
+      textNodes.forEach((node) => {
+        const key = node.dataset.i18n;
+        if (selected[key]) {
+          node.textContent = selected[key];
+        }
+      });
+      panels.forEach((panel) => {
+        panel.classList.toggle('active', panel.dataset.langPanel === lang);
+      });
+      selector.value = lang;
+      localStorage.setItem('language', lang);
+      document.documentElement.lang = lang;
+    };
+
+    if (selector) {
+      const preferredLanguage = localStorage.getItem('language') || 'es';
+      selector.value = preferredLanguage;
+      selector.addEventListener('change', (event) => setLang(event.target.value));
+      setLang(preferredLanguage);
+    }
+  </script>
+</body>
+</html>
