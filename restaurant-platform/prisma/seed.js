@@ -122,8 +122,14 @@ async function main() {
     }
     console.log("Creando usuario superadmin...");
     const superadminRole = await prisma.role.findUniqueOrThrow({ where: { key: "SUPERADMIN" } });
-    const email = process.env.SUPERADMIN_EMAIL || "superadmin@turestaurante.com";
-    const password = process.env.SUPERADMIN_PASSWORD || "cambia-esta-contraseña";
+    const email = process.env.SUPERADMIN_EMAIL?.trim();
+    const password = process.env.SUPERADMIN_PASSWORD;
+    if (!email || !password) {
+      throw new Error("Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD before running the seed.");
+    }
+    if (password.length < 12) {
+      throw new Error("SUPERADMIN_PASSWORD must contain at least 12 characters.");
+    }
     const passwordHash = await bcryptjs_1.default.hash(password, 10);
     await prisma.user.upsert({
         where: { email },
@@ -137,7 +143,7 @@ async function main() {
         },
     });
     console.log("Seed completado.");
-    console.log(`Superadmin -> email: ${email} / password: ${password}`);
+    console.log("Superadmin seed completed; credentials omitted.");
 }
 main()
     .catch((e) => {
