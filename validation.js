@@ -31,13 +31,13 @@ function t(key) {
 // Horario de servicio, usado para validar la hora elegida según el día
 const HORARIO = {
   // 0 = domingo ... 6 = sábado
-  0: { abre: "13:00", cierra: "23:00" },
-  2: { abre: "13:00", cierra: "23:00" },
-  3: { abre: "13:00", cierra: "23:00" },
-  4: { abre: "13:00", cierra: "23:00" },
-  5: { abre: "13:00", cierra: "23:59" }, // viernes: hasta medianoche
-  6: { abre: "13:00", cierra: "23:59" }, // sábado: hasta medianoche
-  // 1 = lunes: cerrado (no aparece en el objeto)
+  0: { abre: "11:00", cierra: "22:00" },
+  1: { abre: "11:00", cierra: "22:00" },
+  2: { abre: "11:00", cierra: "22:00" },
+  3: { abre: "11:00", cierra: "22:00" },
+  4: { abre: "11:00", cierra: "22:00" },
+  5: { abre: "11:00", cierra: "22:00" },
+  6: { abre: "11:00", cierra: "22:00" },
 };
 
 const COUNTRY_CITY_MAP = {
@@ -88,7 +88,6 @@ const VALIDATORS = {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     if (fecha < hoy) return t("reserva.errors.diaPast");
-    if (fecha.getDay() === 1) return t("reserva.errors.diaClosed");
     const limite = new Date(hoy);
     limite.setMonth(limite.getMonth() + 3);
     if (fecha > limite) return t("reserva.errors.diaTooFar");

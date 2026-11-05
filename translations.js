@@ -335,7 +335,7 @@ const translations = {
 
       email: "hola@brasaland.com",
 
-      hours: "Mar–Jue y Dom: 13:00–23:00<br>Vie–Sáb: 13:00–00:00<br>Lunes cerrado"
+      hours: "Lun-Dom 11:00 - 22:00<br>Abierto todos los días"
     },
 
     footer: {
@@ -419,7 +419,7 @@ const translations = {
 
 
 
-      hoursNote: "Servimos de 13:00 a 23:00 (hasta 00:00 viernes y sábado). Lunes cerrado.",
+      hoursNote: "Lun-Dom 11:00 - 22:00 — abierto todos los días.",
 
       buttons: {
         submit: "Confirmar reserva",
@@ -1087,7 +1087,7 @@ const translations = {
 
       email: "hola@brasaland.com",
 
-      hours: "Tue–Thu & Sun: 1:00 PM–11:00 PM<br>Fri–Sat: 1:00 PM–12:00 AM<br>Closed Mondays"
+      hours: "Mon-Sun 11:00 AM - 10:00 PM<br>Open all week"
     },
 
     footer: {
@@ -1172,7 +1172,7 @@ const translations = {
         preferencias: "Allergies, celebrations, dietary preferences..."
         },
 
-      hoursNote: "We serve from 1:00 PM to 11:00 PM (until midnight Friday and Saturday). Closed Mondays.",
+      hoursNote: "Mon-Sun 11:00 AM - 10:00 PM — open all week.",
 
       buttons: {
         submit: "Confirm reservation",

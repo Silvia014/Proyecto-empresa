@@ -171,6 +171,11 @@ checkoutFeedback.setAttribute("role", "status");
 checkoutFeedback.setAttribute("aria-live", "polite");
 checkoutForm.appendChild(checkoutFeedback);
 
+function isOrderWindowOpen(now = new Date()) {
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  return minutes >= 11 * 60 && minutes < 21 * 60 + 30;
+}
+
 async function reconcileCartWithLiveMenu() {
   if (!cart.length) throw new Error("Your cart is empty. Return to the menu and add current items.");
   const locations = await apiJson("/api/ordering");
@@ -246,6 +251,12 @@ checkoutForm.addEventListener("submit", async (event) => {
 
   if (!cart.length) {
     checkoutFeedback.textContent = "Your cart is empty.";
+    checkoutFeedback.classList.add("error");
+    return;
+  }
+
+  if (!isOrderWindowOpen()) {
+    checkoutFeedback.textContent = "Orders can only be placed between 11:00 AM and 9:30 PM.";
     checkoutFeedback.classList.add("error");
     return;
   }
