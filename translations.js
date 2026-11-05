@@ -334,7 +334,7 @@ const translations = {
       phone1: "+57 4 123 4567",
       phone2: "+1 305 123 4567",
 
-      email: "hola@brasaland.com",
+      email: "reservas@brasaland.site",
 
       hours: "Lun-Dom 11:00 - 22:00<br>Abierto todos los días"
     },
@@ -1091,7 +1091,7 @@ const translations = {
       phone1: "+57 4 123 4567",
       phone2: "+1 305 123 4567",
 
-      email: "hola@brasaland.com",
+      email: "reservas@brasaland.site",
 
       hours: "Mon-Sun 11:00 AM - 10:00 PM<br>Open all week"
     },
