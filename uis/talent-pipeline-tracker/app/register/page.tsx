@@ -3,218 +3,136 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { StaffRole } from "@/lib/staff-access";
+
+type RoleOption = { value: StaffRole; label: string };
 
 export default function RegisterPage() {
   const router = useRouter();
   const supabase = createClient();
-
+  const [step, setStep] = useState<"authorize" | "create">("authorize");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [role, setRole] = useState<StaffRole | "">("");
+  const [roles, setRoles] = useState<RoleOption[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function authorizeAdmin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError("");
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
-
     try {
-      const { error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role: "staff",
-          },
-        },
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+      if (signInError || !data.session) throw new Error("The administrator email or password is incorrect.");
+
+      const response = await fetch("/api/staff/users", {
+        headers: { Authorization: `Bearer ${data.session.access_token}` },
+        cache: "no-store",
       });
-
-      if (authError) {
-        throw new Error(
-          authError.message || "Registration failed."
-        );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        await supabase.auth.signOut();
+        throw new Error(result.error || "Only an admin or superadmin can create staff accounts.");
       }
-
-      router.push("/login");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to register."
-      );
+      if (!Array.isArray(result.roles) || result.roles.length === 0) {
+        await supabase.auth.signOut();
+        throw new Error("No account roles are available for this administrator.");
+      }
+      setRoles(result.roles);
+      setRole(result.roles[0].value);
+      setStep("create");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Administrator verification failed.");
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f5f0e8] px-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-serif font-bold text-[#5a1f2b]">
-            Brasaland CRM
-          </h1>
+  async function createStaffAccount(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    if (password !== confirmPassword) return setError("Passwords do not match.");
+    if (!role) return setError("Choose an access category.");
+    setLoading(true);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) throw new Error("Administrator session expired. Start again.");
+      const response = await fetch("/api/staff/users", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, displayName, password, role }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Unable to create the staff account.");
+      await supabase.auth.signOut();
+      const query = new URLSearchParams({ staffCreated: "1", emailSent: result.confirmationEmailSent ? "1" : "0", existing: result.existingAccountEnabled ? "1" : "0" });
+      router.replace(`/login?${query.toString()}`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to create the staff account.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-          <p className="mt-2 text-sm text-gray-600">
-            Create your CRM account
-          </p>
+  async function restart() {
+    await supabase.auth.signOut();
+    setStep("authorize");
+    setAdminPassword("");
+    setError("");
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-[#f5f0e8] px-6 py-10">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-serif font-bold text-[#5a1f2b]">Brasaland CRM</h1>
+          <p className="mt-2 text-sm text-gray-600">Create a staff account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              autoComplete="email"
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
-              placeholder="name@brasaland.com"
-            />
+        {step === "authorize" ? <form onSubmit={authorizeAdmin} className="space-y-5">
+          <div className="rounded-xl bg-[#f5f0e8] p-4 text-sm leading-6 text-gray-700">
+            An existing admin or superadmin must verify their credentials before a new staff account can be created.
           </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                autoComplete="new-password"
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={8}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
-                placeholder="••••••••"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword((current) => !current)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                aria-pressed={showPassword}
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-gray-500 transition hover:bg-[#5a1f2b]/10 hover:text-[#5a1f2b] focus:outline-none focus:ring-2 focus:ring-[#5a1f2b]/30"
-              >
-                {showPassword ? (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-                    <path d="m3 3 18 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M9.88 5.1A9.96 9.96 0 0 1 12 5c6.5 0 10 7 10 7a18.11 18.11 0 0 1-3.13 4.15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.23 6.23C3.86 8.25 2 12 2 12s3.5 7 10 7c1.44 0 2.78-.25 4-.68" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-            </div>
+          <label className="block text-sm font-medium text-gray-700">Admin email
+            <input type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} autoComplete="username" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Admin password
+            <input type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} autoComplete="current-password" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          {error && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          <button disabled={loading} className="w-full rounded-lg bg-[#5a1f2b] px-4 py-3 font-medium text-white hover:bg-[#431720] disabled:opacity-50">{loading ? "Verifying…" : "Verify administrator"}</button>
+        </form> : <form onSubmit={createStaffAccount} className="space-y-5">
+          <div className="flex items-center justify-between rounded-xl bg-[#f5f0e8] p-4 text-sm text-gray-700">
+            <span>Administrator verified. Enter the staff account details. If the email already exists, this password will be set and staff access enabled.</span>
+            <button type="button" onClick={restart} className="shrink-0 font-medium text-[#5a1f2b] underline">Change</button>
           </div>
+          <label className="block text-sm font-medium text-gray-700">Staff name
+            <input type="text" value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Staff email
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Access category
+            <select value={role} onChange={(event) => setRole(event.target.value as StaffRole)} required className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]">
+              {roles.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Password
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          <label className="block text-sm font-medium text-gray-700">Confirm password
+            <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+          </label>
+          {error && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          <button disabled={loading} className="w-full rounded-lg bg-[#5a1f2b] px-4 py-3 font-medium text-white hover:bg-[#431720] disabled:opacity-50">{loading ? "Creating account…" : "Create staff account"}</button>
+        </form>}
 
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium text-gray-700"
-            >
-              Confirm password
-            </label>
-
-            <div className="relative">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                autoComplete="new-password"
-                onChange={(event) =>
-                  setConfirmPassword(event.target.value)
-                }
-                required
-                minLength={8}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-500 outline-none focus:border-[#5a1f2b]"
-                placeholder="••••••••"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((current) => !current)}
-                aria-label={
-                  showConfirmPassword ? "Hide password" : "Show password"
-                }
-                aria-pressed={showConfirmPassword}
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-gray-500 transition hover:bg-[#5a1f2b]/10 hover:text-[#5a1f2b] focus:outline-none focus:ring-2 focus:ring-[#5a1f2b]/30"
-              >
-                {showConfirmPassword ? (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-                    <path d="m3 3 18 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M9.88 5.1A9.96 9.96 0 0 1 12 5c6.5 0 10 7 10 7a18.11 18.11 0 0 1-3.13 4.15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.23 6.23C3.86 8.25 2 12 2 12s3.5 7 10 7c1.44 0 2.78-.25 4-.68" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <p
-              aria-live="polite"
-              className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
-            >
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-[#5a1f2b] px-4 py-3 font-medium text-white transition hover:bg-[#431720] disabled:opacity-50"
-          >
-            {loading ? "Creating account..." : "Create account"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="font-medium text-[#5a1f2b] hover:underline"
-          >
-            Sign in
-          </a>
-        </p>
+        <p className="mt-6 text-center text-sm text-gray-600">Already have staff access? <a href="/login" className="font-medium text-[#5a1f2b] hover:underline">Sign in</a></p>
       </div>
     </main>
   );

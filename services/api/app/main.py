@@ -20,9 +20,7 @@ from .users.routes import router as users_router
 from .profiles.routes import router as profiles_router
 from .auth.routes import router as auth_router
 from .incidents.routes import router as incidents_router
-from .auth.supabase_dependencies import (
-    get_current_inventory_user as get_current_user,
-)
+from .auth.supabase_dependencies import require_permission
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -162,7 +160,7 @@ def root():
 @app.post("/suppliers", response_model=Supplier, status_code=201)
 def register_supplier(
     supplier: SupplierCreate,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     return create_supplier(supplier.model_dump())
 
@@ -171,7 +169,7 @@ def register_supplier(
 def list_suppliers(
     country: Optional[str] = Query(default=None),
     category: Optional[str] = Query(default=None),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     return get_suppliers(country=country, category=category)
 
@@ -179,7 +177,7 @@ def list_suppliers(
 @app.get("/suppliers/{supplier_id}", response_model=Supplier)
 def supplier_detail(
     supplier_id: int,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     supplier = get_supplier(supplier_id)
 
@@ -193,7 +191,7 @@ def supplier_detail(
 def change_supplier_rate(
     supplier_id: int,
     data: RateUpdate,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     supplier = update_supplier_rate(
         supplier_id,
@@ -210,7 +208,7 @@ def change_supplier_rate(
 def change_supplier_status(
     supplier_id: int,
     data: StatusUpdate,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     supplier = update_supplier_status(
         supplier_id,
@@ -226,7 +224,7 @@ def change_supplier_status(
 @app.delete("/suppliers/{supplier_id}", status_code=204)
 def remove_supplier(
     supplier_id: int,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("suppliers")),
 ):
     deleted = delete_supplier(supplier_id)
 

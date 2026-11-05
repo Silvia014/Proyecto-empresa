@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           <h1 className="mb-4 text-3xl font-bold">Check your email</h1>
 
           <p className="mb-6">
-            If that address is registered, you'll receive a link shortly.
+            If that address is registered, you&apos;ll receive a link shortly.
           </p>
 
           <Link href="/login" className="underline">

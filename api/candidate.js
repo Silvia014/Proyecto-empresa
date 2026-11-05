@@ -1,6 +1,7 @@
 const { randomUUID } = require("node:crypto");
 const path = require("node:path");
 const { createAdminClient } = require("../lib/api-supabase");
+const { escapeHtml, sendResendEmail } = require("../lib/resend-email");
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const ACCEPTED = {
@@ -8,6 +9,17 @@ const ACCEPTED = {
   ".doc": "application/msword",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
+
+function candidateConfirmation(candidate, language) {
+  const english = language === "en";
+  const name = escapeHtml(candidate.name);
+  const title = english ? "We received your application" : "Hemos recibido tu candidatura";
+  const message = english
+    ? "Thank you for your interest in Brasaland. Our team will review your application and contact you by email if your profile matches an open position."
+    : "Gracias por tu interés en Brasaland. Nuestro equipo revisará tu candidatura y te contactará por email si tu perfil encaja con una vacante.";
+  const html = `<!doctype html><html lang="${english ? "en" : "es"}"><body style="margin:0;background:#f7f1e7;color:#382b24;font-family:Arial,sans-serif"><main style="max-width:600px;margin:32px auto;padding:32px;background:#fffdf9;border-radius:16px"><p style="margin:0;color:#762b3e;font-weight:bold;letter-spacing:.12em">BRASALAND</p><h1 style="color:#762b3e;font-size:26px">${title}</h1><p>${english ? "Hello" : "Hola"} ${name},</p><p style="line-height:1.6">${message}</p><p style="margin-top:28px;color:#776c64;font-size:13px">Brasaland</p></main></body></html>`;
+  return { subject: title, html, text: `${title}\n\n${english ? "Hello" : "Hola"} ${candidate.name},\n\n${message}` };
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -68,7 +80,9 @@ module.exports = async function handler(req, res) {
       await supabase.storage.from("candidate-cvs").remove([objectPath]);
       throw error;
     }
-    return res.status(201).json({ ok: true, id: data.id });
+    const email = candidateConfirmation({ name: body.full_name.trim() }, body.language === "en" ? "en" : "es");
+    const confirmationEmailSent = await sendResendEmail({ to: body.email.trim().toLowerCase(), ...email });
+    return res.status(201).json({ ok: true, id: data.id, confirmationEmailSent });
   } catch (error) {
     console.error("Candidate intake failed:", error.message);
     if (error.code === "SUPABASE_CONFIG_MISSING") {

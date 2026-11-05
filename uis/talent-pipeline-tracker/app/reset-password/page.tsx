@@ -22,12 +22,27 @@ function ResetPasswordForm() {
     async function verifyRecoveryLink() {
       const supabase = createClient();
       const code = searchParams.get("code");
+      const tokenHash = searchParams.get("token_hash");
+      const type = searchParams.get("type");
 
       if (code) {
         const { error: exchangeError } =
           await supabase.auth.exchangeCodeForSession(code);
 
         if (exchangeError) {
+          if (active) {
+            setError("This reset link is invalid or has expired. Request a new one.");
+            setCheckingLink(false);
+          }
+          return;
+        }
+      } else if (tokenHash && type === "recovery") {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "recovery",
+        });
+
+        if (verifyError) {
           if (active) {
             setError("This reset link is invalid or has expired. Request a new one.");
             setCheckingLink(false);

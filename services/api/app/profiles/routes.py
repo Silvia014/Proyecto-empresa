@@ -69,6 +69,8 @@ def read_profile(
     user_id: str,
     current_user=Depends(get_current_user),
 ):
+    if str(user_id) != str(current_user["id"]):
+        raise HTTPException(status_code=403, detail="You can only view your own staff profile.")
     profile = get_profile_by_user_id(user_id)
 
     if profile is None:
@@ -86,6 +88,8 @@ def edit_profile(
     updates: ProfileUpdate,
     current_user=Depends(get_current_user),
 ):
+    if str(user_id) != str(current_user["id"]):
+        raise HTTPException(status_code=403, detail="You can only edit your own staff profile.")
     profile = update_profile(
         user_id,
         updates.model_dump(exclude_unset=True),
@@ -105,6 +109,8 @@ def remove_profile(
     user_id: str,
     current_user=Depends(get_current_user),
 ):
+    if str(user_id) != str(current_user["id"]):
+        raise HTTPException(status_code=403, detail="You can only delete your own staff profile.")
     deleted = delete_profile(user_id)
 
     if not deleted:

@@ -193,7 +193,12 @@ function setupForm() {
     btnEnviar.textContent = t("reserva.buttons.submitting") || "Enviando...";
 
     try {
-      await enviarReserva(datos);
+      const resultado = await enviarReserva(datos);
+      const confirmationText = document.querySelector('[data-i18n="reserva.confirmationText"]');
+      if (confirmationText) {
+        const messageKey = resultado.confirmationEmailSent ? "reserva.confirmationText" : "reserva.confirmationEmailFailed";
+        confirmationText.textContent = t(messageKey) || confirmationText.textContent;
+      }
       mostrar(confirmacion);
       confirmacion.scrollIntoView({ behavior: "smooth", block: "center" });
       limpiarFormularioCompleto(form);

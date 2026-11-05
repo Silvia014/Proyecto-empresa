@@ -1,4 +1,5 @@
 const { createAdminClient } = require("../lib/api-supabase");
+const { escapeHtml, sendResendEmail } = require("../lib/resend-email");
 
 const COUNTRY_CITY = { colombia: "Bogotá", usa: "Orlando" };
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -9,13 +10,6 @@ function timeToMinutes(value) {
   if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return Number.NaN;
   return hours * 60 + minutes;
 }
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  })[character]);
-}
-
 function buildReservationEmail(reservation, language) {
   const english = language === "en";
   const seatingChoices = {
@@ -53,30 +47,7 @@ function buildReservationEmail(reservation, language) {
 }
 
 async function sendReservationConfirmation(reservation, language) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
-  if (!apiKey || !from) {
-    console.warn("Reservation saved; confirmation email was not sent because Resend is not configured.");
-    return false;
-  }
-
-  try {
-    const email = buildReservationEmail(reservation, language);
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [reservation.email], ...email }),
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!response.ok) {
-      console.error(`Reservation confirmation email failed with HTTP ${response.status}.`);
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.error("Reservation confirmation email could not be sent:", error.name || "request error");
-    return false;
-  }
+  return sendResendEmail({ to: reservation.email, ...buildReservationEmail(reservation, language) });
 }
 
 module.exports = async function handler(req, res) {
