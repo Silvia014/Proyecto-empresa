@@ -114,3 +114,37 @@ def test_outbound_and_demo_events_are_skipped():
     assert result["rows"] == []
     assert result["rows_rejected"] == 0
     assert result["rows_skipped"] == 2
+def test_rejects_country_currency_mismatch():
+    data = {
+        "locations": [
+            {
+                "id": "CO-MDE-01",
+                "country": "Colombia",
+                "currency": "USD",
+            }
+        ],
+        "events": [
+            {
+                "event_id": "invalid-currency",
+                "event_type": "stock_threshold_triggered",
+                "event_timestamp": "2026-11-02T10:00:00Z",
+                "properties": {
+                    "location_id": "CO-MDE-01",
+                },
+            }
+        ],
+    }
+
+    result = _transform(data)
+
+    assert result["rows"] == []
+    assert result["rows_rejected"] == 1
+    assert result["blocked_location_weeks"] == [
+        {
+            "location_id": "CO-MDE-01",
+            "week_start": "2026-11-02",
+        }
+    ]
+    assert "Invalid country/currency combination" in (
+        result["quality_issues"][0]
+    )

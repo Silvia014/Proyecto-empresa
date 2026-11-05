@@ -131,7 +131,6 @@ def aggregate_weekly_location_kpis(
     Invalid KPI events block only their known location/week. Events with an
     unknown location are recorded as rejected without guessing their mapping.
     """
-    # Included in the task arguments so a logic revision invalidates the cache.
     _ = transform_revision
 
     def to_decimal(value: Any) -> Decimal | None:
@@ -155,7 +154,6 @@ def aggregate_weekly_location_kpis(
 
     for event in extracted_data.get("events", []):
         event_id = str(event.get("event_id", "unknown"))
-
         if event_id in seen_event_ids:
             rows_skipped += 1
             quality_warnings.append(f"Duplicate event ignored: {event_id}")
@@ -165,9 +163,8 @@ def aggregate_weekly_location_kpis(
         properties = event.get("properties") or {}
         if not isinstance(properties, dict):
             properties = {}
-        event_type = event.get("event_type")
 
-        # Outbound events provide context but are not KPI inputs in v1.
+        event_type = event.get("event_type")
         if event_type not in KPI_EVENT_TYPES:
             rows_skipped += 1
             continue
@@ -202,15 +199,16 @@ def aggregate_weekly_location_kpis(
         grain = (location_id, week_start)
         country = _country_code(location.get("country"))
         currency = str(location.get("currency") or "").strip().upper()
+        expected_currency = {"CO": "COP", "US": "USD"}.get(country)
 
-        if country is None or currency not in {"COP", "USD"}:
+        if expected_currency is None or currency != expected_currency:
             blocked_location_weeks.add(grain)
             quality_issues.append(
-                f"Invalid reference country/currency for location {location_id}"
+                "Invalid country/currency combination for location "
+                f"{location_id}: {country}/{currency}"
             )
             continue
 
-        # Location reference data is canonical; absent event metadata is allowed.
         event_country = properties.get("country")
         if (
             event_country not in (None, "")
@@ -271,7 +269,6 @@ def aggregate_weekly_location_kpis(
 
     result_rows = []
     for grain, row in aggregates.items():
-        # Do not replace a previously published total with an incomplete total.
         if grain in blocked_location_weeks:
             continue
 
