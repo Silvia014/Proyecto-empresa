@@ -12,22 +12,6 @@ const resetPasswordForm = document.getElementById(
 );
 
 
-// ==========================================
-// CHECK RECOVERY SESSION
-// ==========================================
-
-async function checkRecoverySession() {
-  const { data, error } = await supabase.auth.getSession();
-
-  console.log("Recovery session:", data.session);
-  console.log("Session error:", error);
-
-  if (!data.session) {
-    console.error("No recovery session found");
-  }
-}
-
-checkRecoverySession();
 
 
 // ==========================================
@@ -59,7 +43,6 @@ resetPasswordForm?.addEventListener("submit", async (event) => {
       error: sessionError,
     } = await supabase.auth.getSession();
 
-    console.log("Session before password update:", session);
 
     if (sessionError) {
       throw sessionError;
@@ -71,14 +54,11 @@ resetPasswordForm?.addEventListener("submit", async (event) => {
       );
     }
 
-    console.log("Attempting to update password...");
 
     const { data, error } = await supabase.auth.updateUser({
       password,
     });
 
-    console.log("Update result:", data);
-    console.log("Update error:", error);
 
     if (error) {
       throw error;
@@ -91,7 +71,7 @@ resetPasswordForm?.addEventListener("submit", async (event) => {
     window.location.href = "account.html";
 
   } catch (error) {
-    console.error("Password update error:", error);
+    console.error("Password update failed.");
 
     alert("Password was not updated: " + error.message);
   }
