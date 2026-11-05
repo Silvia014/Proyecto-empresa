@@ -13,10 +13,6 @@ from prefect import flow, task
 from prefect.tasks import task_input_hash
 from sqlalchemy import bindparam, create_engine, text
 
-
-# ---------------------------------------------------------------------------
-# Project configuration
-# ---------------------------------------------------------------------------
 ROOT_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT_DIR / ".env")
 load_dotenv(ROOT_DIR / ".env.local")
@@ -24,94 +20,71 @@ load_dotenv(ROOT_DIR / ".env.local")
 DATABASE_URL = os.getenv("DATABASE_URL")
 ENGINE = None
 
-EVENT_TYPES = [
+EVENT_TYPES = (
     "inbound_order_created",
     "outbound_order_created",
     "stock_waste_registered",
     "stock_threshold_triggered",
     "ingredient_price_variance_detected",
-]
-
+)
 KPI_EVENT_TYPES = {
     "inbound_order_created",
     "stock_waste_registered",
     "stock_threshold_triggered",
     "ingredient_price_variance_detected",
 }
-
-TRANSFORM_REVISION = "2026-11-04-v2"
+TRANSFORM_REVISION = "2026-11-04-v3"
 
 
 def get_engine():
-    """Create the SQLAlchemy engine lazily."""
+    """Return a lazily-created SQLAlchemy engine."""
     global ENGINE
-
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL is not configured.")
-
     if ENGINE is None:
-        ENGINE = create_engine(
-            DATABASE_URL,
-            pool_pre_ping=True,
-        )
-
+        ENGINE = create_engine(DATABASE_URL, pool_pre_ping=True)
     return ENGINE
 
 
-def _normalize_event_timestamp(value: Any) -> datetime:
-    """Parse an event timestamp and normalize it to UTC."""
+def _utc_timestamp(value: Any) -> datetime:
     if isinstance(value, datetime):
-        timestamp = value
+        result = value
     else:
-        timestamp = datetime.fromisoformat(
-            str(value).replace("Z", "+00:00")
-        )
-
-    if timestamp.tzinfo is None:
-        timestamp = timestamp.replace(tzinfo=timezone.utc)
-
-    return timestamp.astimezone(timezone.utc)
+        result = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    if result.tzinfo is None:
+        result = result.replace(tzinfo=timezone.utc)
+    return result.astimezone(timezone.utc)
 
 
-# ---------------------------------------------------------------------------
-# 1. EXTRACT
-# ---------------------------------------------------------------------------
-@task(
-    name="extract_inventory_telemetry_events",
-    retries=3,
-    retry_delay_seconds=5,
-)
+def _country_code(value: Any) -> str | None:
+    normalized = str(value or "").strip().upper()
+    if normalized in {"CO", "COLOMBIA"}:
+        return "CO"
+    if normalized in {
+        "US", "USA", "UNITED STATES",
+        "UNITED STATES OF AMERICA", "ESTADOS UNIDOS",
+    }:
+        return "US"
+    return None
+
+
+@task(name="extract_inventory_telemetry_events", retries=3, retry_delay_seconds=5)
 def extract_inventory_telemetry_events(
     watermark_from: str,
     watermark_to: str,
 ) -> dict:
-    """Read business telemetry and location reference data.
-
-    `public.telemetry_events` is read-only for this pipeline. Reporting data
-    is written only to the separate `reporting` schema.
-    """
+    """Read the source telemetry and Location dimension; never write to either."""
     event_query = text("""
-        SELECT
-            event_id,
-            event_timestamp,
-            event_type,
-            properties
+        SELECT event_id, event_timestamp, event_type, properties
         FROM public.telemetry_events
         WHERE event_timestamp >= :date_from
           AND event_timestamp < :date_to
           AND event_type IN :event_types
         ORDER BY event_timestamp
-    """).bindparams(
-        bindparam("event_types", expanding=True)
-    )
+    """).bindparams(bindparam("event_types", expanding=True))
 
     locations_query = text("""
-        SELECT
-            id,
-            name,
-            city,
-            country,
-            currency
+        SELECT id, name, city, country, currency
         FROM public."Location"
         ORDER BY id
     """)
@@ -125,31 +98,25 @@ def extract_inventory_telemetry_events(
                 "event_types": EVENT_TYPES,
             },
         ).mappings().all()
+        locations = connection.execute(locations_query).mappings().all()
 
-        locations = connection.execute(
-            locations_query
-        ).mappings().all()
-
-    event_records = []
-    for event in events:
-        record = dict(event)
+    records = []
+    for item in events:
+        record = dict(item)
+        record["event_id"] = str(record["event_id"])
         if isinstance(record.get("event_timestamp"), datetime):
             record["event_timestamp"] = record["event_timestamp"].isoformat()
-        record["event_id"] = str(record["event_id"])
         if not isinstance(record.get("properties"), dict):
             record["properties"] = {}
-        event_records.append(record)
+        records.append(record)
 
     return {
-        "events": event_records,
-        "locations": [dict(location) for location in locations],
-        "rows_extracted": len(event_records),
+        "events": records,
+        "locations": [dict(item) for item in locations],
+        "rows_extracted": len(records),
     }
 
 
-# ---------------------------------------------------------------------------
-# 2. TRANSFORM
-# ---------------------------------------------------------------------------
 @task(
     name="aggregate_weekly_location_kpis",
     cache_key_fn=task_input_hash,
@@ -159,50 +126,29 @@ def aggregate_weekly_location_kpis(
     extracted_data: dict,
     transform_revision: str = TRANSFORM_REVISION,
 ) -> dict:
-    """Calculate location/week KPIs and quarantine affected grains.
+    """Aggregate the five KPIs by location and Monday-based UTC week.
 
-    The explicit `transform_revision` is part of the task input/cache key.
-    Increase it whenever transformation logic changes.
-
-    Missing/conflicting data for a known location blocks only that
-    location/week. Events with an unknown location remain rejected and are
-    recorded in the quality report, without blocking unrelated locations.
+    Invalid KPI events block only their known location/week. Events with an
+    unknown location are recorded as rejected without guessing their mapping.
     """
-    # Referencing this value makes the cache revision an explicit dependency.
+    # Included in the task arguments so a logic revision invalidates the cache.
     _ = transform_revision
 
     def to_decimal(value: Any) -> Decimal | None:
         try:
-            number = Decimal(str(value))
-            if not number.is_finite():
-                return None
-            return number
+            result = Decimal(str(value))
+            return result if result.is_finite() else None
         except (InvalidOperation, TypeError, ValueError):
             return None
 
-    def normalize_country(value: Any) -> str | None:
-        normalized = str(value or "").strip().upper()
-        if normalized in {"CO", "COLOMBIA"}:
-            return "CO"
-        if normalized in {
-            "US",
-            "USA",
-            "UNITED STATES",
-            "UNITED STATES OF AMERICA",
-            "ESTADOS UNIDOS",
-        }:
-            return "US"
-        return None
-
     locations = {
-        str(location["id"]): location
-        for location in extracted_data.get("locations", [])
+        str(item["id"]): item
+        for item in extracted_data.get("locations", [])
     }
-
     aggregates: dict[tuple[str, str], dict[str, Any]] = {}
+    blocked_location_weeks: set[tuple[str, str]] = set()
     quality_issues: list[str] = []
     quality_warnings: list[str] = []
-    blocked_location_weeks: set[tuple[str, str]] = set()
     seen_event_ids: set[str] = set()
     rows_skipped = 0
     rows_processed = 0
@@ -221,12 +167,11 @@ def aggregate_weekly_location_kpis(
             properties = {}
         event_type = event.get("event_type")
 
-        # Outbound events are context only, not one of the five report KPIs.
+        # Outbound events provide context but are not KPI inputs in v1.
         if event_type not in KPI_EVENT_TYPES:
             rows_skipped += 1
             continue
 
-        # Demo/test records must not affect business reporting.
         if str(properties.get("demo_record", "")).strip().lower() in {
             "true", "1", "yes"
         }:
@@ -235,44 +180,41 @@ def aggregate_weekly_location_kpis(
             continue
 
         try:
-            timestamp = _normalize_event_timestamp(event.get("event_timestamp"))
+            timestamp = _utc_timestamp(event.get("event_timestamp"))
         except (TypeError, ValueError, OverflowError) as exc:
             quality_issues.append(
-                f"Invalid event timestamp for event {event_id}: {exc}"
+                f"Invalid event timestamp for {event_id}: {exc}"
             )
             continue
 
-        event_week = (
+        week_start = (
             timestamp.date() - timedelta(days=timestamp.weekday())
         ).isoformat()
 
         location_id = str(properties.get("location_id") or "")
         location = locations.get(location_id)
-
         if location is None:
             quality_issues.append(
                 f"Unknown location: {location_id}, event: {event_id}"
             )
             continue
 
-        # The Location reference table is the canonical country/currency data.
-        country = normalize_country(location.get("country"))
+        grain = (location_id, week_start)
+        country = _country_code(location.get("country"))
         currency = str(location.get("currency") or "").strip().upper()
-        grain = (location_id, event_week)
 
-        if country is None or not currency:
+        if country is None or currency not in {"COP", "USD"}:
             blocked_location_weeks.add(grain)
             quality_issues.append(
-                "Invalid reference country/currency for "
-                f"location {location_id}, event {event_id}"
+                f"Invalid reference country/currency for location {location_id}"
             )
             continue
 
-        # Missing event metadata is enriched from Location; conflicts are rejected.
+        # Location reference data is canonical; absent event metadata is allowed.
         event_country = properties.get("country")
         if (
             event_country not in (None, "")
-            and normalize_country(event_country) != country
+            and _country_code(event_country) != country
         ):
             blocked_location_weeks.add(grain)
             quality_issues.append(f"Country mismatch for event {event_id}")
@@ -287,7 +229,6 @@ def aggregate_weekly_location_kpis(
             quality_issues.append(f"Currency mismatch for event {event_id}")
             continue
 
-        # Validate cost events before adding them to the aggregate.
         total_cost = None
         if event_type in {"inbound_order_created", "stock_waste_registered"}:
             unit_cost = to_decimal(properties.get("unit_cost"))
@@ -304,12 +245,11 @@ def aggregate_weekly_location_kpis(
                 )
                 continue
 
-        key = grain
-        if key not in aggregates:
-            aggregates[key] = {
+        if grain not in aggregates:
+            aggregates[grain] = {
                 "location_id": location_id,
                 "country": country,
-                "week_start": event_week,
+                "week_start": week_start,
                 "total_purchase_cost": Decimal("0"),
                 "total_waste_cost": Decimal("0"),
                 "stockout_events_count": 0,
@@ -317,8 +257,7 @@ def aggregate_weekly_location_kpis(
                 "currency": currency,
             }
 
-        row = aggregates[key]
-
+        row = aggregates[grain]
         if event_type == "inbound_order_created":
             row["total_purchase_cost"] += total_cost
         elif event_type == "stock_waste_registered":
@@ -331,18 +270,15 @@ def aggregate_weekly_location_kpis(
         rows_processed += 1
 
     result_rows = []
-    for key, row in aggregates.items():
-        # Never publish a partial KPI for a location/week containing a rejected
-        # KPI event. Other locations/weeks can still be loaded safely.
-        if key in blocked_location_weeks:
+    for grain, row in aggregates.items():
+        # Do not replace a previously published total with an incomplete total.
+        if grain in blocked_location_weeks:
             continue
 
         purchase_cost = row["total_purchase_cost"]
         waste_cost = row["total_waste_cost"]
         row["waste_ratio"] = (
-            float(waste_cost / purchase_cost)
-            if purchase_cost > 0
-            else 0.0
+            float(waste_cost / purchase_cost) if purchase_cost > 0 else 0.0
         )
         row["total_purchase_cost"] = float(purchase_cost)
         row["total_waste_cost"] = float(waste_cost)
@@ -359,25 +295,17 @@ def aggregate_weekly_location_kpis(
         "quality_issues": quality_issues,
         "quality_warnings": quality_warnings,
         "blocked_location_weeks": [
-            {"location_id": location_id, "week_start": week_start}
-            for location_id, week_start in sorted(blocked_location_weeks)
+            {"location_id": location_id, "week_start": week}
+            for location_id, week in sorted(blocked_location_weeks)
         ],
     }
 
 
-# ---------------------------------------------------------------------------
-# 3. LOAD AND AUDIT TABLES
-# ---------------------------------------------------------------------------
-@task(
-    name="ensure_reporting_tables",
-    retries=3,
-    retry_delay_seconds=5,
-)
-def ensure_reporting_tables() -> None:
-    """Create the business reporting and pipeline audit tables if needed."""
+@task(name="ensure_reporting_tables", retries=3, retry_delay_seconds=5)
+def ensure_reporting_tables():
+    """Create the business reporting and audit tables idempotently."""
     with get_engine().begin() as connection:
         connection.execute(text("CREATE SCHEMA IF NOT EXISTS reporting"))
-
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS reporting.weekly_location_performance (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -394,7 +322,6 @@ def ensure_reporting_tables() -> None:
                 UNIQUE (location_id, week_start)
             )
         """))
-
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS reporting.pipeline_runs (
                 run_id UUID PRIMARY KEY,
@@ -417,38 +344,22 @@ def ensure_reporting_tables() -> None:
         """))
 
 
-@task(
-    name="upsert_weekly_location_performance",
-    retries=3,
-    retry_delay_seconds=5,
-)
+@task(name="upsert_weekly_location_performance", retries=3, retry_delay_seconds=5)
 def upsert_weekly_location_performance(rows: list[dict]) -> int:
-    """Idempotently load KPI rows using the unique location/week key."""
+    """Idempotently upsert weekly aggregates by location/week."""
     if not rows:
         return 0
 
     statement = text("""
         INSERT INTO reporting.weekly_location_performance (
-            location_id,
-            country,
-            week_start,
-            total_purchase_cost,
-            total_waste_cost,
-            waste_ratio,
-            stockout_events_count,
-            price_alert_events_count,
-            currency
+            location_id, country, week_start,
+            total_purchase_cost, total_waste_cost, waste_ratio,
+            stockout_events_count, price_alert_events_count, currency
         )
         VALUES (
-            :location_id,
-            :country,
-            :week_start,
-            :total_purchase_cost,
-            :total_waste_cost,
-            :waste_ratio,
-            :stockout_events_count,
-            :price_alert_events_count,
-            :currency
+            :location_id, :country, :week_start,
+            :total_purchase_cost, :total_waste_cost, :waste_ratio,
+            :stockout_events_count, :price_alert_events_count, :currency
         )
         ON CONFLICT (location_id, week_start)
         DO UPDATE SET
@@ -465,15 +376,10 @@ def upsert_weekly_location_performance(rows: list[dict]) -> int:
     with get_engine().begin() as connection:
         for row in rows:
             connection.execute(statement, row)
-
     return len(rows)
 
 
-@task(
-    name="save_pipeline_run",
-    retries=3,
-    retry_delay_seconds=5,
-)
+@task(name="save_pipeline_run", retries=3, retry_delay_seconds=5)
 def save_pipeline_run(
     run_id: str,
     week_start: str,
@@ -489,24 +395,20 @@ def save_pipeline_run(
     last_completed_stage: str | None = None,
     error_summary: str | None = None,
     trigger_source: str = "schedule",
-) -> None:
+):
     statement = text("""
         INSERT INTO reporting.pipeline_runs (
             run_id, pipeline_name, week_start,
-            started_at, finished_at, status,
-            last_completed_stage,
-            watermark_from, watermark_to,
-            records_processed, rows_extracted,
-            rows_rejected, rows_loaded,
+            started_at, finished_at, status, last_completed_stage,
+            watermark_from, watermark_to, records_processed,
+            rows_extracted, rows_rejected, rows_loaded,
             error_summary, pipeline_version, trigger_source
         )
         VALUES (
             :run_id, :pipeline_name, :week_start,
-            :started_at, :finished_at, :status,
-            :last_completed_stage,
-            :watermark_from, :watermark_to,
-            :records_processed, :rows_extracted,
-            :rows_rejected, :rows_loaded,
+            :started_at, :finished_at, :status, :last_completed_stage,
+            :watermark_from, :watermark_to, :records_processed,
+            :rows_extracted, :rows_rejected, :rows_loaded,
             :error_summary, :pipeline_version, :trigger_source
         )
         ON CONFLICT (run_id)
@@ -543,24 +445,20 @@ def save_pipeline_run(
 
 
 @task(name="save_pipeline_eval_snapshot")
-def save_pipeline_eval_snapshot(run_id: str, transformed: dict) -> str:
-    """Write an evaluation snapshot without changing source telemetry."""
+def save_pipeline_eval_snapshot(run_id: str, transformed: dict):
+    """Write a local JSON quality snapshot for each flow run."""
     eval_dir = ROOT_DIR / "data" / "eval"
     eval_dir.mkdir(parents=True, exist_ok=True)
-
     output = {
         "run_id": run_id,
         "rows_processed": transformed["rows_processed"],
         "rows_rejected": transformed["rows_rejected"],
-        "rows_skipped": transformed.get("rows_skipped", 0),
-        "quality_issues": transformed.get("quality_issues", []),
-        "quality_warnings": transformed.get("quality_warnings", []),
-        "blocked_location_weeks": transformed.get(
-            "blocked_location_weeks", []
-        ),
+        "rows_skipped": transformed["rows_skipped"],
+        "quality_issues": transformed["quality_issues"],
+        "quality_warnings": transformed["quality_warnings"],
+        "blocked_location_weeks": transformed["blocked_location_weeks"],
         "rows": transformed["rows"],
     }
-
     output_path = eval_dir / f"pipeline-{run_id}.json"
     output_path.write_text(
         json.dumps(output, indent=2, default=str),
@@ -569,20 +467,85 @@ def save_pipeline_eval_snapshot(run_id: str, transformed: dict) -> str:
     return str(output_path)
 
 
-# ---------------------------------------------------------------------------
-# 4. PREFECT FLOW
-# ---------------------------------------------------------------------------
+def get_latest_pipeline_run() -> dict | None:
+    """Return the most recent audit row, or None before the first run."""
+    with get_engine().connect() as connection:
+        table_exists = connection.execute(
+            text("SELECT to_regclass('reporting.pipeline_runs')")
+        ).scalar_one()
+        if table_exists is None:
+            return None
+        row = connection.execute(text("""
+            SELECT *
+            FROM reporting.pipeline_runs
+            ORDER BY started_at DESC
+            LIMIT 1
+        """)).mappings().first()
+    return dict(row) if row else None
+
+
+def get_weekly_location_performance(
+    week_start: date | None = None,
+    location_id: str | None = None,
+    country: str | None = None,
+    limit: int = 100,
+) -> dict:
+    """Return one week's location report without combining currencies."""
+    filters = []
+    params: dict[str, Any] = {"limit": limit}
+    if week_start is not None:
+        filters.append("week_start = :week_start")
+        params["week_start"] = week_start
+    if location_id:
+        filters.append("location_id = :location_id")
+        params["location_id"] = location_id
+    if country:
+        filters.append("country = :country")
+        params["country"] = country.upper()
+
+    where_clause = "WHERE " + " AND ".join(filters) if filters else ""
+    with get_engine().connect() as connection:
+        table_exists = connection.execute(
+            text("SELECT to_regclass('reporting.weekly_location_performance')")
+        ).scalar_one()
+        if table_exists is None:
+            return {"week_start": week_start, "locations": []}
+        if week_start is None:
+            latest = connection.execute(text("""
+                SELECT MAX(week_start)
+                FROM reporting.weekly_location_performance
+            """)).scalar_one_or_none()
+            if latest is None:
+                return {"week_start": None, "locations": []}
+            params["week_start"] = latest
+            where_clause = (
+                "WHERE " + " AND ".join(["week_start = :week_start"] + filters)
+                if filters else "WHERE week_start = :week_start"
+            )
+        rows = connection.execute(text(f"""
+            SELECT location_id, country, week_start,
+                   total_purchase_cost, total_waste_cost, waste_ratio,
+                   stockout_events_count, price_alert_events_count,
+                   currency, computed_at
+            FROM reporting.weekly_location_performance
+            {where_clause}
+            ORDER BY location_id
+            LIMIT :limit
+        """), params).mappings().all()
+
+    effective_week = week_start or (rows[0]["week_start"] if rows else None)
+    return {
+        "week_start": effective_week,
+        "locations": [dict(row) for row in rows],
+    }
+
+
 @flow(name="weekly_location_cost_waste_flow")
 def weekly_location_cost_waste_flow(
     week_start: str | None = None,
     trigger_source: str = "schedule",
-) -> dict:
-    """Run extract -> transform -> load and persist an audit record.
-
-    Reprocesses the target week and the preceding three weeks to account for
-    late-arriving events. Valid, unaffected location/week rows are loaded;
-    rejected grains are withheld and the run is marked `partial`.
-    """
+    run_id: str | None = None,
+):
     now = datetime.now(timezone.utc)
     current_monday = now.date() - timedelta(days=now.weekday())
     target_week = (
@@ -590,9 +553,9 @@ def weekly_location_cost_waste_flow(
         if week_start
         else current_monday - timedelta(days=7)
     )
-
     if target_week.weekday() != 0:
         raise ValueError("week_start must be a Monday.")
+
     watermark_from = datetime.combine(
         target_week - timedelta(days=21),
         datetime.min.time(),
@@ -604,9 +567,8 @@ def weekly_location_cost_waste_flow(
         tzinfo=timezone.utc,
     )
 
-    run_id = str(uuid.uuid4())
+    run_id = run_id or str(uuid.uuid4())
     started_at = datetime.now(timezone.utc)
-
     ensure_reporting_tables()
     save_pipeline_run(
         run_id=run_id,
@@ -618,7 +580,6 @@ def weekly_location_cost_waste_flow(
         trigger_source=trigger_source,
     )
 
-    # 1. EXTRACT: return_state lets the flow audit and handle task failures.
     extraction_state = extract_inventory_telemetry_events(
         watermark_from.isoformat(),
         watermark_to.isoformat(),
@@ -639,13 +600,11 @@ def weekly_location_cost_waste_flow(
             trigger_source=trigger_source,
         )
         raise RuntimeError(f"Extraction failed: {error}")
-
     extracted = extraction_state.result()
 
-    # 2. TRANSFORM: explicit revision invalidates results from earlier logic.
     transformation_state = aggregate_weekly_location_kpis(
         extracted,
-        transform_revision=TRANSFORM_REVISION,
+        TRANSFORM_REVISION,
         return_state=True,
     )
     if transformation_state.is_failed():
@@ -664,22 +623,17 @@ def weekly_location_cost_waste_flow(
             trigger_source=trigger_source,
         )
         raise RuntimeError(f"Transformation failed: {error}")
-
     transformed = transformation_state.result()
 
-    # Optional evaluation snapshot: its failure must not block KPI loading.
+    # Evaluation is optional: a snapshot failure must not block reporting.
     snapshot_state = save_pipeline_eval_snapshot(
         run_id,
         transformed,
         return_state=True,
     )
     if snapshot_state.is_failed():
-        print(
-            "Optional evaluation snapshot failed. "
-            "Continuing with the main pipeline."
-        )
+        print("Optional evaluation snapshot failed; continuing to load.")
 
-    # 3. LOAD: publish valid, unaffected grains even when other records fail.
     load_state = upsert_weekly_location_performance(
         transformed["rows"],
         return_state=True,
@@ -704,17 +658,14 @@ def weekly_location_cost_waste_flow(
         raise RuntimeError(f"Loading failed: {error}")
 
     rows_loaded = load_state.result()
-    final_status = (
-        "partial" if transformed["rows_rejected"] > 0 else "completed"
-    )
+    status = "partial" if transformed["rows_rejected"] else "completed"
     error_summary = "; ".join(transformed["quality_issues"]) or None
-
     save_pipeline_run(
         run_id=run_id,
         week_start=target_week.isoformat(),
         started_at=started_at,
         finished_at=datetime.now(timezone.utc),
-        status=final_status,
+        status=status,
         last_completed_stage="load",
         watermark_from=watermark_from,
         watermark_to=watermark_to,
@@ -725,17 +676,26 @@ def weekly_location_cost_waste_flow(
         error_summary=error_summary,
         trigger_source=trigger_source,
     )
-
     return {
-        "status": final_status,
+        "status": status,
         "run_id": run_id,
         "rows_processed": transformed["rows_processed"],
         "rows_rejected": transformed["rows_rejected"],
-        "rows_skipped": transformed["rows_skipped"],
         "rows_loaded": rows_loaded,
-        "quality_issues": transformed["quality_issues"],
-        "quality_warnings": transformed["quality_warnings"],
     }
+
+
+def trigger_weekly_location_cost_waste_flow(
+    week_start: str | None = None,
+    trigger_source: str = "manual",
+    run_id: str | None = None,
+):
+    """Stable callable for the API layer and deployment tooling."""
+    return weekly_location_cost_waste_flow(
+        week_start=week_start,
+        trigger_source=trigger_source,
+        run_id=run_id,
+    )
 
 
 if __name__ == "__main__":

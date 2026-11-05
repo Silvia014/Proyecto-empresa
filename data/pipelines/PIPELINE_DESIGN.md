@@ -1,6 +1,6 @@
 # Business Performance Data Pipeline — Design
 
-**Status:** Design only (Part 1 of 3)  
+**Status:** Design baseline (Part 1) with Part 2 implementation added on `feat/business-performance-pipeline`; local verification and production deployment remain outstanding.  
 **Company:** Brasaland  
 **Primary audience:** Mariana Restrepo (CEO) and Felipe Guerrero (Operations Director)  
 **Business cadence:** Weekly, every Monday morning  
