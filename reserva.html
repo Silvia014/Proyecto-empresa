@@ -157,7 +157,9 @@
 
       <div>
         <label for="ciudad" class="field-label" data-i18n="reserva.labels.ciudad">Ciudad</label>
-        <input type="text" id="ciudad" name="ciudad" class="field-input" autocomplete="address-level2" readonly />
+        <select id="ciudad" name="ciudad" class="field-input" autocomplete="address-level2">
+          <option value="">Selecciona una ciudad</option>
+        </select>
         <p id="error-ciudad" class="field-error hidden"></p>
       </div>
 
@@ -208,7 +210,7 @@
 
       <div class="sm:col-span-2">
        <label for="preferencias" class="field-label" data-i18n="reserva.labels.preferencias">
-        Preferencias
+        Preferencias(Vegetariano, sin gluten, otros...)
        </label>
 
        <textarea
@@ -270,6 +272,19 @@
           Otro
         </option>
       </select>
+    </div>
+
+    <div class="sm:col-span-2 space-y-3">
+      <label class="flex items-start gap-3 rounded-md border border-walnut/15 bg-cream px-3 py-2 text-sm text-walnut/80">
+        <input type="checkbox" id="acepta_terminos" name="acepta_terminos" class="mt-1 h-4 w-4 rounded border-walnut/40 text-wine focus:ring-wine" required aria-required="true" aria-describedby="error-acepta_terminos" />
+        <span data-i18n="reserva.labels.termsConsent">Acepto los <a href="terminos-de-uso.html" target="_blank" rel="noopener" class="text-wine underline">términos y condiciones</a> y la <a href="politica-de-privacidad.html" target="_blank" rel="noopener" class="text-wine underline">política de privacidad</a>.</span>
+      </label>
+      <p id="error-acepta_terminos" class="field-error hidden"></p>
+
+      <label class="flex items-start gap-3 rounded-md border border-walnut/15 bg-cream px-3 py-2 text-sm text-walnut/80">
+        <input type="checkbox" id="acepta_ofertas" name="acepta_ofertas" class="mt-1 h-4 w-4 rounded border-walnut/40 text-wine focus:ring-wine" />
+        <span data-i18n="reserva.labels.offersConsent">Quiero recibir ofertas y novedades por email.</span>
+      </label>
     </div>
 
       <div class="sm:col-span-2 mt-2 flex flex-wrap gap-3">

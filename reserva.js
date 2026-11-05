@@ -32,6 +32,13 @@ const HORARIO = {
   6: { abre: "11:00", cierra: "22:00" },
 };
 
+function timeToMinutes(value) {
+  if (typeof value !== "string") return Number.NaN;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return Number.NaN;
+  return hours * 60 + minutes;
+}
+
 const VALIDATORS = {
   nombre: (value) => {
     if (!value.trim()) return "Escribe tu nombre.";
@@ -87,7 +94,10 @@ const VALIDATORS = {
     const dia = new Date(`${diaValue}T00:00:00`).getDay();
     const horario = HORARIO[dia];
     if (!horario) return null; // lunes: ya se marca error en el campo día
-    if (value < horario.abre || value > horario.cierra) {
+    const selectedMinutes = timeToMinutes(value);
+    const openMinutes = timeToMinutes(horario.abre);
+    const closeMinutes = timeToMinutes(horario.cierra);
+    if (!Number.isFinite(selectedMinutes) || selectedMinutes < openMinutes || selectedMinutes > closeMinutes) {
       return `Ese día servimos de ${horario.abre} a ${horario.cierra}.`;
     }
     return null;

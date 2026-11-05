@@ -78,6 +78,11 @@ if (cart.length === 0) {
 // DISPLAY ORDER
 // ==========================================
 
+function getDeliveryFee(currency = cart[0]?.currency || "USD") {
+  const normalizedCurrency = String(currency || "USD").toUpperCase();
+  return normalizedCurrency === "COP" ? 5 * 4100 : 5;
+}
+
 function renderCheckout() {
 
   checkoutItems.innerHTML = "";
@@ -108,6 +113,9 @@ function renderCheckout() {
     checkoutItems.appendChild(itemElement);
 
   });
+
+  const deliveryFee = getDeliveryFee(cart[0]?.currency || "USD");
+  total += deliveryFee;
 
   checkoutTotal.textContent = formatPrice(total, cart[0]?.currency || "USD");
 }

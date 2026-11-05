@@ -40,14 +40,26 @@ const HORARIO = {
   6: { abre: "11:00", cierra: "22:00" },
 };
 
-const COUNTRY_CITY_MAP = {
-  colombia: "Bogotá",
-  usa: "Orlando",
+const COUNTRY_CITY_OPTIONS = {
+  colombia: ["Medellin", "Bogota", "Cali"],
+  usa: ["Miami", "Orlando"],
 };
+
+function timeToMinutes(value) {
+  if (typeof value !== "string") return Number.NaN;
+  const [hours, minutes] = value.split(":").map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return Number.NaN;
+  return hours * 60 + minutes;
+}
 
 // Una función de validación por campo. Cada una devuelve un mensaje de
 // error específico (string) si algo está mal, o null si el valor es válido.
 const VALIDATORS = {
+  acepta_terminos: (value, form) => {
+    if (!form.acepta_terminos?.checked) return t("reserva.errors.termsRequired");
+    return null;
+  },
+  acepta_ofertas: () => null,
   nombre: (value) => {
     if (!value.trim()) return t ("reserva.errors.nombreRequired");
     if (value.trim().length < 2) return t("reserva.errors.nombreShort");
@@ -100,7 +112,10 @@ const VALIDATORS = {
     const dia = new Date(`${diaValue}T00:00:00`).getDay();
     const horario = HORARIO[dia];
     if (!horario) return null; // lunes: ya se marca error en el campo día
-    if (value < horario.abre || value > horario.cierra) {
+    const selectedMinutes = timeToMinutes(value);
+    const openMinutes = timeToMinutes(horario.abre);
+    const closeMinutes = timeToMinutes(horario.cierra);
+    if (!Number.isFinite(selectedMinutes) || selectedMinutes < openMinutes || selectedMinutes > closeMinutes) {
       return t("reserva.errors.horaRange").replace("{abre}", horario.abre).replace("{cierra}", horario.cierra);
     }
     return null;
@@ -169,6 +184,8 @@ function setupForm() {
       notas: form.preferencias?.value.trim() || "",
       ubicacion: form.ubicacion?.value || "sin_preferencia",
       comoNosConociste: form.como_nos_conociste?.value || "",
+      acepta_terminos: form.acepta_terminos?.checked || false,
+      acepta_ofertas: form.acepta_ofertas?.checked || false,
     };
 
     btnEnviar.disabled = true;
@@ -288,8 +305,29 @@ function syncCityWithCountry(form) {
   const cityField = form.ciudad;
   if (!countryField || !cityField) return;
 
-  const city = COUNTRY_CITY_MAP[countryField.value] || "";
-  cityField.value = city;
+  const options = COUNTRY_CITY_OPTIONS[countryField.value] || [];
+  cityField.innerHTML = "";
+
+  if (!options.length) {
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Selecciona una ciudad";
+    cityField.appendChild(placeholder);
+    cityField.value = "";
+    return;
+  }
+
+  options.forEach((city) => {
+    const option = document.createElement("option");
+    option.value = city;
+    option.textContent = city;
+    cityField.appendChild(option);
+  });
+
+  const currentValue = cityField.dataset.value || options[0];
+  const nextValue = options.includes(currentValue) ? currentValue : options[0];
+  cityField.value = nextValue;
+  cityField.dataset.value = nextValue;
 }
 
 async function enviarReserva(datos) {
