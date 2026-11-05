@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+import hashlib
+from contextlib import contextmanager
 import json
 import os
 import uuid
@@ -44,7 +45,66 @@ def get_engine():
     if ENGINE is None:
         ENGINE = create_engine(DATABASE_URL, pool_pre_ping=True)
     return ENGINE
+@contextmanager
+def postgres_week_advisory_lock(week_start: date):
+    """
+    Prevent two pipeline executions from processing
+    the same reporting week simultaneously.
 
+    Uses a PostgreSQL session-level advisory lock.
+    The same database connection holds and releases
+    the lock.
+    """
+    lock_name = (
+        f"brasaland-weekly-location-cost-waste:"
+        f"{week_start.isoformat()}"
+    )
+
+    lock_key = int.from_bytes(
+        hashlib.sha256(lock_name.encode("utf-8")).digest()[:8],
+        byteorder="big",
+        signed=True,
+    )
+
+    connection = get_engine().connect()
+    acquired = False
+
+    try:
+        acquired = bool(
+            connection.execute(
+                text("SELECT pg_try_advisory_lock(:lock_key)"),
+                {"lock_key": lock_key},
+            ).scalar_one()
+        )
+        connection.commit()
+
+        if not acquired:
+            raise RuntimeError(
+                f"Another pipeline run already owns the lock "
+                f"for week {week_start}."
+            )
+
+        yield
+
+    finally:
+        if acquired:
+            try:
+                released = connection.execute(
+                    text("SELECT pg_advisory_unlock(:lock_key)"),
+                    {"lock_key": lock_key},
+                ).scalar_one()
+                connection.commit()
+
+                if not released:
+                    raise RuntimeError(
+                        f"Could not release advisory lock for {week_start}."
+                    )
+
+            except Exception:
+                connection.invalidate()
+                raise
+
+        connection.close()
 
 def _utc_timestamp(value: Any) -> datetime:
     if isinstance(value, datetime):
@@ -552,17 +612,17 @@ def weekly_location_cost_waste_flow(
     )
     if target_week.weekday() != 0:
         raise ValueError("week_start must be a Monday.")
-
-    watermark_from = datetime.combine(
-        target_week - timedelta(days=21),
-        datetime.min.time(),
-        tzinfo=timezone.utc,
-    )
-    watermark_to = datetime.combine(
+    with postgres_week_advisory_lock(target_week):
+        watermark_from = datetime.combine(
+            target_week - timedelta(days=21),
+            datetime.min.time(),
+            tzinfo=timezone.utc,
+        )
+        watermark_to = datetime.combine(
         target_week + timedelta(days=7),
         datetime.min.time(),
         tzinfo=timezone.utc,
-    )
+        )
 
     run_id = run_id or str(uuid.uuid4())
     started_at = datetime.now(timezone.utc)
