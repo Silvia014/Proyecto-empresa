@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { escapeEmailHtml, sendResendEmail } from "@/lib/resend-email";
+import { getErpPublicUrl } from "@/lib/public-url";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
 
   try {
     const supabase = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-    const siteUrl = process.env.ERP_PUBLIC_URL || (process.env.NODE_ENV === "production" ? "https://erp.brasaland.site" : new URL(request.url).origin);
+    const siteUrl = getErpPublicUrl(request);
     const { data, error } = await supabase.auth.admin.generateLink({ type: "recovery", email });
     // Keep unknown addresses indistinguishable from existing accounts.
     if (error || !data.properties.hashed_token) {

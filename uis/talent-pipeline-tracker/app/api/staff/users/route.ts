@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { creatableRoles, isStaffRole, roleLabels } from "@/lib/staff-access";
 import { getStaffActor, isDenied } from "@/lib/staff-auth";
 import { escapeEmailHtml, sendResendEmail } from "@/lib/resend-email";
+import { getErpPublicUrl } from "@/lib/public-url";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "The account could not be assigned a staff role, so creation was rolled back." }, { status: 500 });
   }
 
-  const erpUrl = (process.env.ERP_PUBLIC_URL || "https://erp.brasaland.site").replace(/\/$/, "");
+  const erpUrl = getErpPublicUrl(request);
   const safeName = escapeEmailHtml(displayName);
   const label = roleLabels[role];
   const subject = "Your Brasaland staff account is ready";
