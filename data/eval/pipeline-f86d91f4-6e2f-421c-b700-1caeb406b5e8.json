@@ -1,0 +1,18 @@
+{
+  "run_id": "f86d91f4-6e2f-421c-b700-1caeb406b5e8",
+  "rows_processed": 8,
+  "rows_rejected": 5,
+  "rows": [
+    {
+      "location_id": "CO-MDE-01",
+      "country": "CO",
+      "week_start": "2026-11-02",
+      "total_purchase_cost": 20000.0,
+      "total_waste_cost": 10000.0,
+      "stockout_events_count": 0,
+      "price_alert_events_count": 0,
+      "currency": "COP",
+      "waste_ratio": 0.5
+    }
+  ]
+}

@@ -191,6 +191,12 @@ def create_inbound(
                 detail="The specified lot does not belong to this product.",
             )
 
+    if movement.unit_cost is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Unit cost is required for inbound orders.",
+        )
+
     record = InventoryMovement(
         item_id=movement.item_id,
         lot_id=movement.lot_id,
@@ -366,6 +372,23 @@ def create_outbound(
 
     if normalized_reason in waste_reasons:
         location = session.get(Location, item.location_id)
+        last_inbound = session.exec(
+    select(InventoryMovement)
+    .where(
+        InventoryMovement.item_id == item.id,
+        InventoryMovement.movement_type == "inbound",
+        InventoryMovement.unit_cost.is_not(None),
+    )
+    .order_by(InventoryMovement.created_at.desc())
+        ).first()
+
+        waste_unit_cost = last_inbound.unit_cost if last_inbound else None
+
+        waste_total_cost = (
+            round(record.quantity * waste_unit_cost, 2)
+            if waste_unit_cost is not None
+            else None
+        )
         record_internal_event(
             "stock_waste_registered",
             str(current_user["id"]),
@@ -379,6 +402,8 @@ def create_outbound(
                 "currency": location.currency if location else None,
                 "order_id": None,
                 "reason": normalized_reason,
+                "unit_cost": waste_unit_cost,
+                "total_cost": waste_total_cost,
             },
         )
 

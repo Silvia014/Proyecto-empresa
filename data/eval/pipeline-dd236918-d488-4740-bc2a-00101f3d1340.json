@@ -1,0 +1,14 @@
+{
+  "run_id": "dd236918-d488-4740-bc2a-00101f3d1340",
+  "rows_processed": 0,
+  "rows_rejected": 1,
+  "rows_skipped": 4,
+  "quality_issues": [
+    "Unknown location: 1, event: 550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "quality_warnings": [
+    "Demo event excluded: 4cad4971-6353-40e0-abe2-fc0eb6b6c99f"
+  ],
+  "blocked_location_weeks": [],
+  "rows": []
+}
