@@ -7,3 +7,4 @@ bcrypt<4
 tinydb
 email-validator
 resend
+prefect>=3,<4

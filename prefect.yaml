@@ -1,0 +1,17 @@
+deployments:
+  - name: weekly-location-cost-waste
+    version: "1"
+    tags:
+      - brasaland
+      - business-reporting
+    description: Weekly location cost and waste KPIs for Brasaland.
+    concurrency_limit: 1
+    entrypoint: data/pipelines/pipeline.py:weekly_location_cost_waste_flow
+    parameters:
+      trigger_source: schedule
+    work_pool:
+      name: default
+    schedules:
+      - cron: "0 7 * * 1"
+        timezone: America/Bogota
+        active: false

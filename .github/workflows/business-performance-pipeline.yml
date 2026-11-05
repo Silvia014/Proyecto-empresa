@@ -1,0 +1,53 @@
+name: Business performance pipeline checks
+
+on:
+  push:
+    branches:
+      - feat/business-performance-pipeline
+    paths:
+      - "data/pipelines/**"
+      - "services/reporting/**"
+      - "services/api/app/main.py"
+      - "pyproject.toml"
+      - "services/api/requirements.txt"
+      - "tests/test_business_performance_pipeline.py"
+      - "tests/test_reporting_api.py"
+      - ".github/workflows/business-performance-pipeline.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "data/pipelines/**"
+      - "services/reporting/**"
+      - "services/api/app/main.py"
+      - "pyproject.toml"
+      - "services/api/requirements.txt"
+      - "tests/test_business_performance_pipeline.py"
+      - "tests/test_reporting_api.py"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install project and development dependencies
+        run: uv sync --python 3.12 --dev
+
+      - name: Compile Python modules
+        run: PYTHONPATH=services/api uv run --python 3.12 python -m compileall -q data services
+
+      - name: Run tests
+        run: PYTHONPATH=services/api uv run --python 3.12 pytest -q tests/test_business_performance_pipeline.py tests/test_reporting_api.py

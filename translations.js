@@ -330,10 +330,10 @@ const translations = {
 
       address2: "123 Church Street<br>Orlando, FL 32801, USA",
 
-      phone1: "+57 601 234 5678",
+      phone1: "+57 4 123 4567",
       phone2: "+1 305 123 4567",
 
-      email: "bookings@brasaland.com",
+      email: "hola@brasaland.com",
 
       hours: "Mar–Jue y Dom: 13:00–23:00<br>Vie–Sáb: 13:00–00:00<br>Lunes cerrado"
     },
@@ -413,7 +413,7 @@ const translations = {
       },
 
       placeholders: {
-      telefono: "+57 601 234 5678",
+      telefono: "+57 4 123 4567",
       preferencias: "Alergias, celebraciones, preferencias alimentarias..."
       },
 
@@ -442,7 +442,7 @@ const translations = {
         emailInvalid: "Escribe un email válido, por ejemplo usuario@dominio.com",
 
         telefonoRequired: "Escribe tu teléfono.",
-        telefonoInvalid: "Escribe un teléfono válido, por ejemplo +57 601 234 5678",
+        telefonoInvalid: "Escribe un teléfono válido, por ejemplo +57 4 123 4567",
 
         personasRequired: "Indica el número de comensales.",
         personasInteger: "El número de comensales debe ser un número entero.",
@@ -1082,10 +1082,10 @@ const translations = {
 
       address2: "123 Church Street<br>Orlando, FL 32801, USA",
 
-      phone1: "+57 601 234 5678",
+      phone1: "+57 4 123 4567",
       phone2: "+1 305 123 4567",
 
-      email: "bookings@brasaland.com",
+      email: "hola@brasaland.com",
 
       hours: "Tue–Thu & Sun: 1:00 PM–11:00 PM<br>Fri–Sat: 1:00 PM–12:00 AM<br>Closed Mondays"
     },

@@ -82,7 +82,7 @@ EVENT_PROPERTY_ALLOWLIST: dict[str, set[str]] = {
     },
     "stock_waste_registered": {
         "location_id", "country", "product_id", "product_category", "quantity",
-        "unit", "currency", "reason", "order_id",
+        "unit", "currency", "reason", "order_id","unit_cost","total_cost",
     },
     "stock_threshold_triggered": {
         "location_id", "country", "product_id", "product_category", "quantity",
