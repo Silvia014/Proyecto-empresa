@@ -23,13 +23,13 @@ function setCurrentYear() {
 // Horario de servicio, usado para validar la hora elegida según el día
 const HORARIO = {
   // 0 = domingo ... 6 = sábado
-  0: { abre: "13:00", cierra: "23:00" },
-  2: { abre: "13:00", cierra: "23:00" },
-  3: { abre: "13:00", cierra: "23:00" },
-  4: { abre: "13:00", cierra: "23:00" },
-  5: { abre: "13:00", cierra: "23:59" }, // viernes: hasta medianoche
-  6: { abre: "13:00", cierra: "23:59" }, // sábado: hasta medianoche
-  // 1 = lunes: cerrado (no aparece en el objeto)
+  0: { abre: "11:00", cierra: "22:00" },
+  1: { abre: "11:00", cierra: "22:00" },
+  2: { abre: "11:00", cierra: "22:00" },
+  3: { abre: "11:00", cierra: "22:00" },
+  4: { abre: "11:00", cierra: "22:00" },
+  5: { abre: "11:00", cierra: "22:00" },
+  6: { abre: "11:00", cierra: "22:00" },
 };
 
 const VALIDATORS = {
@@ -74,7 +74,6 @@ const VALIDATORS = {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     if (fecha < hoy) return "La fecha no puede ser anterior a hoy.";
-    if (fecha.getDay() === 1) return "Los lunes estamos cerrados. Elige otro día.";
     // No permitir reservas con más de 3 meses de antelación
     const limite = new Date(hoy);
     limite.setMonth(limite.getMonth() + 3);
