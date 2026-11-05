@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import IntakeHub from "./intake-hub";
 import CandidatesFrame from "../candidates/CandidatesFrame";
+import StaffRequirements from "../hr/StaffRequirements";
 import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
   getCrmSectionBySlug,
@@ -290,25 +291,22 @@ export default function DashboardShell({
 
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
                   <Link
-                    href={activeSection.route}
+                    href={activeSection.slug === "candidates" ? `${activeSection.route}#staff-requirements` : activeSection.route}
                     className="rounded-xl bg-[#5a1f2b] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-[#4a1a28] sm:flex-1 lg:flex-none"
                   >
                     {activeSection.ctaLabel}
                   </Link>
 
-                  <Link
-                    href="/profile"
-                    className="rounded-xl border border-[#5a1f2b] px-5 py-3 text-center text-sm font-medium text-[#5a1f2b] transition hover:bg-[#5a1f2b] hover:text-white sm:flex-1 lg:flex-none"
-                  >
-                    Open profile
-                  </Link>
                 </div>
               </div>
             </section>
 
             {activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
              activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
-             activeSection?.slug === "candidates" ? <CandidatesFrame /> : <>
+             activeSection?.slug === "candidates" ? <>
+               <CandidatesFrame />
+               <StaffRequirements locations={locations} />
+             </> : <>
             {activeSection.metrics.length > 0 && <section className="grid gap-4 md:grid-cols-3">
               {activeSection.metrics.map((metric) => (
                 <article

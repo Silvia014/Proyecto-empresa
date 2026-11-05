@@ -19,13 +19,14 @@ export type StaffPermission =
   | "reservations"
   | "candidates"
   | "inventory"
+  | "hr"
   | "brasapuntos"
   | "profile";
 
 const rolePermissions: Record<StaffRole, StaffPermission[]> = {
-  superadmin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"],
-  admin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"],
-  manager_hr: ["locations", "customers", "candidates", "inventory", "profile"],
+  superadmin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
+  admin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
+  manager_hr: ["locations", "customers", "candidates", "inventory", "hr", "profile"],
   marketing: ["locations", "customers", "suppliers", "profile"],
   economato: ["locations", "suppliers", "orders", "inventory", "profile"],
   chef: ["suppliers", "locations", "customers", "orders", "reservations", "inventory", "brasapuntos", "profile"],
