@@ -10,6 +10,75 @@ function timeToMinutes(value) {
   return hours * 60 + minutes;
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[character]);
+}
+
+function buildReservationEmail(reservation, language) {
+  const english = language === "en";
+  const seatingChoices = {
+    sin_preferencia: english ? "No preference" : "Sin preferencia",
+    terraza: english ? "Terrace" : "Terraza",
+    interior: english ? "Indoor" : "Interior",
+    patio: "Patio",
+  };
+  const date = new Date(`${reservation.date}T12:00:00Z`).toLocaleDateString(
+    english ? "en-US" : "es-CO",
+    { timeZone: "UTC", weekday: "long", year: "numeric", month: "long", day: "numeric" },
+  );
+  const name = escapeHtml(reservation.name);
+  const city = escapeHtml(reservation.city);
+  const safeDate = escapeHtml(date);
+  const time = escapeHtml(reservation.time);
+  const guests = escapeHtml(reservation.guests);
+  const seatingLabel = seatingChoices[reservation.seating] || seatingChoices.sin_preferencia;
+  const seating = escapeHtml(seatingLabel);
+  const subject = english
+    ? "We received your reservation request at Brasaland"
+    : "Hemos recibido tu solicitud de reserva en Brasaland";
+  const intro = english
+    ? `Hello ${name}, we received your reservation request. Our team will review availability and contact you if anything changes.`
+    : `Hola ${name}, hemos recibido tu solicitud de reserva. Nuestro equipo revisará la disponibilidad y te contactará si hay algún cambio.`;
+  const note = english
+    ? "This email confirms that we received your request; the restaurant will contact you if the requested time is unavailable."
+    : "Este correo confirma que recibimos tu solicitud; el restaurante te contactará si el horario solicitado no está disponible.";
+  const labels = english
+    ? { date: "Date", time: "Time", guests: "Guests", location: "Restaurant", seating: "Seating preference" }
+    : { date: "Fecha", time: "Hora", guests: "Personas", location: "Restaurante", seating: "Preferencia de ubicación" };
+  const html = `<!doctype html><html lang="${english ? "en" : "es"}"><body style="margin:0;background:#f7f1e7;color:#382b24;font-family:Arial,sans-serif"><main style="max-width:600px;margin:32px auto;padding:32px;background:#fffdf9;border-radius:16px"><p style="margin:0;color:#762b3e;font-weight:bold;letter-spacing:.12em">BRASALAND</p><h1 style="color:#762b3e;font-size:26px">${subject}</h1><p>${intro}</p><table style="width:100%;border-collapse:collapse;margin:24px 0"><tr><td style="padding:10px 0;color:#776c64">${labels.date}</td><td style="padding:10px 0;font-weight:bold">${safeDate}</td></tr><tr><td style="padding:10px 0;color:#776c64">${labels.time}</td><td style="padding:10px 0;font-weight:bold">${time}</td></tr><tr><td style="padding:10px 0;color:#776c64">${labels.guests}</td><td style="padding:10px 0;font-weight:bold">${guests}</td></tr><tr><td style="padding:10px 0;color:#776c64">${labels.location}</td><td style="padding:10px 0;font-weight:bold">${city}</td></tr><tr><td style="padding:10px 0;color:#776c64">${labels.seating}</td><td style="padding:10px 0;font-weight:bold">${seating}</td></tr></table><p style="font-size:14px;line-height:1.6">${note}</p><p style="margin-top:28px;color:#776c64;font-size:13px">Brasaland</p></main></body></html>`;
+  const text = `${subject}\n\n${intro}\n\n${labels.date}: ${date}\n${labels.time}: ${reservation.time}\n${labels.guests}: ${reservation.guests}\n${labels.location}: ${reservation.city}\n${labels.seating}: ${seatingLabel}\n\n${note}`;
+  return { subject, html, text };
+}
+
+async function sendReservationConfirmation(reservation, language) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !from) {
+    console.warn("Reservation saved; confirmation email was not sent because Resend is not configured.");
+    return false;
+  }
+
+  try {
+    const email = buildReservationEmail(reservation, language);
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [reservation.email], ...email }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) {
+      console.error(`Reservation confirmation email failed with HTTP ${response.status}.`);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Reservation confirmation email could not be sent:", error.name || "request error");
+    return false;
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -87,7 +156,16 @@ module.exports = async function handler(req, res) {
       referral_source: String(body.comoNosConociste || "").trim().slice(0, 100),
     }).select("id").single();
     if (error) throw error;
-    return res.status(201).json({ ok: true, reservationId: data.id });
+    const confirmationEmailSent = await sendReservationConfirmation({
+      email,
+      name: `${firstName} ${lastName}`,
+      city,
+      date: body.dia,
+      time: body.hora,
+      guests: partySize,
+      seating: String(body.ubicacion || "sin_preferencia"),
+    }, body.idioma === "en" ? "en" : "es");
+    return res.status(201).json({ ok: true, reservationId: data.id, confirmationEmailSent });
   } catch (error) {
     console.error("Reservation intake failed:", error.message);
     if (error.code === "SUPABASE_CONFIG_MISSING") {

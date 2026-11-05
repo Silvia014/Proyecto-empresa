@@ -250,7 +250,8 @@ async function loadAccount() {
     return;
   }
   try {
-    const response = await fetch("/api/account", { headers: { Authorization: `Bearer ${session.access_token}` } });
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, { headers: { Authorization: `Bearer ${session.access_token}` } });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "No pudimos cargar tu cuenta.");
     dashboardMemberName = result.member.name || "";
@@ -285,7 +286,8 @@ profileForm.addEventListener("submit", async (event) => {
   button.disabled = true;
   feedback.classList.add("hidden");
   try {
-    const response = await fetch("/api/account", {
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({

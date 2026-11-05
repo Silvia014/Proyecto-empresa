@@ -186,6 +186,7 @@ function setupForm() {
       comoNosConociste: form.como_nos_conociste?.value || "",
       acepta_terminos: form.acepta_terminos?.checked || false,
       acepta_ofertas: form.acepta_ofertas?.checked || false,
+      idioma: document.documentElement.lang === "en" ? "en" : "es",
     };
 
     btnEnviar.disabled = true;

@@ -14,7 +14,8 @@
   updateLinks();
   window.addEventListener("languagechange", updateLinks);
 
-  fetch("/api/account", { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" })
+  const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+  fetch(apiUrl, { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" })
     .then(async (response) => {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Account unavailable");
