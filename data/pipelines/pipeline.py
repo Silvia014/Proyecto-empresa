@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from dotenv import load_dotenv
-from prefect import flow, task
+from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
 from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
@@ -275,7 +275,8 @@ def extract_inventory_telemetry_events(
 @task(
     name="aggregate_weekly_location_kpis",
     cache_key_fn=task_input_hash,
-    cache_expiration=timedelta(minutes=30),
+    cache_expiration=timedelta(hours=1),
+    persist_result=True,
 )
 def aggregate_weekly_location_kpis(
     extracted_data: dict[str, Any],
@@ -876,10 +877,10 @@ def get_weekly_location_performance(
         rows = connection.execute(
             text(
                 f"""
-                SELECT location_id, country, week_start,
+                SELECT location_id, country, 
                        total_purchase_cost, total_waste_cost, waste_ratio,
                        stockout_events_count, price_alert_events_count,
-                       currency, computed_at
+                       currency
                 FROM reporting.weekly_location_performance
                 {where_clause}
                 ORDER BY location_id
@@ -964,23 +965,24 @@ def weekly_location_cost_waste_flow(
     transformed: dict[str, Any] | None = None
     rows_loaded = 0
     last_completed_stage = "start"
+    logger = get_run_logger()
 
-    # A backfill can touch four weekly grains. Lock all four for the complete
-    # run, including audit writes, extraction, transformation and loading.
-    with postgres_reporting_window_advisory_lock(target_week):
-        ensure_reporting_tables()
-        save_pipeline_run(
-            run_id=run_id,
-            week_start=target_week.isoformat(),
-            started_at=started_at,
-            status="running",
-            watermark_from=watermark_from,
-            watermark_to=watermark_to,
-            source_metrics={"stage": "started"},
-            trigger_source=trigger_source,
-        )
+    try:
+        # Include lock acquisition, table setup, and the initial audit write in
+        # the failure boundary so startup failures are logged by Prefect too.
+        with postgres_reporting_window_advisory_lock(target_week):
+            ensure_reporting_tables()
+            save_pipeline_run(
+                run_id=run_id,
+                week_start=target_week.isoformat(),
+                started_at=started_at,
+                status="running",
+                watermark_from=watermark_from,
+                watermark_to=watermark_to,
+                source_metrics={"stage": "started"},
+                trigger_source=trigger_source,
+            )
 
-        try:
             extraction_state = extract_inventory_telemetry_subflow(
                 watermark_from.isoformat(),
                 watermark_to.isoformat(),
@@ -1008,18 +1010,19 @@ def weekly_location_cost_waste_flow(
             last_completed_stage = "transform"
             source_metrics = build_source_metrics(extracted, transformed)
 
-            # Local evaluation snapshots are supplementary and must not
-            # prevent reporting from completing if the worker filesystem
-            # is unavailable.
+            # This local quality snapshot is optional. Its failure is recorded
+            # in Prefect but must not prevent the reporting data from loading.
             snapshot_state = save_pipeline_eval_snapshot(
                 run_id,
                 transformed,
                 return_state=True,
             )
             if snapshot_state.is_failed():
-                print(
-                    "Optional pipeline evaluation snapshot failed; "
-                    "continuing with the reporting load."
+                logger.warning(
+                    "Optional evaluation snapshot failed; continuing with "
+                    "the reporting load. run_id=%s error=%s",
+                    run_id,
+                    snapshot_state.message,
                 )
 
             load_state = load_weekly_location_performance_subflow(
@@ -1064,40 +1067,50 @@ def weekly_location_cost_waste_flow(
                 "source_metrics": source_metrics,
             }
 
-        except Exception as exc:
-            # Capture unexpected exceptions as well as failed Prefect states.
-            # If the audit write itself is unavailable, preserve the original
-            # exception and leave the Prefect run as the fallback record.
-            try:
-                save_pipeline_run(
-                    run_id=run_id,
-                    week_start=target_week.isoformat(),
-                    started_at=started_at,
-                    finished_at=datetime.now(timezone.utc),
-                    status="failed",
-                    last_completed_stage=last_completed_stage,
-                    watermark_from=watermark_from,
-                    watermark_to=watermark_to,
-                    records_processed=(
-                        transformed["rows_processed"] if transformed else 0
-                    ),
-                    rows_extracted=(
-                        extracted["rows_extracted"] if extracted else 0
-                    ),
-                    rows_rejected=(
-                        transformed["rows_rejected"] if transformed else 0
-                    ),
-                    rows_loaded=rows_loaded,
-                    source_metrics=source_metrics,
-                    error_summary=str(exc),
-                    trigger_source=trigger_source,
-                )
-            except Exception as audit_exc:
-                print(
-                    "Could not persist failed pipeline audit record: "
-                    f"{audit_exc}"
-                )
-            raise
+    except Exception as exc:
+        # Prefect keeps this structured exception even if the reporting DB is
+        # unavailable and cannot persist the run audit row.
+        logger.exception(
+            "Business reporting pipeline failed. run_id=%s week_start=%s "
+            "last_completed_stage=%s",
+            run_id,
+            target_week.isoformat(),
+            last_completed_stage,
+        )
+        try:
+            # This also handles a transient startup failure after the database
+            # becomes available. If the schema/database is still unavailable,
+            # the following exception is logged and the original is re-raised.
+            ensure_reporting_tables()
+            save_pipeline_run(
+                run_id=run_id,
+                week_start=target_week.isoformat(),
+                started_at=started_at,
+                finished_at=datetime.now(timezone.utc),
+                status="failed",
+                last_completed_stage=last_completed_stage,
+                watermark_from=watermark_from,
+                watermark_to=watermark_to,
+                records_processed=(
+                    transformed["rows_processed"] if transformed else 0
+                ),
+                rows_extracted=(
+                    extracted["rows_extracted"] if extracted else 0
+                ),
+                rows_rejected=(
+                    transformed["rows_rejected"] if transformed else 0
+                ),
+                rows_loaded=rows_loaded,
+                source_metrics=source_metrics,
+                error_summary=str(exc),
+                trigger_source=trigger_source,
+            )
+        except Exception:
+            logger.exception(
+                "Could not persist failed pipeline audit record. run_id=%s",
+                run_id,
+            )
+        raise
 
 def trigger_weekly_location_cost_waste_flow(
     week_start: str | None = None,
