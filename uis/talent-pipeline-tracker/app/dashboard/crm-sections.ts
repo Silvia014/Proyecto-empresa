@@ -62,8 +62,8 @@ const sectionDefinitions = [
   {
     slug: "candidates", title: "Job applications", route: "/dashboard/candidates",
     navLabel: "Recruitment", description: "Applications and uploaded CVs from the website.",
-    panelTitle: "Job applications", panelDescription: "Review candidate details and open uploaded CVs using a private, time-limited link.",
-    ctaLabel: "Open applications", recordsTitle: "Applications",
+    panelTitle: "Staff requirements", panelDescription: "Review applications and manage staff absences, holiday requests, and bank holidays in one place.",
+    ctaLabel: "Staff requirements", recordsTitle: "Applications",
   },
   {
     slug: "inventory", title: "Inventory", route: "/dashboard/inventory",
@@ -81,7 +81,7 @@ const sectionDefinitions = [
     slug: "profile", title: "Profile", route: "/profile",
     navLabel: "My account", description: "Your account settings.",
     panelTitle: "Profile and permissions", panelDescription: "Your staff account settings.",
-    ctaLabel: "Open profile", recordsTitle: "Profile",
+    ctaLabel: "Profile settings", recordsTitle: "Profile",
   },
 ].map((section) => ({ ...section, metrics: [], records: [] })) satisfies CrmSection[];
 
