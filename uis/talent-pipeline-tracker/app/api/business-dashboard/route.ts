@@ -30,6 +30,8 @@ type OrderRow = {
   source: string;
   status: string;
   paymentStatus: string;
+  guestCount: number | null;
+  reservationId: string | null;
   Location: { name: string } | { name: string }[] | null;
   OrderItem: Array<{ dishName: string; quantity: number; subtotal: number; menuItemId: string | null }>;
 };
@@ -45,13 +47,17 @@ export async function GET(request: Request) {
 
   const { service: supabase } = actor;
   try {
-    const [orders, reservations] = await Promise.all([
+    const [orders, reservations, feedbackRows] = await Promise.all([
       readAllRows<OrderRow>(async (from, to) => supabase.from("Order")
-        .select('id, createdAt, total, subtotal, discount, brasapointsDiscount, currency, source, status, paymentStatus, Location(name), OrderItem(dishName, quantity, subtotal, menuItemId)')
+        .select('id, createdAt, total, subtotal, discount, brasapointsDiscount, currency, source, status, paymentStatus, guestCount, reservationId, Location(name), OrderItem(dishName, quantity, subtotal, menuItemId)')
         .order("createdAt", { ascending: false })
         .range(from, to)),
       readAllRows<ReservationRow>(async (from, to) => supabase.from("reservations")
         .select("status, party_size")
+        .range(from, to)),
+      readAllRows<{ value_for_money_rating: number; comment: string; created_at: string }>(async (from, to) => supabase.from("customer_feedback")
+        .select("value_for_money_rating, comment, created_at")
+        .order("created_at", { ascending: false })
         .range(from, to)),
     ]);
     const menuItems = await readAllRows<{ id: string; category: string }>(async (from, to) => supabase.from("MenuItem")
@@ -62,7 +68,11 @@ export async function GET(request: Request) {
     const onlineOrders = orders.filter((order) => order.source === "ONLINE");
     const realizedOrders = orders.filter((order) => order.paymentStatus === "PAID" && order.status !== "CANCELLED");
     const revenueByCurrency: Record<string, number> = {};
+    const coveredRevenueByCurrency: Record<string, number> = {};
     const discountByCurrency: Record<string, number> = {};
+    const guestCountByCurrency: Record<string, number> = {};
+    const tableCheckTotals: Record<string, number> = {};
+    const tableCheckCounts: Record<string, number> = {};
     const monthly: Record<string, { month: string; revenueByCurrency: Record<string, number>; paidOrders: number }> = {};
     const productSales: Record<string, { name: string; category: string; quantity: number; revenueByCurrency: Record<string, number> }> = {};
 
@@ -71,6 +81,14 @@ export async function GET(request: Request) {
       revenueByCurrency[currency] = (revenueByCurrency[currency] ?? 0) + Number(order.total || 0);
       discountByCurrency[currency] = (discountByCurrency[currency] ?? 0)
         + Number(order.discount || 0) + Number(order.brasapointsDiscount || 0);
+      guestCountByCurrency[currency] = (guestCountByCurrency[currency] ?? 0) + Number(order.guestCount || 0);
+      if (order.reservationId) {
+        tableCheckTotals[currency] = (tableCheckTotals[currency] ?? 0) + Number(order.total || 0);
+        tableCheckCounts[currency] = (tableCheckCounts[currency] ?? 0) + 1;
+      }
+      if (Number(order.guestCount || 0) > 0) {
+        coveredRevenueByCurrency[currency] = (coveredRevenueByCurrency[currency] ?? 0) + Number(order.total || 0);
+      }
 
       const month = String(order.createdAt).slice(0, 7);
       monthly[month] ??= { month, revenueByCurrency: {}, paidOrders: 0 };
@@ -88,9 +106,14 @@ export async function GET(request: Request) {
     }
 
     const locationName = (value: OrderRow["Location"]) => Array.isArray(value) ? value[0]?.name ?? "" : value?.name ?? "";
-    const completedReservationCovers = reservations
-      .filter((reservation) => String(reservation.status).toUpperCase() === "COMPLETED")
-      .reduce((sum, reservation) => sum + Number(reservation.party_size || 0), 0);
+    const guestsServed = realizedOrders.reduce((sum, order) => sum + Number(order.guestCount || 0), 0);
+    const averageSpendPerGuestByCurrency = Object.fromEntries(Object.entries(revenueByCurrency).map(([currency, total]) => [
+      currency,
+      guestCountByCurrency[currency] ? (coveredRevenueByCurrency[currency] || 0) / guestCountByCurrency[currency] : null,
+    ]));
+    const feedbackAverage = feedbackRows.length
+      ? feedbackRows.reduce((sum, row) => sum + Number(row.value_for_money_rating || 0), 0) / feedbackRows.length
+      : null;
     const response = {
       generatedAt: new Date().toISOString(),
       orders: onlineOrders.map((order) => ({
@@ -111,6 +134,9 @@ export async function GET(request: Request) {
             ? total / realizedOrders.filter((order) => (order.currency || "UNKNOWN").toUpperCase() === currency).length
             : 0,
         ])),
+        averageTableCheckByCurrency: Object.fromEntries(Object.entries(tableCheckTotals).map(([currency, total]) => [currency, total / tableCheckCounts[currency]])),
+        averageSpendPerGuestByCurrency,
+        guestCountByCurrency,
         paidOrderCount: realizedOrders.length,
         onlineOrderCount: onlineOrders.length,
         monthlySales: Object.values(monthly).sort((a, b) => a.month.localeCompare(b.month)).slice(-12),
@@ -118,12 +144,19 @@ export async function GET(request: Request) {
         discountsByCurrency: discountByCurrency,
         cancelledOrders: orders.filter((order) => String(order.status).toUpperCase() === "CANCELLED").length,
         cancelledReservations: reservations.filter((reservation) => String(reservation.status).toUpperCase() === "CANCELLED").length,
-        completedReservationCovers,
+        guestsServed,
+        valueForMoneyAverage: feedbackAverage,
+        feedbackCount: feedbackRows.length,
       },
       dataAvailability: {
-        customerFeedback: false,
-        orderGuestCount: false,
-        note: "Feedback and guest count per order are not currently stored in the ERP database.",
+        customerFeedback: feedbackRows.length > 0,
+        orderGuestCount: guestsServed > 0,
+        note: "Feedback and guest counts appear as soon as customers submit a review and staff record the covers for orders.",
+        recentFeedback: feedbackRows.slice(0, 10).map((row) => ({
+          rating: Number(row.value_for_money_rating),
+          comment: row.comment,
+          createdAt: row.created_at,
+        })),
       },
     };
     return NextResponse.json(response, { headers: { "Cache-Control": "no-store" } });

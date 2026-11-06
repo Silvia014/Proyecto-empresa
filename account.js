@@ -131,6 +131,7 @@ function addRecord(parent, title, details, value, status) {
     card.append(amount);
   }
   parent.append(card);
+  return card;
 }
 
 function emptyRecord(parent, message) {
@@ -196,7 +197,55 @@ function renderOrders(orders) {
   orders.forEach((order) => {
     const lines = (order.items || []).map((item) => `${item.quantity} × ${item.dishName}`).join(" · ");
     const money = new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", { style: "currency", currency: order.currency || "USD" }).format(Number(order.total) || 0);
-    addRecord(list, `${copy("Pedido", "Order")} · ${formatDate(order.createdAt)}`, lines || copy("Detalles del pedido", "Order details"), money, formatOrderStatus(order));
+    const record = addRecord(list, `${copy("Pedido", "Order")} · ${formatDate(order.createdAt)}`, lines || copy("Detalles del pedido", "Order details"), money, formatOrderStatus(order));
+    if (String(order.status).toUpperCase() === "COMPLETED" && String(order.paymentStatus).toUpperCase() === "PAID") {
+      const form = document.createElement("form");
+      form.className = "portal-review-form";
+      form.dataset.orderId = order.id;
+      const title = document.createElement("h4");
+      title.className = "portal-review-title";
+      title.textContent = copy("¿Qué te pareció la relación calidad-precio?", "How was the value for money?");
+      const rating = document.createElement("select");
+      rating.name = "rating";
+      rating.required = true;
+      rating.className = "portal-review-input";
+      [[5, copy("Excelente", "Excellent")], [4, copy("Buena", "Good")], [3, copy("Normal", "Fair")], [2, copy("Mala", "Poor")], [1, copy("Muy mala", "Very poor")]].forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = `${value} · ${label}`;
+        rating.append(option);
+      });
+      if (order.feedback?.value_for_money_rating) rating.value = String(order.feedback.value_for_money_rating);
+      const comment = document.createElement("textarea");
+      comment.name = "comment";
+      comment.rows = 3;
+      comment.maxLength = 1000;
+      comment.className = "portal-review-input";
+      comment.value = order.feedback?.comment || "";
+      comment.placeholder = copy("Cuéntanos cómo fue tu experiencia", "Tell us about your experience");
+      const button = document.createElement("button");
+      button.type = "submit";
+      button.className = "portal-save";
+      button.textContent = order.feedback ? copy("Actualizar valoración", "Update feedback") : copy("Enviar valoración", "Send feedback");
+      const result = document.createElement("p");
+      result.className = "portal-review-result";
+      result.setAttribute("role", "status");
+      form.append(title, rating, comment, button, result);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        button.disabled = true;
+        try {
+          await accountRequest({ action: "submit-feedback", orderId: order.id, rating: Number(rating.value), comment: comment.value }, readSession());
+          showPortalFeedback(copy("Gracias. Tu valoración se ha guardado.", "Thank you. Your feedback was saved."));
+          await loadPortal();
+        } catch (error) {
+          result.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+      record.append(form);
+    }
   });
 }
 

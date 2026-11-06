@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type MoneyMap = Record<string, number>;
+type NullableMoneyMap = Record<string, number | null>;
 type DashboardData = {
   generatedAt: string;
   orders: Array<{
@@ -12,7 +13,9 @@ type DashboardData = {
   }>;
   metrics: {
     revenueByCurrency: MoneyMap;
-    averagePaidOrderByCurrency: MoneyMap;
+        averagePaidOrderByCurrency: MoneyMap;
+    averageTableCheckByCurrency: MoneyMap;
+        averageSpendPerGuestByCurrency: NullableMoneyMap;
     paidOrderCount: number;
     onlineOrderCount: number;
     monthlySales: Array<{ month: string; revenueByCurrency: MoneyMap; paidOrders: number }>;
@@ -20,9 +23,11 @@ type DashboardData = {
     discountsByCurrency: MoneyMap;
     cancelledOrders: number;
     cancelledReservations: number;
-    completedReservationCovers: number;
+    guestsServed: number;
+        valueForMoneyAverage: number | null;
+        feedbackCount: number;
   };
-  dataAvailability: { customerFeedback: boolean; orderGuestCount: boolean; note: string };
+  dataAvailability: { customerFeedback: boolean; orderGuestCount: boolean; note: string; recentFeedback: Array<{ rating: number; comment: string; createdAt: string }> };
 };
 
 const panel = "rounded-3xl border border-[#eadfce] bg-white p-5 shadow-sm sm:p-6";
@@ -38,8 +43,8 @@ function formatMoney(value: number, currency: string) {
   }
 }
 
-function moneyList(values: MoneyMap) {
-  const entries = Object.entries(values).filter(([, value]) => Number.isFinite(value));
+function moneyList(values: NullableMoneyMap) {
+  const entries = Object.entries(values).filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1]));
   return entries.length ? entries.map(([currency, value]) => formatMoney(value, currency)).join(" · ") : "—";
 }
 
@@ -80,6 +85,7 @@ export default function BusinessDashboard() {
     const channel = supabase.channel("business-dashboard-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "Order" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "OrderItem" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "customer_feedback" }, () => void load())
       .on("postgres_changes", { event: "*", schema: "public", table: "reservations" }, () => void load())
       .subscribe();
     const interval = window.setInterval(() => void load(), 30_000);
@@ -110,14 +116,14 @@ export default function BusinessDashboard() {
     {data && <>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article className={card}><p className="text-sm text-gray-600">Revenue received</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">{moneyList(data.metrics.revenueByCurrency)}</p><p className="mt-2 text-xs text-gray-500">Paid, non-cancelled orders</p></article>
-        <article className={card}><p className="text-sm text-gray-600">Average paid order</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">{moneyList(data.metrics.averagePaidOrderByCurrency)}</p><p className="mt-2 text-xs text-gray-500">Order average; table number is not stored</p></article>
+        <article className={card}><p className="text-sm text-gray-600">Average table check</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">{moneyList(data.metrics.averageTableCheckByCurrency) || "Not available"}</p><p className="mt-2 text-xs text-gray-500">Paid dine-in orders linked to a reservation</p></article>
         <article className={card}><p className="text-sm text-gray-600">Online orders</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.onlineOrderCount}</p><p className="mt-2 text-xs text-gray-500">All online orders in the database</p></article>
         <article className={card}><p className="text-sm text-gray-600">Paid orders</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.paidOrderCount}</p><p className="mt-2 text-xs text-gray-500">All sources · excludes cancelled or unpaid orders</p></article>
-        <article className={card}><p className="text-sm text-gray-600">Reservation covers marked complete</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.completedReservationCovers.toLocaleString()}</p><p className="mt-2 text-xs text-gray-500">Guests from reservations staff marked completed</p></article>
+        <article className={card}><p className="text-sm text-gray-600">Guests recorded for paid orders</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.guestsServed.toLocaleString()}</p><p className="mt-2 text-xs text-gray-500">Online covers and restaurant checks</p></article>
         <article className={card}><p className="text-sm text-gray-600">Discounts applied</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">{moneyList(data.metrics.discountsByCurrency)}</p><p className="mt-2 text-xs text-gray-500">Paid orders, including Brasapuntos discounts</p></article>
         <article className={card}><p className="text-sm text-gray-600">Cancelled orders</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.cancelledOrders}</p><p className="mt-2 text-xs text-gray-500">All order sources</p></article>
         <article className={card}><p className="text-sm text-gray-600">Cancelled reservations</p><p className="mt-3 text-3xl font-semibold text-[#5a1f2b]">{data.metrics.cancelledReservations}</p><p className="mt-2 text-xs text-gray-500">Online reservation records</p></article>
-        <article className={card}><p className="text-sm text-gray-600">Average spend per guest</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">Not available</p><p className="mt-2 text-xs text-gray-500">Orders need a guest count to calculate this accurately</p></article>
+        <article className={card}><p className="text-sm text-gray-600">Average spend per guest</p><p className="mt-3 text-xl font-semibold text-[#5a1f2b]">{moneyList(data.metrics.averageSpendPerGuestByCurrency) || "Not available"}</p><p className="mt-2 text-xs text-gray-500">Paid order total divided by recorded guests</p></article>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
@@ -134,7 +140,11 @@ export default function BusinessDashboard() {
 
       <section className={panel}>
         <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6a52]">Customer experience</p><h4 className="mt-2 text-xl font-semibold text-[#5a1f2b]">Value for money feedback</h4></div>
-        <p className="mt-4 rounded-xl bg-[#fdfaf5] p-4 text-sm leading-6 text-gray-600">Not available yet. The current ERP database has no customer feedback or quality-price rating records, so this metric will appear once that feedback is collected and stored.</p>
+        <div className="mt-4 rounded-xl bg-[#fdfaf5] p-4">
+          <p className="text-2xl font-semibold text-[#5a1f2b]">{data.metrics.valueForMoneyAverage == null ? "—" : `${data.metrics.valueForMoneyAverage.toFixed(1)} / 5`}</p>
+          <p className="mt-1 text-sm text-gray-600">Average customer value-for-money rating · {data.metrics.feedbackCount} reviews</p>
+          {data.dataAvailability.recentFeedback.length ? <div className="mt-4 space-y-3">{data.dataAvailability.recentFeedback.map((review, index) => <article key={`${review.createdAt}-${index}`} className="border-t border-[#eadfce] pt-3"><p className="text-sm font-semibold text-[#5a1f2b]">{review.rating} / 5 · {dateTime(review.createdAt)}</p><p className="mt-1 whitespace-pre-wrap text-sm text-gray-700">{review.comment || "No written comment"}</p></article>)}</div> : <p className="mt-3 text-sm text-gray-600">Reviews will appear here after a customer submits feedback from their account.</p>}
+        </div>
       </section>
 
       <section className={panel}>

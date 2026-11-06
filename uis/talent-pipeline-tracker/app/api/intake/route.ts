@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const includeReservations = view === "reservations" || (view === "all" && canAccess(role, "reservations"));
   const includeCandidates = view === "candidates" || (view === "all" && canAccess(role, "candidates"));
   const includeMembers = view === "all" && canAccess(role, "brasapuntos");
-  const includeOrders = view === "all" && canAccess(role, "orders");
+  const includeOrders = (view === "all" || view === "reservations") && canAccess(role, "orders");
   const emptyResult = { data: [], error: null };
   const [reservationResult, candidateResult, memberResult, orderResult] = await Promise.all([
     includeReservations ? supabase.from("reservations")
@@ -33,9 +33,9 @@ export async function GET(request: Request) {
       .select('balance, createdAt, Customer!inner(id, name, email)')
       .order("createdAt", { ascending: false }).limit(8) : Promise.resolve(emptyResult),
     includeOrders ? supabase.from("Order")
-      .select('id, createdAt, total, currency, status, paymentStatus, fulfillment, Customer(name, email), Location(name), OrderItem(dishName, quantity)')
+      .select('id, createdAt, total, currency, status, paymentStatus, fulfillment, guestCount, Customer(name, email), Location(name), OrderItem(dishName, quantity)')
       .eq("source", "ONLINE")
-      .order("createdAt", { ascending: false }).limit(8) : Promise.resolve(emptyResult),
+      .order("createdAt", { ascending: false }).limit(view === "reservations" ? 100 : 8) : Promise.resolve(emptyResult),
   ]);
   const queryError = reservationResult.error || candidateResult.error || memberResult.error || orderResult.error;
   if (queryError) {
@@ -66,6 +66,7 @@ export async function GET(request: Request) {
       currency: row.currency,
       status: row.status,
       paymentStatus: row.paymentStatus,
+      guestCount: row.guestCount,
       fulfillment: row.fulfillment,
       customerName: customer?.name || "",
       customerEmail: customer?.email || "",

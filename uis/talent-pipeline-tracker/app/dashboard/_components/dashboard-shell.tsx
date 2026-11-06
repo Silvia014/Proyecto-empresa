@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import IntakeHub from "./intake-hub";
 import BusinessDashboard from "./business-dashboard";
+import OrdersWorkspace from "./orders-workspace";
 import CandidatesFrame from "../candidates/CandidatesFrame";
 import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
@@ -308,6 +309,7 @@ export default function DashboardShell({
             </section>
 
             {activeSection?.slug === "dashboard" ? <BusinessDashboard /> :
+             activeSection?.slug === "orders" ? <OrdersWorkspace /> :
              activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
              activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
              activeSection?.slug === "candidates" ? <CandidatesFrame /> : <>
