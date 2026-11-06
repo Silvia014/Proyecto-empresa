@@ -18,7 +18,7 @@ type IntakeData = {
   members: Array<{ id: string; name: string; email: string; balance: number; createdAt: string }>;
   orders: Array<{
     id: string; createdAt: string; total: number; currency: string; status: string;
-    paymentStatus: string; fulfillment: string; customerName: string; customerEmail: string;
+    paymentStatus: string; fulfillment: string; guestCount: number | null; customerName: string; customerEmail: string;
     locationName: string; items: Array<{ dishName: string; quantity: number }>;
   }>;
   updatedAt: string;
@@ -33,6 +33,8 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
   const [data, setData] = useState<IntakeData | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [covers, setCovers] = useState<Record<string, string>>({});
+  const [coversMessages, setCoversMessages] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     try {
@@ -46,6 +48,8 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Unable to load intake records.");
       setData(result as IntakeData);
+      const returnedOrders = (result.orders || []) as IntakeData["orders"];
+      setCovers((current) => Object.fromEntries(returnedOrders.map((order) => [order.id, current[order.id] ?? (order.guestCount == null ? "" : String(order.guestCount))])));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load intake records.");
     } finally {
@@ -57,6 +61,27 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
     setLoading(true);
     setError("");
     void load();
+  }
+
+  async function saveCovers(orderId: string) {
+    try {
+      const guestCount = Number(covers[orderId]);
+      if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > 50) throw new Error("Enter a guest count from 1 to 50.");
+      const supabase = createClient();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) throw new Error("Sign in again to update this order.");
+      const response = await fetch("/api/staff/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session.access_token}` },
+        body: JSON.stringify({ action: "update-online-covers", orderId, guestCount }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Could not save the guest count.");
+      setCoversMessages((current) => ({ ...current, [orderId]: "Guest count saved." }));
+      void load();
+    } catch (cause) {
+      setCoversMessages((current) => ({ ...current, [orderId]: cause instanceof Error ? cause.message : "Could not save the guest count." }));
+    }
   }
 
   useEffect(() => {
@@ -95,6 +120,17 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
             <p className="mt-1 text-sm text-gray-700">{item.city}, {item.country} · <a className="underline" href={`mailto:${item.email}`}>{item.email}</a> · <a className="underline" href={`tel:${item.phone}`}>{item.phone}</a></p>
             <p className="mt-1 text-xs text-gray-500">{item.location_preference || "No location preference"} · {item.status} · received {showDate(item.created_at)}</p>
             {item.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{item.notes}</p>}
+          </article>)}
+        </div>
+      </div>}
+      {view === "reservations" && <div>
+        <h4 className="mb-3 font-semibold text-gray-900">Online orders · record guests for Dashboard 00</h4>
+        <p className="mb-3 text-sm text-gray-600">Enter the number of people served for each online order. This is used to calculate average spend per guest.</p>
+        <div className="space-y-3">
+          {data.orders.length === 0 && <p className={cardClass + " text-sm text-gray-500"}>No online orders are available to update.</p>}
+          {data.orders.map((order) => <article key={order.id} className={cardClass}>
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold text-[#5a1f2b]">Order {order.id}</p><p className="mt-1 text-sm text-gray-700">{order.customerName} · {order.locationName} · {new Date(order.createdAt).toLocaleString()}</p><p className="mt-1 text-sm">{order.items.map((line) => `${line.quantity} × ${line.dishName}`).join(" · ")}</p></div><p className="text-sm font-semibold">{new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", { style: "currency", currency: order.currency }).format(order.total)}</p></div>
+            <div className="mt-4 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-gray-600">Guests served<input className="w-36 rounded-lg border border-[#d8c9b5] px-3 py-2 text-sm font-normal normal-case text-gray-900" type="number" min={1} max={50} value={covers[order.id] ?? ""} onChange={(event) => setCovers((current) => ({ ...current, [order.id]: event.target.value }))} /></label><button type="button" onClick={() => void saveCovers(order.id)} className="rounded-xl bg-[#5a1f2b] px-4 py-2.5 text-sm font-medium text-white">Save guest count</button>{coversMessages[order.id] && <p role="status" className="text-sm text-gray-600">{coversMessages[order.id]}</p>}</div>
           </article>)}
         </div>
       </div>}

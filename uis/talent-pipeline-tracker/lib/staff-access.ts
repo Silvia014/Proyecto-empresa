@@ -12,6 +12,7 @@ export const STAFF_ROLES = [
 
 export type StaffRole = (typeof STAFF_ROLES)[number];
 export type StaffPermission =
+  | "dashboard"
   | "suppliers"
   | "locations"
   | "customers"
@@ -24,8 +25,8 @@ export type StaffPermission =
   | "profile";
 
 const rolePermissions: Record<StaffRole, StaffPermission[]> = {
-  superadmin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
-  admin: ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
+  superadmin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
+  admin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
   manager_hr: ["locations", "customers", "candidates", "inventory", "hr", "profile"],
   marketing: ["locations", "customers", "suppliers", "profile"],
   economato: ["locations", "suppliers", "orders", "inventory", "profile"],

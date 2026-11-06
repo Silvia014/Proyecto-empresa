@@ -52,11 +52,17 @@ module.exports = async function handler(req, res) {
       if (reservationsError) throw reservationsError;
       const { data: orders, error: ordersError } = await supabase
         .from("Order")
-        .select("id, createdAt, total, currency, status, paymentStatus, fulfillment, OrderItem(dishName, quantity)")
+        .select("id, createdAt, total, currency, status, paymentStatus, fulfillment, guestCount, OrderItem(dishName, quantity)")
         .eq("customerId", customer.id)
         .eq("source", "ONLINE")
         .order("createdAt", { ascending: false });
       if (ordersError) throw ordersError;
+      const { data: feedbackRows, error: feedbackError } = await supabase
+        .from("customer_feedback")
+        .select("order_id, value_for_money_rating, comment, created_at")
+        .eq("customer_id", customer.id);
+      if (feedbackError) throw feedbackError;
+      const feedbackByOrder = new Map((feedbackRows || []).map((row) => [row.order_id, row]));
       const loyaltyAccount = Array.isArray(customer.BrasapointsAccount)
         ? customer.BrasapointsAccount[0]
         : customer.BrasapointsAccount;
@@ -70,7 +76,11 @@ module.exports = async function handler(req, res) {
           transactions: loyaltyAccount?.BrasapointsTransaction || [],
         },
         reservations: reservations ?? [],
-        orders: (orders ?? []).map((order) => ({ ...order, items: order.OrderItem || [] })),
+        orders: (orders ?? []).map((order) => ({
+          ...order,
+          items: order.OrderItem || [],
+          feedback: feedbackByOrder.get(order.id) || null,
+        })),
       });
     }
 
@@ -101,6 +111,40 @@ module.exports = async function handler(req, res) {
         .maybeSingle();
       if (error) throw error;
       if (!customer) return res.status(404).json({ error: "No encontramos una cuenta Brasaclub asociada a este usuario." });
+      return res.status(200).json({ ok: true });
+    }
+
+    if (action === "submit-feedback") {
+      const user = await getUserFromRequest(supabase, req);
+      if (!user) return res.status(401).json({ error: "Inicia sesión para enviar tu valoración." });
+      const orderId = typeof req.body?.orderId === "string" ? req.body.orderId.trim() : "";
+      const rating = Number(req.body?.rating);
+      const comment = typeof req.body?.comment === "string" ? req.body.comment.trim() : "";
+      if (!orderId || !Number.isInteger(rating) || rating < 1 || rating > 5 || comment.length > 1000) {
+        return res.status(400).json({ error: "Elige una valoración entre 1 y 5 y limita el comentario a 1.000 caracteres." });
+      }
+      const { data: customer, error: customerError } = await findOrLinkCustomer(supabase, user);
+      if (customerError) throw customerError;
+      if (!customer) return res.status(404).json({ error: "No encontramos tu cuenta Brasaclub." });
+      const { data: order, error: orderError } = await supabase.from("Order")
+        .select("id, status, paymentStatus, source")
+        .eq("id", orderId)
+        .eq("customerId", customer.id)
+        .eq("source", "ONLINE")
+        .maybeSingle();
+      if (orderError) throw orderError;
+      if (!order) return res.status(404).json({ error: "No encontramos este pedido en tu cuenta." });
+      if (order.status !== "COMPLETED" || order.paymentStatus !== "PAID") {
+        return res.status(409).json({ error: "Podrás valorar el pedido cuando figure como completado y pagado." });
+      }
+      const { error: feedbackError } = await supabase.from("customer_feedback").upsert({
+        customer_id: customer.id,
+        order_id: order.id,
+        value_for_money_rating: rating,
+        comment,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "order_id" });
+      if (feedbackError) throw feedbackError;
       return res.status(200).json({ ok: true });
     }
 

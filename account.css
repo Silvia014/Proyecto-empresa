@@ -571,6 +571,45 @@
   font-weight: 700;
 }
 
+.portal-review-form {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid rgba(90, 31, 43, .14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .72);
+}
+
+.portal-review-title {
+  color: #5a1f2b;
+  font-weight: 700;
+}
+
+.portal-review-label {
+  display: grid;
+  gap: 6px;
+  color: #4a272d;
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+.portal-review-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(59, 29, 29, .2);
+  border-radius: 8px;
+  background: #fff;
+  color: #241b17;
+  font: inherit;
+}
+
+.portal-review-result {
+  color: #315d3d;
+  font-size: .85rem;
+}
+
 .portal-feedback,
 .portal-error {
   margin: 0 0 18px;

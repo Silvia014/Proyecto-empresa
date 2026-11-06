@@ -112,6 +112,58 @@ function renderOrders(orders) {
     status.className = "mt-2 text-xs font-semibold uppercase tracking-wide text-wine";
     status.textContent = `${money} · ${formatOrderStatus(order.status, order.paymentStatus)}`;
     card.append(title, lines, status);
+    const existingFeedback = order.feedback;
+    if (String(order.status).toUpperCase() === "COMPLETED" && String(order.paymentStatus).toUpperCase() === "PAID") {
+      const form = document.createElement("form");
+      form.className = "portal-review-form";
+      form.dataset.orderId = order.id;
+      const heading = document.createElement("h4");
+      heading.className = "portal-review-title";
+      heading.textContent = isDashboardEnglish() ? "How was the value for money?" : "¿Qué te pareció la relación calidad-precio?";
+      const ratingLabel = document.createElement("label");
+      ratingLabel.className = "portal-review-label";
+      ratingLabel.textContent = isDashboardEnglish() ? "Rating" : "Valoración";
+      const rating = document.createElement("select");
+      rating.name = "rating";
+      rating.required = true;
+      rating.className = "portal-review-input";
+      [
+        [5, isDashboardEnglish() ? "Excellent" : "Excelente"],
+        [4, isDashboardEnglish() ? "Good" : "Buena"],
+        [3, isDashboardEnglish() ? "Fair" : "Normal"],
+        [2, isDashboardEnglish() ? "Poor" : "Mala"],
+        [1, isDashboardEnglish() ? "Very poor" : "Muy mala"],
+      ].forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = `${value} · ${label}`;
+        rating.append(option);
+      });
+      if (existingFeedback?.value_for_money_rating) rating.value = String(existingFeedback.value_for_money_rating);
+      ratingLabel.append(rating);
+      const commentLabel = document.createElement("label");
+      commentLabel.className = "portal-review-label";
+      commentLabel.textContent = isDashboardEnglish() ? "Comment (optional)" : "Comentario (opcional)";
+      const comment = document.createElement("textarea");
+      comment.name = "comment";
+      comment.rows = 3;
+      comment.maxLength = 1000;
+      comment.className = "portal-review-input";
+      comment.value = existingFeedback?.comment || "";
+      comment.placeholder = isDashboardEnglish() ? "Tell us about your experience" : "Cuéntanos cómo fue tu experiencia";
+      commentLabel.append(comment);
+      const submit = document.createElement("button");
+      submit.type = "submit";
+      submit.className = "portal-save";
+      submit.textContent = existingFeedback
+        ? (isDashboardEnglish() ? "Update feedback" : "Actualizar valoración")
+        : (isDashboardEnglish() ? "Send feedback" : "Enviar valoración");
+      const result = document.createElement("p");
+      result.className = "portal-review-result";
+      result.setAttribute("role", "status");
+      form.append(heading, ratingLabel, commentLabel, submit, result);
+      card.append(form);
+    }
     list.append(card);
   });
 }
@@ -308,6 +360,37 @@ profileForm.addEventListener("submit", async (event) => {
     feedback.textContent = error.message;
     feedback.classList.remove("hidden", "text-green-800");
     feedback.classList.add("text-red-700");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("orders-list")?.addEventListener("submit", async (event) => {
+  const form = event.target.closest(".portal-review-form");
+  if (!form) return;
+  event.preventDefault();
+  const button = form.querySelector('[type="submit"]');
+  const result = form.querySelector(".portal-review-result");
+  button.disabled = true;
+  result.textContent = "";
+  try {
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        action: "submit-feedback",
+        orderId: form.dataset.orderId,
+        rating: Number(form.elements.rating.value),
+        comment: form.elements.comment.value,
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "No pudimos guardar tu valoración.");
+    result.textContent = isDashboardEnglish() ? "Thank you. Your feedback was saved." : "Gracias. Tu valoración se ha guardado.";
+    await loadAccount();
+  } catch (error) {
+    result.textContent = error.message;
   } finally {
     button.disabled = false;
   }

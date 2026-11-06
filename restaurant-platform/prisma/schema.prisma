@@ -23,6 +23,7 @@ model Location {
   city      String
   country   String
   currency  String
+  timezone  String?
   createdAt DateTime @default(now())
 
   users        User[]
@@ -35,6 +36,7 @@ model Location {
   timeOffs     TimeOff[]
   serviceStats ServiceStat[]
   menuItems    MenuItem[]
+  reservations Reservation[]
 
   brasapointsRules BrasapointsRule[]
 }
@@ -153,6 +155,7 @@ model Customer {
   orders             Order[]
   reservations       Reservation[]
   brasapointsAccount BrasapointsAccount?
+  feedback           CustomerFeedback[]
 
   @@index([email])
   @@index([phone])
@@ -175,10 +178,16 @@ model Reservation {
   notes               String?
   referralSource      String?  @map("referral_source")
   status              String   @default("NEW")
+  source              String   @default("ONLINE")
+  locationId          String?  @map("location_id")
+  createdBy           String?  @map("created_by")
   createdAt           DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  location            Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  orders              Order[]
 
   @@index([createdAt])
   @@index([customerId, reservationDate])
+  @@index([locationId, reservationDate])
   @@map("reservations")
 }
 
@@ -231,6 +240,10 @@ model Order {
   location   Location @relation(fields: [locationId], references: [id])
 
   items OrderItem[]
+  reservationId String? @unique
+  reservation   Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  guestCount    Int?
+  feedback      CustomerFeedback?
 
   // -----------------------------
   // PRECIOS
@@ -275,6 +288,22 @@ model Order {
 
   @@index([locationId, status])
   @@index([customerId, createdAt])
+  @@index([reservationId])
+}
+
+model CustomerFeedback {
+  id                    String   @id @default(uuid()) @db.Uuid
+  customerId            String   @map("customer_id")
+  orderId               String   @unique @map("order_id")
+  valueForMoneyRating   Int      @map("value_for_money_rating") @db.SmallInt
+  comment               String   @default("")
+  createdAt             DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt             DateTime @default(now()) @db.Timestamptz(6) @map("updated_at")
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order                 Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@map("customer_feedback")
 }
 
 model OrderItem {
