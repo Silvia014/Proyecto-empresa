@@ -324,6 +324,7 @@ const translations = {
     contacto: {
       title: "Contacto",
       subtitle: "Visítanos o escríbenos",
+      description: "Conoce los dos restaurantes más famosos en cada país.",
 
       city2: "Orlando",
 
@@ -1081,6 +1082,7 @@ const translations = {
     contacto: {
       title: "Contact",
       subtitle: "Visit Us or Get in Touch",
+      description: "Discover the two most famous restaurants in each country.",
 
       city2: "Orlando",
 

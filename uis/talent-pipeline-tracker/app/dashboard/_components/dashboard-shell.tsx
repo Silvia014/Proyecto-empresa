@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import IntakeHub from "./intake-hub";
+import BusinessDashboard from "./business-dashboard";
 import CandidatesFrame from "../candidates/CandidatesFrame";
 import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
@@ -233,7 +234,7 @@ export default function DashboardShell({
                               : "text-[#8c6a52]",
                           ].join(" ")}
                         >
-                          {String(index + 1).padStart(2, "0")}
+                          {section.slug === "dashboard" ? "00" : String(index).padStart(2, "0")}
                         </p>
 
                         <h3 className="mt-2 text-lg font-semibold">
@@ -306,7 +307,8 @@ export default function DashboardShell({
               </div>
             </section>
 
-            {activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
+            {activeSection?.slug === "dashboard" ? <BusinessDashboard /> :
+             activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
              activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
              activeSection?.slug === "candidates" ? <CandidatesFrame /> : <>
             {activeSection.metrics.length > 0 && <section className="grid gap-4 md:grid-cols-3">

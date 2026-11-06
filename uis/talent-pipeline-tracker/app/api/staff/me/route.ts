@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const actor = await getStaffActor(request);
   if (isDenied(actor)) return actor;
-  const permissions: StaffPermission[] = ["suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"];
+  const permissions: StaffPermission[] = ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"];
   return NextResponse.json({
     id: actor.user.id,
     email: actor.user.email,

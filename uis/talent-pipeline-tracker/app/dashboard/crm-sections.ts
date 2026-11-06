@@ -24,6 +24,12 @@ export type CrmSection = {
 
 const sectionDefinitions = [
   {
+    slug: "dashboard", title: "Dashboard", route: "/dashboard",
+    navLabel: "Business intelligence", description: "Live business performance across sales, orders, products, and reservations.",
+    panelTitle: "Business intelligence", panelDescription: "Operational and sales metrics from the ERP database, refreshed automatically.",
+    ctaLabel: "View business dashboard", recordsTitle: "Business performance",
+  },
+  {
     slug: "suppliers", title: "Suppliers", route: "/dashboard/suppliers",
     navLabel: "Vendor control", description: "Supplier records and operations.",
     panelTitle: "Supplier operations", panelDescription: "Supplier information currently available in the ERP database.",
