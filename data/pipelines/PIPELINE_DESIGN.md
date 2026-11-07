@@ -1,6 +1,6 @@
 # Business Performance Data Pipeline — Design
 
-- **Status:** Approved design with the Part 2 implementation on `feat/business-performance-pipeline`. The CLI has been run against the configured Supabase database. The latest run finished `partial` because one event referenced an unknown location. Production validation and scheduling remain outstanding.
+- **Status:** Part 3 implementation is on `feat/business-performance-pipeline`: three transformation tasks are coordinated by the transform subflow, unit tests are in `tests/pipelines/test_pipeline.py`, the CLI entrypoint is retained, and a protected KPI dashboard is available from the ERP origin. User-reported local tests and CLI run passed. End-to-end dashboard validation and valid source location mapping remain outstanding.
 - **Company:** Brasaland
 - **Primary audience:** Mariana Restrepo (CEO) and Felipe Guerrero (Operations Director)
 - **Business cadence:** Weekly, every Monday morning
@@ -126,7 +126,9 @@ flowchart LR
     end
 
     X["extract_inventory_telemetry_events task"]
-    A["aggregate_weekly_location_kpis task<br/>validate, deduplicate, aggregate"]
+    V["validate_weekly_location_events task"]
+    A["aggregate_weekly_location_metrics task"]
+    C["calculate_weekly_location_kpis task"]
     S["save_pipeline_eval_snapshot task<br/>optional"]
     T["ensure_reporting_tables task"]
     U["upsert_weekly_location_performance task"]
@@ -136,10 +138,11 @@ flowchart LR
 
     E --> X
     L --> X
-    X --> A --> U --> R --> API
-    A -. optional snapshot .-> S
+    X --> V --> A --> C --> U --> R --> API --> UI["uis/backoffice/reporting.html"]
+    C -. optional snapshot .-> S
     X -. extraction counts and watermarks .-> RUN
-    A -. quality counters .-> RUN
+    V -. validation diagnostics .-> RUN
+    C -. final KPI counters .-> RUN
     T --> U
     U -. final status and counts .-> RUN
 ```
@@ -152,15 +155,13 @@ flowchart LR
 - Read the `Location` reference roster and validate each event's `location_id`, `country`, and `currency` against it.
 - Select only fields required for the five KPIs and reconciliation. Do not extract user names, customer data, credentials, request bodies, or unrelated telemetry.
 
-**2. Transformation and validation — `aggregate_weekly_location_kpis`**
+**2. Transformation and validation — `transform_weekly_location_kpis_subflow`**
 
-- Deduplicate the extracted batch by `event_id`; the source also enforces uniqueness on this event identifier.
-- Parse `properties` and validate required identifiers, allowed reason values, numeric quantities/costs, and currency-country consistency.
-- Convert `event_timestamp` to UTC and derive Monday `week_start`.
-- Use the event's captured `total_cost` snapshot for purchase and waste aggregation. Do not look up today's product price to revalue a historical event.
-- Aggregate at exactly `location_id + week_start`; retain `country` and `currency` as dimensions.
-- Compute `waste_ratio` only after the two cost totals are available.
-- Validate that monetary values for a group use one currency and that no invalid cost event was silently discarded. Validation, deduplication, UTC normalization, and aggregation currently run inside this task, not separate Prefect tasks.
+- `validate_weekly_location_events` deduplicates by `event_id`, validates event properties, IDs, timestamps, location/country/currency, and required cost snapshots, then returns normalized accepted events and quality diagnostics.
+- `aggregate_weekly_location_metrics` aggregates the validated events at exactly `location_id + week_start`, producing `total_purchase_cost`, `total_waste_cost`, `stockout_events_count`, and `price_alert_events_count`.
+- `calculate_weekly_location_kpis` computes `waste_ratio`, removes blocked location/week grains, sorts the output, and returns the stable result contract used by the load stage.
+- The transform subflow calls the three Prefect tasks in order with explicit outputs. The cost ratio is never calculated before the purchase and waste totals are available.
+- Monetary totals retain the location's local currency; COP and USD are never combined.
 
 **3. Load and audit**
 
@@ -310,12 +311,20 @@ The implemented pipeline uses Prefect 3 for task execution, retries, caching, fl
 - **Scheduled deployment:** every Monday at 07:00 `America/Bogota`; inactive until a production Prefect worker/work pool and business approval are in place.
 - **Manual/backfill:** accepts an optional Monday `week_start` and records the `trigger_source`.
 
-### Implemented tasks
+### Implemented subflows and tasks
+
+| Subflow | Task sequence | Responsibility |
+|---|---|---|
+| `extract_inventory_telemetry_subflow` | `extract_inventory_telemetry_events` | Read the bounded telemetry window and location roster. |
+| `transform_weekly_location_kpis_subflow` | `validate_weekly_location_events` → `aggregate_weekly_location_metrics` → `calculate_weekly_location_kpis` | Validate and normalize events, aggregate the four additive metrics, and calculate the final ratio/output contract. |
+| `load_weekly_location_performance_subflow` | `upsert_weekly_location_performance` | Idempotently load location/week KPI rows. |
 
 | Task | Stage | Resilience / responsibility |
 |---|---|---|
 | `extract_inventory_telemetry_events` | Extract | Read the event window and location roster; 3 retries with a 5-second delay for transient database failures. |
-| `aggregate_weekly_location_kpis` | Transform | Validate and aggregate the five KPIs; uses `task_input_hash`, a one-hour cache expiration, and persisted task results. |
+| `validate_weekly_location_events` | Transform | Deduplicate and validate event records; returns accepted normalized records and quality diagnostics. |
+| `aggregate_weekly_location_metrics` | Transform | Aggregate purchase/waste costs and stockout/price-alert counts by location/week. |
+| `calculate_weekly_location_kpis` | Transform | Calculate `waste_ratio` and produce the final KPI contract; uses `task_input_hash`, a one-hour cache expiration, and persisted task results. |
 | `ensure_reporting_tables` | Load setup | Create/check reporting schema and tables; 3 retries with a 5-second delay. |
 | `upsert_weekly_location_performance` | Load | Transactionally upsert by `(location_id, week_start)`; 3 retries with a 5-second delay. |
 | `save_pipeline_run` | Audit | Insert/update run metadata; 3 retries with a 5-second delay. |
@@ -326,7 +335,7 @@ The implemented pipeline uses Prefect 3 for task execution, retries, caching, fl
 - `completed`: required stages and final audit update succeeded with no rejected source records.
 - `partial`: the flow completed but source-quality problems caused event rejection or blocked a location/week from publication.
 - `failed`: a critical task or unexpected execution error stopped the flow.
-- Extraction, transformation, and load states are checked explicitly with `return_state=True`; a failure in these critical stages fails the flow.
+- Extraction, transformation, and load subflow states are checked explicitly with `return_state=True`; a failure in these critical stages fails the flow.
 - The evaluation snapshot is non-critical. Its failed state is logged through the Prefect flow logger and does not fail the main load.
 - The flow-level exception handler includes lock acquisition, table setup, and the initial audit write. It logs failures through Prefect and attempts to persist a failed audit row. If the reporting database is unavailable, the Prefect run log is the fallback.
 - Database tasks use 3 retries with a fixed 5-second delay. A retry replays the full reporting window through the idempotent upsert.
@@ -387,7 +396,7 @@ The values above illustrate the response shape only; they are not actual Brasala
 - Writing pipeline output into `telemetry_events`.
 - FX conversion between COP and USD.
 - Sales, revenue, customer, HR, or marketing KPIs not requested by the data-pipelines BRIEFING.
-- The staff dashboard UI that consumes the reporting endpoints.
+- Replacing or modifying the technical telemetry dashboard or `GET /telemetry/report`.
 
 ### Production gates to confirm
 
@@ -434,7 +443,9 @@ Automatic scheduling remains inactive until a Prefect worker is configured.
 
 ## 13. Implementation and Latest Local Verification
 
-The pipeline CLI completed against the configured Supabase database on 2026-11-06, but the run status was `partial`. The reporting API route test suite also passed locally (4 tests):
+The user confirmed that the Part 3 unit-test command and the documented CLI command completed locally. The dashboard is implemented at `uis/backoffice/reporting.html` and copied into the ERP's `public/backoffice/` directory so it shares the ERP origin and Supabase SSR session. The ERP Next.js route `/api/reporting/weekly-location-performance` validates the staff cookie session, restricts access to dashboard-authorized roles, and proxies the request to the authenticated FastAPI reporting endpoint. Local browser/API integration still needs a final verification after the proxy change.
+
+The latest recorded Supabase pipeline result from Part 2 was `partial`:
 
 | Run result | Value |
 |---|---:|
@@ -444,4 +455,20 @@ The pipeline CLI completed against the configured Supabase database on 2026-11-0
 | KPI rows loaded | 0 |
 | Run status | `partial` |
 
-The rejected inbound event supplied `location_id = 1`, but no row with `id = '1'` exists in `public."Location"`. The pipeline correctly rejected the unknown location rather than guessing a mapping. The source tables remain read-only. Confirm the canonical location identifier or determine whether this is a test event before rerunning the affected window. This validation is not a production sign-off; authenticated endpoint integration with the staff dashboard and the production schedule still require verification.
+The rejected inbound event supplied `location_id = 1`, but no row with `id = '1'` exists in `public."Location"`. The pipeline correctly rejects the unknown location rather than guessing a mapping. Do not change the event or invent a location mapping until the canonical location ID is confirmed. The source tables remain read-only. Rerun the pipeline after confirming/fixing the test event or canonical mapping so the destination contains real KPI rows and the dashboard can display them.
+
+### Part 3 commands
+
+From the repository root, run the transformation unit tests:
+
+```bash
+python -m pytest tests/pipelines/test_pipeline.py
+```
+
+Run the complete pipeline through its retained CLI entrypoint:
+
+```bash
+PYTHONPATH=services/api uv run --python 3.12 python data/pipelines/pipeline.py
+```
+
+For local ERP dashboard access, run the ERP Next.js app on port 3000 and the FastAPI service on port 8000, sign in at `/login`, then open `/backoffice/reporting.html`. The Next.js proxy reads the CRM's Supabase SSR cookies and forwards the access token to FastAPI. Set `REPORTING_API_URL` in production to the public HTTPS origin of the FastAPI service; locally it falls back to `NEXT_PUBLIC_INVENTORY_API_URL` or `http://127.0.0.1:8000`.
