@@ -1,10 +1,5 @@
 "use strict";
 
-const supabaseClient = window.supabase.createClient(
-  window.SUPABASE_URL,
-  window.SUPABASE_PUBLISHABLE_KEY
-);
-
 const statusElement = document.getElementById("report-status");
 const messageElement = document.getElementById("report-message");
 const periodElement = document.getElementById("report-period");
@@ -95,26 +90,15 @@ async function loadReport() {
   setMessage("");
 
   try {
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error) throw new Error(`Could not read CRM session: ${error.message}`);
-
-    const token = data.session?.access_token;
-    if (!token) {
-      throw new Error("Please sign in through the existing CRM login first.");
-    }
-
     const params = new URLSearchParams();
     if (weekInput.value) params.set("week_start", weekInput.value);
     if (countryFilter.value) params.set("country", countryFilter.value);
 
     const query = params.toString();
     const response = await fetch(
-      `/reporting/weekly-location-performance${query ? `?${query}` : ""}`,
+      `/api/reporting/weekly-location-performance${query ? `?${query}` : ""}`,
       {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Accept: "application/json" },
         cache: "no-store",
       }
     );
