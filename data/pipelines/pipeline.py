@@ -55,7 +55,7 @@ KPI_EVENT_TYPES = {
     "ingredient_price_variance_detected",
 }
 
-TRANSFORM_REVISION = "2026-11-05-v1"
+TRANSFORM_REVISION = "2026-11-07-v2"
 PIPELINE_NAME = "weekly_location_cost_waste"
 CORRECTION_WINDOW_WEEKS = 4
 
@@ -949,7 +949,9 @@ def extract_inventory_telemetry_subflow(
 def transform_weekly_location_kpis_subflow(
     extracted: dict[str, Any],
 ) -> dict[str, Any]:
-    return aggregate_weekly_location_kpis(extracted, TRANSFORM_REVISION)
+    validated = validate_weekly_location_events(extracted)
+    aggregated = aggregate_weekly_location_metrics(validated)
+    return calculate_weekly_location_kpis(aggregated, TRANSFORM_REVISION)
 
 
 @flow(name="load_weekly_location_performance_subflow")
