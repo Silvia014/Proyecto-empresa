@@ -271,36 +271,23 @@ def extract_inventory_telemetry_events(
 # ---------------------------------------------------------------------------
 # Part 2 — Transform and validate
 # ---------------------------------------------------------------------------
-
-@task(
-    name="aggregate_weekly_location_kpis",
-    cache_key_fn=task_input_hash,
-    cache_expiration=timedelta(hours=1),
-    persist_result=True,
-)
-def aggregate_weekly_location_kpis(
+@task(name="validate_weekly_location_events")
+def validate_weekly_location_events(
     extracted_data: dict[str, Any],
-    transform_revision: str = TRANSFORM_REVISION,
 ) -> dict[str, Any]:
-    """Aggregate five KPIs by location and Monday-based UTC week.
-
-    Invalid events block only their known location/week. Events with an
-    unknown location cannot safely be assigned to a report grain and are
-    rejected without guessing a location.
-    """
+    """Validate, deduplicate, and normalize KPI source events."""
     locations = {
         str(item["id"]): item
         for item in extracted_data.get("locations", [])
         if item.get("id") is not None
     }
 
-    aggregates: dict[tuple[str, str], dict[str, Any]] = {}
+    validated_events: list[dict[str, Any]] = []
     blocked_location_weeks: set[tuple[str, str]] = set()
     quality_issues: list[str] = []
     quality_warnings: list[str] = []
     seen_event_ids: set[str] = set()
     rows_skipped = 0
-    rows_processed = 0
     duplicate_event_count = 0
     missing_event_id_count = 0
 
@@ -332,8 +319,6 @@ def aggregate_weekly_location_kpis(
         properties = _event_properties(event)
         event_type = event.get("event_type")
 
-        # Outbound events are retained in source metrics but are not one of
-        # the five KPI inputs. Demo events are deliberately excluded.
         if event_type not in KPI_EVENT_TYPES:
             rows_skipped += 1
             continue
@@ -357,9 +342,9 @@ def aggregate_weekly_location_kpis(
         week_start = (
             timestamp.date() - timedelta(days=timestamp.weekday())
         ).isoformat()
-
         location_id = str(properties.get("location_id") or "").strip()
         location = locations.get(location_id)
+
         if location is None:
             quality_issues.append(
                 f"Unknown location: {location_id}, event: {event_id}"
@@ -380,10 +365,7 @@ def aggregate_weekly_location_kpis(
             continue
 
         event_country = properties.get("country")
-        if (
-            event_country not in (None, "")
-            and _country_code(event_country) != country
-        ):
+        if event_country not in (None, "") and _country_code(event_country) != country:
             blocked_location_weeks.add(grain)
             quality_issues.append(f"Country mismatch for event {event_id}")
             continue
@@ -413,23 +395,58 @@ def aggregate_weekly_location_kpis(
                 )
                 continue
 
+        validated_events.append({
+            "event_id": event_id,
+            "event_type": event_type,
+            "location_id": location_id,
+            "week_start": week_start,
+            "country": country,
+            "currency": currency,
+            "total_cost": total_cost,
+        })
+
+    return {
+        "events": validated_events,
+        "blocked_location_weeks": [
+            {"location_id": location_id, "week_start": week}
+            for location_id, week in sorted(blocked_location_weeks)
+        ],
+        "quality_issues": quality_issues,
+        "quality_warnings": quality_warnings,
+        "rows_skipped": rows_skipped,
+        "duplicate_event_count": duplicate_event_count,
+        "missing_event_id_count": missing_event_id_count,
+    }
+@task(name="aggregate_weekly_location_metrics")
+def aggregate_weekly_location_metrics(
+    validated_data: dict[str, Any],
+) -> dict[str, Any]:
+    """Aggregate validated inventory events by location and week."""
+    aggregates: dict[tuple[str, str], dict[str, Any]] = {}
+    rows_processed = 0
+
+    for event in validated_data["events"]:
+        grain = (event["location_id"], event["week_start"])
+
         if grain not in aggregates:
             aggregates[grain] = {
-                "location_id": location_id,
-                "country": country,
-                "week_start": week_start,
+                "location_id": event["location_id"],
+                "country": event["country"],
+                "week_start": event["week_start"],
                 "total_purchase_cost": Decimal("0"),
                 "total_waste_cost": Decimal("0"),
                 "stockout_events_count": 0,
                 "price_alert_events_count": 0,
-                "currency": currency,
+                "currency": event["currency"],
             }
 
         row = aggregates[grain]
+        event_type = event["event_type"]
+
         if event_type == "inbound_order_created":
-            row["total_purchase_cost"] += total_cost
+            row["total_purchase_cost"] += event["total_cost"]
         elif event_type == "stock_waste_registered":
-            row["total_waste_cost"] += total_cost
+            row["total_waste_cost"] += event["total_cost"]
         elif event_type == "stock_threshold_triggered":
             row["stockout_events_count"] += 1
         elif event_type == "ingredient_price_variance_detected":
@@ -437,41 +454,61 @@ def aggregate_weekly_location_kpis(
 
         rows_processed += 1
 
-    result_rows: list[dict[str, Any]] = []
-    for grain, row in aggregates.items():
-        if grain in blocked_location_weeks:
+    return {
+        "aggregates": list(aggregates.values()),
+        "rows_processed": rows_processed,
+        **validated_data,
+    }
+
+
+@task(
+    name="calculate_weekly_location_kpis",
+    cache_key_fn=task_input_hash,
+    cache_expiration=timedelta(hours=1),
+    persist_result=True,
+)
+def calculate_weekly_location_kpis(
+    aggregated_data: dict[str, Any],
+    transform_revision: str = TRANSFORM_REVISION,
+) -> dict[str, Any]:
+    """Calculate waste ratio and prepare final weekly KPI rows."""
+    blocked = {
+        (row["location_id"], row["week_start"])
+        for row in aggregated_data["blocked_location_weeks"]
+    }
+
+    rows: list[dict[str, Any]] = []
+    for row in aggregated_data["aggregates"]:
+        grain = (row["location_id"], row["week_start"])
+        if grain in blocked:
             continue
 
         purchase_cost = row["total_purchase_cost"]
         waste_cost = row["total_waste_cost"]
         row["waste_ratio"] = (
-            float(waste_cost / purchase_cost) if purchase_cost > 0 else 0.0
+            float(waste_cost / purchase_cost)
+            if purchase_cost > 0
+            else 0.0
         )
         row["total_purchase_cost"] = float(purchase_cost)
         row["total_waste_cost"] = float(waste_cost)
-        result_rows.append(row)
-
-    blocked_rows = [
-        {"location_id": location_id, "week_start": week}
-        for location_id, week in sorted(blocked_location_weeks)
-    ]
+        rows.append(row)
 
     return {
         "rows": sorted(
-            result_rows,
+            rows,
             key=lambda row: (row["week_start"], row["location_id"]),
         ),
-        "rows_processed": rows_processed,
-        "rows_rejected": len(quality_issues),
-        "rows_skipped": rows_skipped,
-        "duplicate_event_count": duplicate_event_count,
-        "missing_event_id_count": missing_event_id_count,
-        "quality_issues": quality_issues,
-        "quality_warnings": quality_warnings,
-        "blocked_location_weeks": blocked_rows,
+        "rows_processed": aggregated_data["rows_processed"],
+        "rows_rejected": len(aggregated_data["quality_issues"]),
+        "rows_skipped": aggregated_data["rows_skipped"],
+        "duplicate_event_count": aggregated_data["duplicate_event_count"],
+        "missing_event_id_count": aggregated_data["missing_event_id_count"],
+        "quality_issues": aggregated_data["quality_issues"],
+        "quality_warnings": aggregated_data["quality_warnings"],
+        "blocked_location_weeks": aggregated_data["blocked_location_weeks"],
         "transform_revision": transform_revision,
     }
-
 
 def build_source_metrics(
     extracted_data: dict[str, Any],
@@ -997,16 +1034,9 @@ def weekly_location_cost_waste_flow(
             last_completed_stage = "extract"
             source_metrics = build_source_metrics(extracted)
 
-            transformation_state = transform_weekly_location_kpis_subflow(
-                extracted,
-                return_state=True,
-            )
-            if transformation_state.is_failed():
-                raise RuntimeError(
-                    f"Transformation failed: {transformation_state.message}"
-                )
-
-            transformed = transformation_state.result()
+            validated = validate_weekly_location_events(extracted)
+            aggregated = aggregate_weekly_location_metrics(validated)
+            transformed = calculate_weekly_location_kpis(aggregated, TRANSFORM_REVISION)
             last_completed_stage = "transform"
             source_metrics = build_source_metrics(extracted, transformed)
 

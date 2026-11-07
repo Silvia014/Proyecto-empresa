@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brasaland — Weekly Location Performance</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="reporting.css">
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>Brasaland</h1>
+      <p>Business Performance · Weekly Location Report</p>
+    </div>
+    <span id="report-status" class="status">Checking report…</span>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="section-header">
+        <div>
+          <h2>Weekly Location Performance</h2>
+          <p id="report-period">Loading reporting period…</p>
+        </div>
+        <button id="refresh-report" class="secondary-button" type="button">
+          Refresh
+        </button>
+      </div>
+
+      <div class="filters">
+        <label>
+          Week starting Monday
+          <input id="week-start" type="date">
+        </label>
+        <label>
+          Country
+          <select id="country-filter">
+            <option value="">All countries</option>
+            <option value="CO">Colombia</option>
+            <option value="US">United States</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="report-message" class="message" role="status"></p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Country</th>
+              <th>Week starting</th>
+              <th>Purchase cost</th>
+              <th>Waste cost</th>
+              <th>Waste ratio</th>
+              <th>Stockout events</th>
+              <th>Price alert events</th>
+            </tr>
+          </thead>
+          <tbody id="performance-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="lib/supabase-config.js"></script>
+  <script src="reporting.js"></script>
+</body>
+</html>
