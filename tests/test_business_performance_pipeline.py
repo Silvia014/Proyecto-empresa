@@ -1,8 +1,8 @@
-from data.pipelines.pipeline import aggregate_weekly_location_kpis
+from data.pipelines.pipeline import transform_weekly_location_kpis_subflow
 
 
 def _transform(data):
-    return aggregate_weekly_location_kpis.fn(data)
+    return transform_weekly_location_kpis_subflow.fn(data)
 
 
 def test_aggregates_costs_and_uses_location_reference_for_country_currency():
