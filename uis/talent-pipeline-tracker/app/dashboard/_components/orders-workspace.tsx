@@ -133,6 +133,7 @@ export default function OrdersWorkspace() {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5 text-sm font-medium text-gray-700">Restaurant
           <select className={input} value={locationId} onChange={(event) => { setLocationId(event.target.value); setDate(""); void load(event.target.value, ""); }}>
+            {!locations.length && <option value="">No restaurant locations are configured</option>}
             {locations.map((location) => <option key={location.id} value={location.id}>{location.name} · {location.city}, {location.country}</option>)}
           </select>
         </label>
@@ -140,6 +141,7 @@ export default function OrdersWorkspace() {
           <input className={input} type="date" value={date} onChange={(event) => { setDate(event.target.value); void load(locationId, event.target.value); }} />
         </label>
       </div>
+      {!loading && !locations.length && <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Save reservation is disabled because the ERP has no restaurant locations. Add the confirmed locations to the Location table, then refresh. Do not use approximate map previews for booking records.</p>}
       {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
       {message && <p role="status" className="mt-4 rounded-xl bg-green-50 p-4 text-sm text-green-800">{message}</p>}
     </section>

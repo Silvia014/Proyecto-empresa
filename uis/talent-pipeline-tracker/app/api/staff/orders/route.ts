@@ -16,6 +16,13 @@ function todayAtTimezone(timezone?: string | null) {
     return new Date().toISOString().slice(0, 10);
   }
 }
+function locationTimezone(location: { timezone?: string | null; city?: string | null; country?: string | null }) {
+  if (location.timezone) return location.timezone;
+  if (/colombia|^co$/i.test(location.country || "")) return "America/Bogota";
+  if (/orlando|miami/i.test(location.city || "") || /united states|^usa$|^us$/i.test(location.country || "")) return "America/New_York";
+  return "UTC";
+}
+const normalizePlace = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 export async function GET(request: Request) {
   const actor = await getStaffActor(request);
@@ -24,9 +31,18 @@ export async function GET(request: Request) {
 
   const params = new URL(request.url).searchParams;
   const { service } = actor;
-  const locationsResult = await service.from("Location").select("id, name, city, country, currency, timezone").order("name");
-  if (locationsResult.error) return jsonError("Unable to load restaurant locations.", 503);
-  const locations = locationsResult.data ?? [];
+  let locationsResult = await service.from("Location").select("id, name, city, country, currency, timezone").order("name");
+  let locationRows = locationsResult.data;
+  let locationLoadError = locationsResult.error;
+  if (locationsResult.error && /timezone/i.test(locationsResult.error.message)) {
+    // Keep the Orders workspace available until the BI migration adds timezone.
+    const fallback = await service.from("Location").select("id, name, city, country, currency").order("name");
+    if (fallback.error) return jsonError("Unable to load restaurant locations. Check the Location table and its currency field.", 503);
+    locationRows = (fallback.data || []).map((item) => ({ ...item, timezone: null }));
+    locationLoadError = null;
+  }
+  if (locationLoadError) return jsonError("Unable to load restaurant locations. Check the Location table and its currency field.", 503);
+  const locations = (locationRows || []).map((item) => ({ ...item, timezone: locationTimezone(item) }));
   const requestedLocation = params.get("locationId");
   const location = locations.find((item) => item.id === requestedLocation) || locations[0];
   if (!location) return jsonError("Create a restaurant location before entering orders.", 503);
@@ -36,7 +52,7 @@ export async function GET(request: Request) {
   if (requestedDate && !validDate(requestedDate)) return jsonError("Choose a valid restaurant date.");
   const date = requestedDate || todayAtTimezone(location.timezone);
 
-  const [reservationsResult, menuResult] = await Promise.all([
+  let [reservationsResult, menuResult] = await Promise.all([
     service.from("reservations")
       .select("id, customer_id, first_name, last_name, email, phone, party_size, reservation_date, reservation_time, location_preference, location_id, source, status, notes")
       .eq("reservation_date", date)
@@ -49,6 +65,34 @@ export async function GET(request: Request) {
       .order("category")
       .order("name"),
   ]);
+  if (reservationsResult.error && /location_id|source/i.test(reservationsResult.error.message)) {
+    // Older production schema: still show website reservations by the selected
+    // location preference while the source/location migration is pending.
+    const fallback = await service.from("reservations")
+      .select("id, customer_id, first_name, last_name, email, phone, party_size, reservation_date, reservation_time, location_preference, status, notes")
+      .eq("reservation_date", date)
+      .order("reservation_time", { ascending: true });
+    reservationsResult = {
+      ...fallback,
+      data: fallback.data?.filter((item) => {
+        if (!item.location_preference) return true;
+        const preference = normalizePlace(item.location_preference);
+        return [location.name, location.city, location.country].filter(Boolean).some((label) => preference.includes(normalizePlace(label)) || normalizePlace(label).includes(preference));
+      })
+        .map((item) => ({ ...item, location_id: null, source: "ONLINE" })) || null,
+    } as typeof reservationsResult;
+  }
+  if (!menuResult.error && !(menuResult.data || []).length) {
+    // The public menu is shared across restaurants; locations with no duplicated
+    // MenuItem rows reuse the matching country/currency menu.
+    const allMenu = await service.from("MenuItem")
+      .select("id, name, category, price, currency, locationId, available")
+      .eq("available", true).order("category").order("name");
+    if (!allMenu.error) {
+      const sameCurrency = allMenu.data.filter((item) => item.currency === location.currency);
+      menuResult = { ...menuResult, data: sameCurrency.length ? sameCurrency : allMenu.data };
+    }
+  }
   const error = reservationsResult.error || menuResult.error;
   if (error) {
     console.error("Staff order workspace query failed:", error.message);
@@ -61,7 +105,7 @@ export async function GET(request: Request) {
     const { data: recorded, error: recordedError } = await service.from("Order")
       .select("reservationId")
       .in("reservationId", reservationIds);
-    if (recordedError) return jsonError("Unable to check recorded restaurant orders.", 503);
+    if (recordedError && !/reservationId/i.test(recordedError.message)) return jsonError("Unable to check recorded restaurant orders.", 503);
     for (const row of recorded ?? []) if (row.reservationId) recordedOrderIds.add(row.reservationId);
   }
   return NextResponse.json({
@@ -132,6 +176,7 @@ export async function POST(request: Request) {
     }
     if (!customerId) {
       createdCustomerId = crypto.randomUUID();
+      const customerTimestamp = new Date().toISOString();
       const { error } = await service.from("Customer").insert({
         id: createdCustomerId,
         name,
@@ -139,6 +184,8 @@ export async function POST(request: Request) {
         phone: phone || null,
         city: location.city,
         country: location.country,
+        createdAt: customerTimestamp,
+        updatedAt: customerTimestamp,
       });
       if (error) return jsonError("Could not create the customer record.", 503);
       customerId = createdCustomerId;
@@ -148,7 +195,7 @@ export async function POST(request: Request) {
     const firstName = nameParts.shift() || name;
     const lastName = nameParts.join(" ");
     const reservationId = crypto.randomUUID();
-    const { data: reservation, error } = await service.from("reservations").insert({
+    const fullInsert = await service.from("reservations").insert({
       id: reservationId,
       customer_id: customerId,
       first_name: firstName,
@@ -167,6 +214,18 @@ export async function POST(request: Request) {
       notes: notes || null,
       created_by: user.id,
     }).select("id, first_name, last_name, email, phone, party_size, reservation_date, reservation_time, location_id, source, status, notes").single();
+    let reservation = fullInsert.data;
+    let error = fullInsert.error;
+    if (error && /location_id|source|created_by/i.test(error.message)) {
+      const legacyInsert = await service.from("reservations").insert({
+        id: reservationId, customer_id: customerId, first_name: firstName, last_name: lastName,
+        email: email || "", phone, country: location.country, city: location.city,
+        party_size: partySize, reservation_date: date, reservation_time: time,
+        location_preference: location.name, status: "CONFIRMED", notes: notes || null,
+      }).select("id, first_name, last_name, email, phone, party_size, reservation_date, reservation_time, status, notes").single();
+      reservation = legacyInsert.data ? { ...legacyInsert.data, location_id: locationId, source: "STAFF" } : null;
+      error = legacyInsert.error;
+    }
     if (error) {
       if (createdCustomerId) await service.from("Customer").delete().eq("id", createdCustomerId);
       console.error("Manual reservation creation failed:", error.message);
@@ -207,12 +266,13 @@ export async function POST(request: Request) {
     if (existingOrder) return jsonError("Consumption has already been recorded for this reservation.", 409);
 
     const menuIds = normalizedItems.map((item) => item.menuItemId);
-    const [{ data: location, error: locationError }, { data: menuItems, error: menuError }] = await Promise.all([
+    const [{ data: location, error: locationError }, { data: menuRows, error: menuError }] = await Promise.all([
       service.from("Location").select("id, currency").eq("id", effectiveLocationId).maybeSingle(),
-      service.from("MenuItem").select("id, name, price, locationId, available").in("id", menuIds).eq("locationId", effectiveLocationId).eq("available", true),
+      service.from("MenuItem").select("id, name, price, currency, locationId, available").in("id", menuIds).eq("available", true),
     ]);
     if (locationError || menuError) return jsonError("Unable to verify the restaurant menu.", 503);
     if (!location) return jsonError("Restaurant location not found.", 404);
+    const menuItems = (menuRows || []).filter((candidate) => !location.currency || candidate.currency === location.currency);
     if (!menuItems || menuItems.length !== normalizedItems.length) return jsonError("One or more menu items are unavailable for this location.");
 
     const itemData = normalizedItems.map((input) => {

@@ -48,22 +48,28 @@ const sectionDefinitions = [
     ctaLabel: "Open customers workspace", recordsTitle: "Customers",
   },
   {
-    slug: "orders", title: "Orders", route: "/dashboard/orders",
-    navLabel: "Service flow", description: "Orders stored in the ERP.",
-    panelTitle: "Order records", panelDescription: "Order information currently available in the ERP database.",
-    ctaLabel: "Open orders workspace", recordsTitle: "Orders",
-  },
-  {
     slug: "reservations", title: "Online reservations", route: "/dashboard/reservations",
     navLabel: "Website bookings", description: "Reservations received from the public website.",
     panelTitle: "Online reservations", panelDescription: "Review booking requests submitted through the website.",
     ctaLabel: "Open reservations", recordsTitle: "Reservations",
   },
   {
-    slug: "candidates", title: "Job applications", route: "/dashboard/candidates",
-    navLabel: "Recruitment", description: "Applications and uploaded CVs from the website.",
-    panelTitle: "Staff requirements", panelDescription: "Review applications and manage staff absences, holiday requests, and bank holidays in one place.",
-    ctaLabel: "Staff requirements", recordsTitle: "Applications",
+    slug: "online-orders", title: "Online orders", route: "/dashboard/online-orders",
+    navLabel: "Website orders", description: "Orders submitted through the public website.",
+    panelTitle: "Online orders", panelDescription: "Review orders placed through the public website and their payment status.",
+    ctaLabel: "Open online orders", recordsTitle: "Online orders",
+  },
+  {
+    slug: "orders", title: "Orders", route: "/dashboard/orders",
+    navLabel: "Table service", description: "In-person reservations and restaurant checks entered by staff.",
+    panelTitle: "Restaurant service", panelDescription: "Add today's in-person reservations and record the items each table consumed.",
+    ctaLabel: "Open restaurant orders", recordsTitle: "Restaurant orders",
+  },
+  {
+    slug: "candidates", title: "HR", route: "/dashboard/candidates",
+    navLabel: "People and payroll", description: "Job applications, staff leave, payroll records, and rota scheduling.",
+    panelTitle: "Human resources", panelDescription: "Manage website applications and CVs, staff absences, holiday requests, payroll status, and work schedules.",
+    ctaLabel: "Open HR workspace", recordsTitle: "Staff and applications",
   },
   {
     slug: "inventory", title: "Inventory", route: "/dashboard/inventory",
@@ -73,9 +79,9 @@ const sectionDefinitions = [
   },
   {
     slug: "brasapuntos", title: "Brasapuntos", route: "/dashboard/brasapuntos",
-    navLabel: "Loyalty engine", description: "Members and customer website intake.",
-    panelTitle: "Brasapuntos and website intake", panelDescription: "Recent records received from reservations, recruitment, loyalty registration, and online orders.",
-    ctaLabel: "Open intake hub", recordsTitle: "Live records",
+    navLabel: "Loyalty engine", description: "Brasaclub members and their points.",
+    panelTitle: "Brasapuntos", panelDescription: "Registered Brasaclub customers and their current points balances.",
+    ctaLabel: "Open Brasaclub members", recordsTitle: "Brasaclub members",
   },
   {
     slug: "profile", title: "Profile", route: "/profile",

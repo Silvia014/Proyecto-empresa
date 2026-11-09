@@ -10,17 +10,23 @@ export async function GET(request: Request) {
   const { service: supabase, role } = actor;
 
   const requestedView = new URL(request.url).searchParams.get("view");
-  const view = requestedView === "reservations" || requestedView === "candidates" ? requestedView : "all";
+  const view = requestedView === "reservations" || requestedView === "orders" || requestedView === "candidates" || requestedView === "members" ? requestedView : "all";
   if (view === "reservations" && !canAccess(role, "reservations")) {
     return NextResponse.json({ error: "You do not have access to online reservations." }, { status: 403 });
   }
   if (view === "candidates" && !canAccess(role, "candidates")) {
     return NextResponse.json({ error: "You do not have access to job applications." }, { status: 403 });
   }
+  if (view === "orders" && !canAccess(role, "orders")) {
+    return NextResponse.json({ error: "You do not have access to online orders." }, { status: 403 });
+  }
+  if (view === "members" && !canAccess(role, "brasapuntos")) {
+    return NextResponse.json({ error: "You do not have access to Brasapuntos." }, { status: 403 });
+  }
   const includeReservations = view === "reservations" || (view === "all" && canAccess(role, "reservations"));
   const includeCandidates = view === "candidates" || (view === "all" && canAccess(role, "candidates"));
-  const includeMembers = view === "all" && canAccess(role, "brasapuntos");
-  const includeOrders = (view === "all" || view === "reservations") && canAccess(role, "orders");
+  const includeMembers = (view === "all" || view === "members") && canAccess(role, "brasapuntos");
+  const includeOrders = view === "orders" || (view === "all" && canAccess(role, "orders"));
   const emptyResult = { data: [], error: null };
   const [reservationResult, candidateResult, memberResult, orderResult] = await Promise.all([
     includeReservations ? supabase.from("reservations")
@@ -31,16 +37,18 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false }).limit(50) : Promise.resolve(emptyResult),
     includeMembers ? supabase.from("BrasapointsAccount")
       .select('balance, createdAt, Customer!inner(id, name, email)')
-      .order("createdAt", { ascending: false }).limit(8) : Promise.resolve(emptyResult),
+      .order("createdAt", { ascending: false }).limit(500) : Promise.resolve(emptyResult),
     includeOrders ? supabase.from("Order")
       .select('id, createdAt, total, currency, status, paymentStatus, fulfillment, guestCount, Customer(name, email), Location(name), OrderItem(dishName, quantity)')
       .eq("source", "ONLINE")
-      .order("createdAt", { ascending: false }).limit(view === "reservations" ? 100 : 8) : Promise.resolve(emptyResult),
+      .order("createdAt", { ascending: false }).limit(view === "orders" ? 100 : 8) : Promise.resolve(emptyResult),
   ]);
   const queryError = reservationResult.error || candidateResult.error || memberResult.error || orderResult.error;
   if (queryError) {
     console.error("Staff intake query failed:", queryError.message);
-    return NextResponse.json({ error: "Unable to load intake records." }, { status: 500 });
+    const source = reservationResult.error ? "reservations" : candidateResult.error ? "candidate_applications" : memberResult.error ? "BrasapointsAccount / Customer" : "Order";
+    const label = view === "reservations" ? "online reservation" : view === "orders" ? "online order" : view === "candidates" ? "job application" : view === "members" ? "Brasaclub member" : "staff intake";
+    return NextResponse.json({ error: `Unable to load ${label} records. The ${source} query failed; check that the current database migrations are applied and the table grants are in place.` }, { status: 503 });
   }
 
   const candidates = await Promise.all((candidateResult.data || []).map(async (candidate) => {
@@ -66,7 +74,7 @@ export async function GET(request: Request) {
       currency: row.currency,
       status: row.status,
       paymentStatus: row.paymentStatus,
-      guestCount: row.guestCount,
+      guestCount: row.guestCount ?? null,
       fulfillment: row.fulfillment,
       customerName: customer?.name || "",
       customerEmail: customer?.email || "",

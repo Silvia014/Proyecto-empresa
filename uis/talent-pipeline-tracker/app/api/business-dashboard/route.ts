@@ -161,7 +161,8 @@ export async function GET(request: Request) {
     };
     return NextResponse.json(response, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("Business dashboard query failed:", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: "Unable to load business performance data." }, { status: 503 });
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error("Business dashboard query failed:", detail);
+    return NextResponse.json({ error: "Business performance data could not be read. Confirm migration 20261106190505_business_feedback_dining_covers.sql is applied to the production Supabase project and that the ERP tables contain records." }, { status: 503 });
   }
 }
