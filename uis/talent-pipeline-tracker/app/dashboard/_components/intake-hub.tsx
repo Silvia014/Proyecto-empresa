@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -27,7 +28,7 @@ type IntakeData = {
 const cardClass = "rounded-2xl border border-[#eadfce] bg-[#fdfaf5] p-4";
 const showDate = (value: string) => new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
-type IntakeView = "all" | "reservations" | "candidates";
+type IntakeView = "all" | "reservations" | "orders" | "candidates" | "members";
 
 export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
   const [data, setData] = useState<IntakeData | null>(null);
@@ -97,10 +98,10 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6a52]">Staff intake hub</p>
         <h3 className="mt-2 text-2xl font-semibold text-[#5a1f2b]">
-          {view === "reservations" ? "Online reservations" : view === "candidates" ? "Job applications and CVs" : "Reservations, candidates and new members"}
+          {view === "reservations" ? "Online reservations" : view === "orders" ? "Online orders" : view === "members" ? "Brasaclub members" : view === "candidates" ? "Job applications and CVs" : "Reservations, candidates and new members"}
         </h3>
         <p className="mt-2 text-sm text-gray-600">
-          {view === "reservations" ? "Live booking requests received from the public website." : view === "candidates" ? "Live applications received from the public website. CV links are private and expire after five minutes." : "Latest records arriving from the website and Brasaclub registration."}
+          {view === "reservations" ? "Live booking requests received from the public website." : view === "orders" ? "Orders placed through the public website. This list is separate from online reservations." : view === "members" ? "Registered Brasaclub customers and their current points balances." : view === "candidates" ? "Live applications received from the public website. CV links are private and expire after five minutes." : "Latest records arriving from the website and Brasaclub registration."}
         </p>
       </div>
       <button onClick={refresh} disabled={loading} className="rounded-xl border border-[#5a1f2b] px-4 py-2 text-sm font-medium text-[#5a1f2b] disabled:opacity-50">
@@ -108,6 +109,7 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
       </button>
     </div>
     {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+    {(view === "all" || view === "members") && <div className="mt-5 rounded-2xl border border-[#d8c9b5] bg-[#fdfaf5] p-5"><h4 className="font-semibold text-[#5a1f2b]">How Brasapuntos works</h4><p className="mt-2 text-sm leading-6 text-gray-700">Members earn 100 points for every €100 of eligible paid spending, converted using the exchange rate at payment. At 100 points, a member can redeem a 10% discount on the next meal; the active points balance resets after redemption. Order history remains on the customer profile.</p></div>}
     {loading && !data && <p className="mt-6 text-sm text-gray-500">Loading live records…</p>}
     {data && <div className={`mt-7 grid gap-6 ${view === "all" ? "xl:grid-cols-2" : "grid-cols-1"}`}>
       {(view === "all" || view === "reservations") && <div>
@@ -123,9 +125,9 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
           </article>)}
         </div>
       </div>}
-      {view === "reservations" && <div>
-        <h4 className="mb-3 font-semibold text-gray-900">Online orders · record guests for Dashboard 00</h4>
-        <p className="mb-3 text-sm text-gray-600">Enter the number of people served for each online order. This is used to calculate average spend per guest.</p>
+      {view === "orders" && <div>
+        <h4 className="mb-3 font-semibold text-gray-900">Online orders · payment and guests for Dashboard 00</h4>
+        <p className="mb-3 text-sm text-gray-600">Online orders are listed here, separately from bookings. Enter guests served to calculate average spend per guest.</p>
         <div className="space-y-3">
           {data.orders.length === 0 && <p className={cardClass + " text-sm text-gray-500"}>No online orders are available to update.</p>}
           {data.orders.map((order) => <article key={order.id} className={cardClass}>
@@ -147,14 +149,14 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
           </article>)}
         </div>
       </div>}
-      {view === "all" && <div>
+      {(view === "all" || view === "members") && <div>
         <h4 className="mb-3 font-semibold text-gray-900">New Brasaclub members <span className="ml-1 text-xs font-normal text-gray-500">Latest {data.members.length}</span></h4>
         <div className="space-y-3">
           {data.members.length === 0 && <p className={cardClass + " text-sm text-gray-500"}>No members received yet.</p>}
           {data.members.map((item) => <article key={item.id} className={cardClass}>
-            <p className="font-semibold text-[#5a1f2b]">{item.name}</p>
+            <Link href={`/dashboard/customers?customer=${encodeURIComponent(item.id)}`} className="font-semibold text-[#5a1f2b] underline">{item.name}</Link>
             <p className="mt-1 text-sm text-gray-700">{item.email}</p>
-            <p className="mt-1 text-xs text-gray-500">{item.balance} points · joined {showDate(item.createdAt)}</p>
+            <p className="mt-1 text-xs text-gray-500">{item.balance} points · joined {showDate(item.createdAt)} · Open customer profile</p>
           </article>)}
         </div>
       </div>}

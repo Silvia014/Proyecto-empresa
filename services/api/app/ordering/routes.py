@@ -19,7 +19,7 @@ from ..database import engine
 
 router = APIRouter(prefix="/api")
 CATALOG_PATH = Path(__file__).with_name("catalog.json")
-DELIVERY_RADIUS_KM = 20.0
+DELIVERY_RADIUS_KM = 5.0
 BRANCH_ADDRESSES = {
     "Bogotá": ("Callejón del Embudo 5, 110111 Bogotá, Colombia", "CO"),
     "Orlando": ("123 Church Street, Orlando, FL 32801, USA", "US"),
@@ -160,7 +160,7 @@ def create_online_order(payload: CheckoutInput):
             raise HTTPException(status_code=404, detail="Restaurant location not found.")
         distance = delivery_distance_km(payload.deliveryAddress.strip(), selected_location["city"])
         if distance > DELIVERY_RADIUS_KM:
-            raise HTTPException(status_code=422, detail=f"This address is {distance:.1f} km from the restaurant. Delivery is available only within 20 km. Choose pickup or enter an address closer to {selected_location['city']}.")
+            raise HTTPException(status_code=422, detail=f"This address is {distance:.1f} km from the restaurant. Delivery is available only within 5 km. Choose pickup or enter an address closer to {selected_location['city']}.")
 
     try:
         with engine.begin() as connection:

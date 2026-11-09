@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import DashboardShell from "../_components/dashboard-shell";
 
 export default function InventoryPage() {
-  redirect("/dashboard/inventory/products");
+  return <DashboardShell initialSectionSlug="inventory" />;
 }

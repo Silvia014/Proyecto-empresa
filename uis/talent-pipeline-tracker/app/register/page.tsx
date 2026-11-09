@@ -13,10 +13,12 @@ export default function RegisterPage() {
   const [step, setStep] = useState<"authorize" | "create">("authorize");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showStaffPasswords, setShowStaffPasswords] = useState(false);
   const [role, setRole] = useState<StaffRole | "">("");
   const [roles, setRoles] = useState<RoleOption[]>([]);
   const [error, setError] = useState("");
@@ -60,8 +62,14 @@ export default function RegisterPage() {
     if (!role) return setError("Choose an access category.");
     setLoading(true);
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) throw new Error("Administrator session expired. Start again.");
+      // Reauthenticate immediately before creation so the API receives a fresh
+      // auth_time claim for its recent-admin verification.
+      const { data: authData, error: sessionError } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: adminPassword,
+      });
+      const session = authData.session;
+      if (sessionError || !session) throw new Error("Administrator verification failed. Re-enter the admin credentials.");
       const response = await fetch("/api/staff/users", {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
@@ -102,7 +110,10 @@ export default function RegisterPage() {
             <input type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} autoComplete="username" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
           </label>
           <label className="block text-sm font-medium text-gray-700">Admin password
-            <input type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} autoComplete="current-password" required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+            <span className="mt-2 flex overflow-hidden rounded-lg border border-gray-300 focus-within:border-[#5a1f2b]">
+              <input type={showAdminPassword ? "text" : "password"} value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} autoComplete="current-password" required className="min-w-0 flex-1 px-4 py-3 text-gray-900 outline-none" />
+              <button type="button" onClick={() => setShowAdminPassword((visible) => !visible)} aria-label={showAdminPassword ? "Hide admin password" : "Show admin password"} className="px-3 text-xs font-semibold text-[#5a1f2b]">{showAdminPassword ? "Hide" : "Show"}</button>
+            </span>
           </label>
           {error && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button disabled={loading} className="w-full rounded-lg bg-[#5a1f2b] px-4 py-3 font-medium text-white hover:bg-[#431720] disabled:opacity-50">{loading ? "Verifying…" : "Verify administrator"}</button>
@@ -123,10 +134,16 @@ export default function RegisterPage() {
             </select>
           </label>
           <label className="block text-sm font-medium text-gray-700">Password
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+            <span className="mt-2 flex overflow-hidden rounded-lg border border-gray-300 focus-within:border-[#5a1f2b]">
+              <input type={showStaffPasswords ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="min-w-0 flex-1 px-4 py-3 text-gray-900 outline-none" />
+              <button type="button" onClick={() => setShowStaffPasswords((visible) => !visible)} aria-label={showStaffPasswords ? "Hide password" : "Show password"} className="px-3 text-xs font-semibold text-[#5a1f2b]">{showStaffPasswords ? "Hide" : "Show"}</button>
+            </span>
           </label>
           <label className="block text-sm font-medium text-gray-700">Confirm password
-            <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-[#5a1f2b]" />
+            <span className="mt-2 flex overflow-hidden rounded-lg border border-gray-300 focus-within:border-[#5a1f2b]">
+              <input type={showStaffPasswords ? "text" : "password"} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" minLength={8} required className="min-w-0 flex-1 px-4 py-3 text-gray-900 outline-none" />
+              <button type="button" onClick={() => setShowStaffPasswords((visible) => !visible)} aria-label={showStaffPasswords ? "Hide passwords" : "Show passwords"} className="px-3 text-xs font-semibold text-[#5a1f2b]">{showStaffPasswords ? "Hide" : "Show"}</button>
+            </span>
           </label>
           {error && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button disabled={loading} className="w-full rounded-lg bg-[#5a1f2b] px-4 py-3 font-medium text-white hover:bg-[#431720] disabled:opacity-50">{loading ? "Creating account…" : "Create staff account"}</button>

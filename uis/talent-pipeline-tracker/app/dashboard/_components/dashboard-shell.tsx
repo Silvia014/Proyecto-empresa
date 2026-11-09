@@ -9,8 +9,14 @@ import BusinessDashboard from "./business-dashboard";
 import OrdersWorkspace from "./orders-workspace";
 import CandidatesFrame from "../candidates/CandidatesFrame";
 import StaffRequirements from "../hr/StaffRequirements";
+import SuppliersWorkspace from "./suppliers-workspace";
+import CustomersWorkspace from "./customers-workspace";
+import LocationsWorkspace from "./locations-workspace";
+import InventoryWorkspace from "./inventory-workspace";
+import PayrollRotaWorkspace from "../hr/PayrollRotaWorkspace";
 import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
+  crmSectionSlugs,
   getCrmSectionBySlug,
   getCrmSections,
   type LocationSummary,
@@ -88,7 +94,7 @@ export default function DashboardShell({
   }, [router, supabase]);
 
   const sections = useMemo(() => getCrmSections(locations).filter((section) =>
-    user ? canAccess(user.role, section.slug as StaffPermission) : false
+    user ? canAccess(user.role, (section.slug === "online-orders" ? "orders" : section.slug) as StaffPermission) : false
   ), [locations, user]);
   const activeSection =
     getCrmSectionBySlug(previewSlug, locations) && sections.some((section) => section.slug === previewSlug)
@@ -207,7 +213,7 @@ export default function DashboardShell({
             </div>
 
             <div className="flex flex-col gap-3 lg:block lg:space-y-3">
-              {sections.map((section, index) => {
+              {sections.map((section) => {
                 const isPreview = activeSection.slug === section.slug;
                 const isCurrentRoute =
                   pathname === section.route ||
@@ -236,7 +242,7 @@ export default function DashboardShell({
                               : "text-[#8c6a52]",
                           ].join(" ")}
                         >
-                          {section.slug === "dashboard" ? "00" : String(index).padStart(2, "0")}
+                          {section.slug === "dashboard" ? "00" : String(crmSectionSlugs.indexOf(section.slug)).padStart(2, "0")}
                         </p>
 
                         <h3 className="mt-2 text-lg font-semibold">
@@ -304,12 +310,18 @@ export default function DashboardShell({
             </section>
 
             {activeSection?.slug === "dashboard" ? <BusinessDashboard /> :
+             activeSection?.slug === "suppliers" ? <SuppliersWorkspace /> :
+             activeSection?.slug === "customers" ? <CustomersWorkspace /> :
+             activeSection?.slug === "locations" ? <LocationsWorkspace locations={locations} /> :
+             activeSection?.slug === "inventory" ? <InventoryWorkspace /> :
              activeSection?.slug === "orders" ? <OrdersWorkspace /> :
-             activeSection?.slug === "brasapuntos" ? <IntakeHub /> :
+             activeSection?.slug === "brasapuntos" ? <IntakeHub view="members" /> :
              activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
+             activeSection?.slug === "online-orders" ? <IntakeHub view="orders" /> :
              activeSection?.slug === "candidates" ? <>
                <CandidatesFrame />
                <StaffRequirements locations={locations} />
+               <PayrollRotaWorkspace locations={locations} />
              </> : <>
             {activeSection.metrics.length > 0 && <section className="grid gap-4 md:grid-cols-3">
               {activeSection.metrics.map((metric) => (

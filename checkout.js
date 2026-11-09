@@ -234,7 +234,7 @@ async function reconcileCartWithLiveMenu() {
   checkoutLocationId = String(matchingLocation.id);
   localStorage.setItem("brasalandLocationId", checkoutLocationId);
   const restaurantSummary = document.getElementById("checkout-restaurant-summary");
-  if (restaurantSummary) restaurantSummary.textContent = `Restaurant: ${matchingLocation.name} · Delivery available within 20 km of ${matchingLocation.city}.`;
+  if (restaurantSummary) restaurantSummary.textContent = `Restaurant: ${matchingLocation.name} · Delivery available within 5 km of ${matchingLocation.city}.`;
   const deliveryCity = document.getElementById("delivery-city-label");
   if (deliveryCity) deliveryCity.textContent = matchingLocation.city;
   localStorage.setItem("brasalandCart", JSON.stringify(cart));
