@@ -27,6 +27,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+# Executing a file under ``scripts/`` puts that directory, not the repository
+# root, on sys.path. Add the root explicitly so ``services.job_runner`` and
+# ``data.pipelines`` imports work the same locally and in GitHub Actions.
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 load_dotenv(ROOT_DIR / ".env.local")
 load_dotenv(ROOT_DIR / ".env")
 
