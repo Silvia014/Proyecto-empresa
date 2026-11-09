@@ -25,6 +25,9 @@ Monetary values remain in local currency (COP or USD) and are never combined acr
 
 The technical telemetry analysis and \`GET /telemetry/report\` remain separate and unchanged.
 
+The independent nightly export wrapper, its `job_runs` orchestration ledger,
+and its external schedule are documented in the [nightly export guide](../../scripts/NIGHTLY_EXPORT.md).
+
 ## Cadence and execution
 
 Business cadence is weekly, every Monday morning. The proposed time is 07:00 \`America/Bogota\`; this schedule is configured inactive until the business owner confirms the time and a Prefect work pool/worker is provisioned.

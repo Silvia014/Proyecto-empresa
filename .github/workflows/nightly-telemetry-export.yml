@@ -1,0 +1,50 @@
+name: Nightly telemetry export
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "Optional UTC export date (YYYY-MM-DD)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  nightly-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install project dependencies
+        run: uv sync --python 3.12
+
+      - name: Export telemetry and run the business pipeline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SOURCE_DATABASE_URL: ${{ secrets.SOURCE_DATABASE_URL }}
+          REPORTING_DATABASE_URL: ${{ secrets.REPORTING_DATABASE_URL }}
+          JOB_RUNS_DATABASE_URL: ${{ secrets.JOB_RUNS_DATABASE_URL }}
+          TARGET_DATE: ${{ inputs.target_date }}
+        run: PYTHONPATH=services/api uv run --python 3.12 python scripts/nightly_export.py
+
+      - name: Preserve the generated CSV snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-telemetry-${{ github.run_id }}
+          path: data/raw/telemetry_*.csv
+          if-no-files-found: ignore
+          retention-days: 90

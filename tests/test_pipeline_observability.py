@@ -118,7 +118,7 @@ def test_transform_counts_duplicates_and_rejects_missing_event_ids():
         ],
     }
 
-    result = pipeline.aggregate_weekly_location_kpis.fn(data)
+    result = pipeline.transform_weekly_location_kpis_subflow.fn(data)
 
     assert result["rows_processed"] == 1
     assert result["rows_skipped"] == 1
