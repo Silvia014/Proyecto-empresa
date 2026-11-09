@@ -10,3 +10,7 @@ __pycache__/
 
 # Generated business pipeline evaluation snapshots
 data/eval/pipeline-*.json
+
+# Nightly telemetry exports are operational data and must not be committed.
+data/raw/telemetry_*.csv
+data/raw/.telemetry_*.tmp
