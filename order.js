@@ -3,7 +3,11 @@ let locations = [];
 let selectedLocation = { id: "", name: "", city: "", country: "", currency: "USD" };
 let selectedCategory = "all";
 let cart = [];
-let selectedRestaurant = localStorage.getItem("brasalandRestaurant") || "colombia";
+let selectedRestaurant = localStorage.getItem("brasalandLocationId") || "";
+
+function normalizeCity(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
 
 try {
   const saved = JSON.parse(localStorage.getItem("brasalandCart") || "[]");
@@ -31,8 +35,11 @@ async function getFallbackOrderingData(url) {
   const locationId = requestUrl.searchParams.get("locationId");
 
   const fallbackLocations = [
-    { id: "bogota", name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP" },
-    { id: "orlando", name: "Brasaland Orlando", city: "Orlando", country: "United States", currency: "USD" },
+    { id: "bogota", name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "cali", name: "Brasaland Cali", city: "Cali", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "medellin", name: "Brasaland Medellín", city: "Medellín", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "miami", name: "Brasaland Miami", city: "Miami", country: "United States", currency: "USD", deliveryFee: 5 },
+    { id: "orlando", name: "Brasaland Orlando", city: "Orlando", country: "United States", currency: "USD", deliveryFee: 5 },
   ];
 
   try {
@@ -73,6 +80,7 @@ const USD_TO_EUR_RATE = 0.92;
 const DELIVERY_FEE_USD = 5;
 
 function getDeliveryFee(currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
+  if (Number.isFinite(Number(selectedLocation?.deliveryFee))) return Number(selectedLocation.deliveryFee);
   const normalizedCurrency = String(currency || "USD").toUpperCase();
   if (normalizedCurrency === "COP") {
     return DELIVERY_FEE_USD * USD_TO_COP_RATE;
@@ -151,7 +159,8 @@ function showApiError(status, fallback) {
 async function fetchJson(url, options) {
   let response;
   try {
-    response = await fetch(url, { cache: "no-store", ...options });
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl(url) : url;
+    response = await fetch(apiUrl, { cache: "no-store", ...options });
   } catch {
     if (url.startsWith("/api/ordering")) {
       return await getFallbackOrderingData(url);
@@ -290,25 +299,28 @@ async function initializeCatalog() {
   try {
     locations = await fetchJson("/api/ordering");
     if (!Array.isArray(locations) || !locations.length) throw new Error("No ordering locations are configured.");
-    const radios = [...document.querySelectorAll('input[name="restaurant-choice"]')];
+    const selector = document.getElementById("restaurant-choice");
     const savedId = localStorage.getItem("brasalandLocationId");
     let location = locations.find((row) => String(row.id) === savedId);
-    if (!location) location = locations.find((row) => selectedRestaurant === "orlando" ? /orlando/i.test(row.city) : /bogot/i.test(row.city)) || locations[0];
-    selectedRestaurant = /orlando/i.test(location.city) ? "orlando" : "colombia";
-    radios.forEach((radio) => { radio.checked = radio.value === selectedRestaurant; });
+    const legacyRestaurant = localStorage.getItem("brasalandRestaurant");
+    if (!location && legacyRestaurant) location = locations.find((row) => normalizeCity(row.city) === normalizeCity(legacyRestaurant));
+    if (!location) location = locations.find((row) => /bogota/.test(normalizeCity(row.city))) || locations[0];
+    if (selector) {
+      selector.innerHTML = locations.map((row) => `<option value="${escapeHtml(row.id)}">${escapeHtml(row.country)} · ${escapeHtml(row.city)}</option>`).join("");
+      selector.value = String(location.id);
+    }
     await chooseRestaurant(location, cart.length > 0);
-    radios.forEach((radio) => radio.addEventListener("change", async () => {
-      if (!radio.checked) return;
-      const next = locations.find((row) => radio.value === "orlando" ? /orlando/i.test(row.city) : /bogot/i.test(row.city));
+    selector?.addEventListener("change", async () => {
+      const next = locations.find((row) => String(row.id) === selector.value);
       if (!next) return;
       if (cart.length && !window.confirm("Changing restaurant clears your current cart. Continue?")) {
-        radios.forEach((item) => { item.checked = item.value === selectedRestaurant; });
+        selector.value = String(selectedLocation.id);
         return;
       }
       cart = [];
       localStorage.removeItem("brasalandCart");
       await chooseRestaurant(next, false);
-    }));
+    });
     setCatalogMessage("");
   } catch (error) {
     setCatalogMessage(error.message || "The restaurant menu could not be loaded.");
@@ -316,7 +328,6 @@ async function initializeCatalog() {
 }
 
 async function chooseRestaurant(location, reconcileCart) {
-  selectedRestaurant = /orlando/i.test(location.city) ? "orlando" : "colombia";
   const live = await fetchJson(`/api/ordering?locationId=${encodeURIComponent(location.id)}`);
   selectedLocation = { ...location, menuItems: live.map((item) => ({ ...item, id: String(item.id), locationId: String(location.id), currency: item.currency || location.currency })) };
   const priorCart = cart;
@@ -330,7 +341,7 @@ async function chooseRestaurant(location, reconcileCart) {
       setCatalogMessage("We refreshed the live menu. Your old cart items were removed; add the current items again.");
     } else cart = updated;
   }
-  localStorage.setItem("brasalandRestaurant", selectedRestaurant);
+  localStorage.setItem("brasalandRestaurant", normalizeCity(location.city));
   localStorage.setItem("brasalandLocationId", String(location.id));
   selectedCategory = "all";
   renderCategoryButtons(); renderProducts(); renderCart();

@@ -174,12 +174,15 @@
 
 
     <section class="restaurant-choice" aria-labelledby="restaurant-choice-title">
-      <h2 id="restaurant-choice-title" class="font-display text-2xl font-semibold text-wine">Choose your restaurant</h2>
-      <p class="mt-2 text-walnut/70">The menu is shared. Choose the kitchen that will prepare your order.</p>
-      <div class="restaurant-choice-options">
-        <label><input type="radio" name="restaurant-choice" value="colombia" checked> Colombia · Bogotá</label>
-        <label><input type="radio" name="restaurant-choice" value="orlando"> United States · Orlando</label>
-      </div>
+      <h2 id="restaurant-choice-title" class="font-display text-2xl font-semibold text-wine" data-i18n="order.restaurantChoice.title">Choose your restaurant</h2>
+      <p class="mt-2 text-walnut/70" data-i18n="order.restaurantChoice.sharedMenu">The menu is shared. Choose the kitchen that will prepare your order.</p>
+      <p class="mt-1 text-sm text-walnut/70" data-i18n="order.restaurantChoice.currencyNote">Prices are converted from EUR to the restaurant's local currency using the latest available reference rate.</p>
+      <label class="restaurant-choice-options" for="restaurant-choice">
+        <span class="sr-only">Choose a restaurant location</span>
+        <select id="restaurant-choice" name="restaurant-choice" class="field-input" aria-describedby="restaurant-choice-message">
+          <option value="">Loading locations…</option>
+        </select>
+      </label>
       <p id="restaurant-choice-message" role="status" aria-live="polite"></p>
     </section>
     <section id="order-categories" class="order-categories" aria-label="Menu categories"></section>

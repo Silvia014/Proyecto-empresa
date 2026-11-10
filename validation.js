@@ -41,7 +41,7 @@ const HORARIO = {
 };
 
 const COUNTRY_CITY_OPTIONS = {
-  colombia: ["Medellin", "Bogota", "Cali"],
+  colombia: ["Bogotá", "Medellín", "Cali"],
   usa: ["Miami", "Orlando"],
 };
 
@@ -311,7 +311,7 @@ function syncCityWithCountry(form) {
   const cityField = form.ciudad;
   if (!countryField || !cityField) return;
 
-  const options = COUNTRY_CITY_OPTIONS[countryField.value] || [];
+  const options = COUNTRY_CITY_OPTIONS[String(countryField.value || "").toLowerCase()] || [];
   cityField.innerHTML = "";
 
   if (!options.length) {
@@ -345,7 +345,8 @@ async function enviarReserva(datos) {
 
   let respuesta;
   try {
-    respuesta = await fetch("/api/reservas", {
+    const reservationEndpoint = window.brasalandApiUrl ? window.brasalandApiUrl("/api/reservas") : "/api/reservas";
+    respuesta = await fetch(reservationEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(datos),

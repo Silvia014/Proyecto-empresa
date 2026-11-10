@@ -24,6 +24,20 @@ function locationTimezone(location: { timezone?: string | null; city?: string | 
 }
 const normalizePlace = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+async function usdRateForCurrency(currency: string): Promise<number> {
+  const code = currency.toUpperCase();
+  if (code === "USD") return 1;
+  const response = await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(code.toLowerCase())}/usd`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(7000),
+  });
+  if (!response.ok) throw new Error(`Current ${code}/USD reference rate is unavailable.`);
+  const quote = await response.json() as { rate?: unknown };
+  const rate = Number(quote.rate);
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error(`The ${code}/USD reference rate was invalid.`);
+  return rate;
+}
+
 export async function GET(request: Request) {
   const actor = await getStaffActor(request);
   if (isDenied(actor)) return actor;
@@ -143,6 +157,35 @@ export async function POST(request: Request) {
     const { error } = await service.from("Order").update({ guestCount, updatedAt: new Date().toISOString() }).eq("id", orderId);
     if (error) return jsonError("Could not save the guest count.", 503);
     return NextResponse.json({ ok: true, orderId, guestCount });
+  }
+
+  if (body.action === "update-online-payment") {
+    const orderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
+    if (!orderId) return jsonError("Choose an online order.");
+    const { data: order, error: orderError } = await service.from("Order")
+      .select("id, currency, paymentStatus, source")
+      .eq("id", orderId)
+      .eq("source", "ONLINE")
+      .maybeSingle();
+    if (orderError) return jsonError("Unable to load the online order.", 503);
+    if (!order) return jsonError("Online order not found.", 404);
+    if (order.paymentStatus === "PAID") return NextResponse.json({ ok: true, orderId, paymentStatus: "PAID", alreadyPaid: true });
+    if (order.paymentStatus !== "PENDING") return jsonError("Only pending online orders can be marked paid.", 409);
+    let loyaltyUsdRate: number;
+    try {
+      loyaltyUsdRate = await usdRateForCurrency(order.currency || "USD");
+    } catch (error) {
+      console.error("Current currency rate unavailable for order settlement:", error instanceof Error ? error.message : "unknown error");
+      return jsonError("The current exchange rate is unavailable. The order remains pending; try again shortly.", 503);
+    }
+    const { error } = await service.from("Order").update({
+      paymentStatus: "PAID", loyaltyUsdRate, updatedAt: new Date().toISOString(),
+    }).eq("id", orderId).eq("paymentStatus", "PENDING");
+    if (error) {
+      console.error("Online order payment settlement failed:", error.message);
+      return jsonError("Could not confirm payment or award Brasapuntos.", 503);
+    }
+    return NextResponse.json({ ok: true, orderId, paymentStatus: "PAID", loyaltyUsdRate });
   }
 
   if (body.action === "create-reservation") {
@@ -283,6 +326,15 @@ export async function POST(request: Request) {
     const subtotal = itemData.reduce((sum, item) => sum + item.subtotal, 0);
     if (discountAmount > subtotal) return jsonError("The discount cannot be greater than the order subtotal.");
     const total = subtotal - discountAmount;
+    let loyaltyUsdRate: number | null = null;
+    if (paymentStatus === "PAID") {
+      try {
+        loyaltyUsdRate = await usdRateForCurrency(location.currency || "USD");
+      } catch (error) {
+        console.error("Current currency rate unavailable for manual order:", error instanceof Error ? error.message : "unknown error");
+        return jsonError("The current exchange rate is unavailable. No order was recorded; try again shortly.", 503);
+      }
+    }
     const orderId = crypto.randomUUID();
     const now = new Date().toISOString();
     const { error: orderInsertError } = await service.from("Order").insert({
@@ -293,6 +345,7 @@ export async function POST(request: Request) {
       subtotal,
       discount: discountAmount,
       brasapointsDiscount: 0,
+      loyaltyUsdRate,
       total,
       status: "COMPLETED",
       source: "COUNTER",
@@ -322,7 +375,17 @@ export async function POST(request: Request) {
       console.error("Reservation completion update failed:", updateReservationError.message);
       return jsonError("Could not complete the reservation record.", 503);
     }
-    return NextResponse.json({ ok: true, orderId, total, currency: location.currency }, { status: 201 });
+    const { data: savedOrder, error: savedOrderError } = await service.from("Order")
+      .select("total, brasapointsDiscount, brasapointsUsed, brasapointsEarned")
+      .eq("id", orderId)
+      .single();
+    if (savedOrderError) {
+      console.error("Saved order totals could not be read:", savedOrderError.message);
+      return jsonError("The restaurant order was saved, but its loyalty totals could not be confirmed. Refresh the order before retrying.", 503);
+    }
+    return NextResponse.json({ ok: true, orderId, total: savedOrder.total, currency: location.currency,
+      brasapointsDiscount: savedOrder.brasapointsDiscount, brasapointsUsed: savedOrder.brasapointsUsed,
+      brasapointsEarned: savedOrder.brasapointsEarned }, { status: 201 });
   }
 
   return jsonError("Invalid order action.");

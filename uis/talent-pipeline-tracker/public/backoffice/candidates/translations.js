@@ -333,7 +333,7 @@ const translations = {
       phone1: "+57 601 234 5678",
       phone2: "+1 305 123 4567",
 
-      email: "bookings@brasaland.com",
+      email: "reservas@brasaland.site",
 
       hours: "Mar–Jue y Dom: 13:00–23:00<br>Vie–Sáb: 13:00–00:00<br>Lunes cerrado"
     },
@@ -1086,7 +1086,7 @@ const translations = {
       phone1: "+57 601 234 5678",
       phone2: "+1 305 123 4567",
 
-      email: "bookings@brasaland.com",
+      email: "reservas@brasaland.site",
 
       hours: "Tue–Thu & Sun: 1:00 PM–11:00 PM<br>Fri–Sat: 1:00 PM–12:00 AM<br>Closed Mondays"
     },
@@ -1431,7 +1431,7 @@ function setLanguage(lang) {
       element.tagName === "A" &&
       element.dataset.i18n === "contacto.email"
     ) {
-      element.href = `mailto:${value}`;
+      element.href = "mailto:roldansilvi@gmail.com";
     }
   });
 

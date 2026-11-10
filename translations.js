@@ -25,6 +25,11 @@ const translations = {
     order: {
       title: "Pide online",
       subtitle: "Elige tus platos favoritos, añádelos al carrito y disfruta de Brasaland donde quieras.",
+      restaurantChoice: {
+        title: "Elige tu restaurante",
+        sharedMenu: "La carta es la misma en todas las sedes. Elige la cocina que preparará tu pedido.",
+        currencyNote: "Los precios se convierten de EUR a la moneda local del restaurante con el último cambio de referencia disponible."
+      },
       categories: {
         all: "Todos",
         entrantes: "Entradas",
@@ -289,11 +294,11 @@ const translations = {
         },
         {
           question: "¿Puedo pedir online?",
-          answer: "Sí. Los clientes pueden pedir online si su dirección de entrega está dentro del área de servicio del restaurante de Orlando o Bogotá. La elegibilidad debe confirmarse con la dirección del cliente."
+          answer: "Sí. Se puede pedir online en Bogotá, Medellín, Cali, Miami y Orlando. La entrega solo está disponible dentro de 5 km de la sede seleccionada y se verifica con la dirección del cliente."
         },
         {
           question: "¿Cuánto cuesta la entrega?",
-          answer: "La entrega cuesta 5 USD en Orlando, o la cantidad equivalente en pesos colombianos en Bogotá. La tarifa aplicable debe mostrarse claramente antes de confirmar el pedido."
+          answer: "La entrega cuesta 5 USD o su equivalente en la moneda local de la sede. La tarifa se muestra antes de confirmar el pedido."
         },
         {
           question: "¿Qué es Brasaland Club?",
@@ -301,7 +306,7 @@ const translations = {
         },
         {
           question: "¿Cómo funcionan los Brasapoints?",
-          answer: "Por cada 100 € de gasto elegible, los miembros reciben 100 Brasapoints. Cuando un miembro alcanza 100 puntos, puede canjear la recompensa por un 10% de descuento en su próxima comida. Después de canjear la recompensa, el contador activo de puntos se reinicia."
+          answer: "Por cada 100 USD de gasto elegible, los miembros reciben 100 Brasapoints. Los pedidos en COP se convierten a USD con el cambio vigente al confirmar el pago. Al alcanzar 100 puntos, se aplica automáticamente un 10% de descuento en el siguiente pedido y el saldo activo se reinicia."
         },
         {
           question: "¿Puedo ganar puntos sin unirme a Brasaland Club?",
@@ -693,8 +698,8 @@ const translations = {
           portal: {
             logout: "Cerrar sesión", eyebrow: "BRASACLUB", title: "Tu cuenta Brasaland",
             refresh: "Actualizar", balance: "Brasapuntos disponibles", pointsUnit: "puntos",
-            earningRule: "Por cada 100 € de gasto elegible se obtienen 100 puntos.",
-            redeemSoon: "Canjear en el próximo pedido · próximamente", profileEyebrow: "TU PERFIL",
+            earningRule: "Por cada 100 USD de gasto elegible se obtienen 100 puntos; COP se convierte a USD al confirmar el pago.",
+            redeemSoon: "El 10% de descuento se aplica automáticamente al siguiente pedido al tener 100 puntos.", profileEyebrow: "TU PERFIL",
             profileTitle: "Tus datos", name: "Nombre", email: "Correo electrónico", phone: "Teléfono",
             preferences: "Preferencias y alergias", preferencesPlaceholder: "Cuéntanos tus preferencias o alergias",
             save: "Guardar preferencias", forYou: "PARA TI", suggestions: "Ideas para tu próxima visita",
@@ -730,6 +735,11 @@ const translations = {
     order: {
       title: "Order online",
       subtitle: "Choose your favorite dishes, add them to your cart, and enjoy Brasaland wherever you are.",
+      restaurantChoice: {
+        title: "Choose your restaurant",
+        sharedMenu: "The menu is shared across locations. Choose the kitchen that will prepare your order.",
+        currencyNote: "Prices are converted from EUR to the restaurant's local currency using the latest available reference rate."
+      },
       categories: {
         all: "All",
         entrantes: "Starters",
@@ -979,8 +989,8 @@ const translations = {
           portal: {
             logout: "Sign out", eyebrow: "BRASACLUB", title: "Your Brasaland account",
             refresh: "Refresh", balance: "Available Brasapoints", pointsUnit: "points",
-            earningRule: "Earn 100 points for every €100 of eligible spend.",
-            redeemSoon: "Redeem on your next order · coming soon", profileEyebrow: "YOUR PROFILE",
+            earningRule: "Earn 100 points for every USD 100 of eligible spend. COP is converted to USD when payment is confirmed.",
+            redeemSoon: "Your 10% reward applies automatically to your next order once you have 100 points.", profileEyebrow: "YOUR PROFILE",
             profileTitle: "Your details", name: "Name", email: "Email address", phone: "Phone",
             preferences: "Preferences and allergies", preferencesPlaceholder: "Tell us about your preferences or allergies",
             save: "Save preferences", forYou: "FOR YOU", suggestions: "Ideas for your next visit",
@@ -1047,11 +1057,11 @@ const translations = {
         },
         {
           question: "Can I order online?",
-          answer: "Yes. Customers can order online if their delivery address falls within the service area of the Orlando or Bogotá restaurant. Delivery eligibility must be confirmed using the customer's address."
+          answer: "Yes. Online ordering is available from Bogotá, Medellín, Cali, Miami and Orlando. Delivery is available only within 5 km of the selected restaurant and is checked against the customer's address."
         },
         {
           question: "How much does delivery cost?",
-          answer: "Delivery costs USD 5 in Orlando, or the equivalent amount in Colombian pesos (COP) in Bogotá. The applicable fee should be displayed clearly before the customer confirms the order."
+          answer: "Delivery costs USD 5 or its equivalent in the restaurant's local currency. The fee is displayed before the customer confirms the order."
         },
         {
           question: "What is Brasaland Club?",
@@ -1059,7 +1069,7 @@ const translations = {
         },
         {
           question: "How do Brasapoints work?",
-          answer: "For every €100 in eligible spending, members earn 100 Brasapoints. Once a member reaches 100 points, they can redeem the reward for a 10% discount on their next meal. After the reward is redeemed, the active points counter resets."
+          answer: "For every USD 100 in eligible spending, members earn 100 Brasapoints. COP orders are converted to USD at the current rate when payment is confirmed. Once a member reaches 100 points, a 10% discount is automatically applied to the next order and the active balance resets."
         },
         {
           question: "Can I earn points without joining Brasaland Club?",
