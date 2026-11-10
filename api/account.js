@@ -52,7 +52,9 @@ module.exports = async function handler(req, res) {
       if (reservationsError) throw reservationsError;
       const { data: orders, error: ordersError } = await supabase
         .from("Order")
-        .select("id, createdAt, total, currency, status, paymentStatus, fulfillment, guestCount, OrderItem(dishName, quantity)")
+        // guestCount is absent in some deployed schemas; avoid making profile
+        // sign-in and order history depend on that optional column.
+        .select("id, createdAt, total, currency, status, paymentStatus, fulfillment, OrderItem(dishName, quantity)")
         .eq("customerId", customer.id)
         .eq("source", "ONLINE")
         .order("createdAt", { ascending: false });
