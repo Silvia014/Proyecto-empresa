@@ -116,6 +116,98 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    if (action === "change-password") {
+      const user = await getUserFromRequest(supabase, req);
+      if (!user) return res.status(401).json({ error: "Sign in again to change your password." });
+      const newPassword = typeof req.body?.newPassword === "string" ? req.body.newPassword : "";
+      if (newPassword.length < 8 || newPassword.length > 128) {
+        return res.status(400).json({ error: "Use a password between 8 and 128 characters." });
+      }
+      const { error } = await supabase.auth.admin.updateUserById(user.id, { password: newPassword });
+      if (error) throw error;
+      return res.status(200).json({ ok: true, message: "Your password has been changed." });
+    }
+
+    if (action === "delete-account") {
+      const user = await getUserFromRequest(supabase, req);
+      if (!user) return res.status(401).json({ error: "Sign in again before deleting your account." });
+      if (req.body?.confirmation !== "DELETE") {
+        return res.status(400).json({ error: "Enter DELETE to confirm account removal." });
+      }
+
+      const { data: customer, error: customerError } = await supabase.from("Customer")
+        .select("id, name, email, phone, preferences, authUserId")
+        .eq("authUserId", user.id)
+        .maybeSingle();
+      if (customerError) throw customerError;
+
+      if (customer) {
+        const { data: activeOrders, error: activeOrderError } = await supabase.from("Order")
+          .select("id")
+          .eq("customerId", customer.id)
+          .in("status", ["RECEIVED", "PREPARING", "READY"])
+          .limit(1);
+        if (activeOrderError) throw activeOrderError;
+        if (activeOrders?.length) {
+          return res.status(409).json({ error: "Resolve your active order with the restaurant before deleting your account." });
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: upcomingReservations, error: reservationError } = await supabase.from("reservations")
+          .select("id")
+          .eq("customer_id", customer.id)
+          .gte("reservation_date", today)
+          .neq("status", "CANCELLED")
+          .limit(1);
+        if (reservationError) throw reservationError;
+        if (upcomingReservations?.length) {
+          return res.status(409).json({ error: "Complete or cancel upcoming reservations with the restaurant before deleting your account." });
+        }
+
+        const accessToken = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+        if (accessToken) {
+          const { error: signOutError } = await supabase.auth.admin.signOut(accessToken, "global");
+          if (signOutError) throw signOutError;
+        }
+        const reservationEmail = `deleted+${customer.id}@privacy.brasaland.site`;
+        const updates = [
+          await supabase.from("reservations").update({
+            first_name: "Deleted",
+            last_name: "Customer",
+            email: reservationEmail,
+            phone: "REDACTED",
+            notes: null,
+          }).eq("customer_id", customer.id),
+          await supabase.from("Order").update({ deliveryAddress: null, customerNotes: null })
+            .eq("customerId", customer.id),
+          await supabase.from("customer_feedback").update({ comment: null })
+            .eq("customer_id", customer.id),
+          await supabase.from("BrasapointsAccount").update({ balance: 0, updatedAt: new Date().toISOString() })
+            .eq("customerId", customer.id),
+          await supabase.from("Customer").update({
+            name: "Deleted customer",
+            email: null,
+            phone: null,
+            preferences: null,
+            authUserId: null,
+            updatedAt: new Date().toISOString(),
+          }).eq("id", customer.id),
+        ];
+        const updateError = updates.find((result) => result.error)?.error;
+        if (updateError) throw updateError;
+      }
+
+      if (!customer) {
+        const accessToken = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+        if (accessToken) {
+          const { error: signOutError } = await supabase.auth.admin.signOut(accessToken, "global");
+          if (signOutError) throw signOutError;
+        }
+      }
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
+      if (deleteError) throw deleteError;
+      return res.status(200).json({ ok: true, message: "Your account was deleted and personal profile data was anonymized. Order records remain for accounting." });
+    }
+
     if (action === "submit-feedback") {
       const user = await getUserFromRequest(supabase, req);
       if (!user) return res.status(401).json({ error: "Inicia sesión para enviar tu valoración." });
@@ -219,10 +311,13 @@ module.exports = async function handler(req, res) {
     // PASSWORD RESET EMAIL
     // ==========================================
     if (action === "reset-password") {
+      if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        return res.status(400).json({ error: "Enter a valid email address." });
+      }
       const { error } =
         await supabase.auth.resetPasswordForEmail(email, {
           redirectTo:
-            "https://proyecto-empresa-xi.vercel.app/reset-password.html",
+            "https://brasaland.site/reset-password.html",
         });
 
       if (error) throw error;
@@ -241,10 +336,24 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("Account request failed:", err.message);
-
-    return res.status(err.code === "SUPABASE_CONFIG_MISSING" ? 503 : 500).json({
-      error: err.message || "Internal server error",
+    console.error("Account request failed:", {
+      code: err.code || null,
+      status: err.status || null,
+      message: err.message || "Unknown account API error",
     });
+    const code = String(err.code || "").toLowerCase();
+    const message = String(err.message || "");
+    if (code === "supabase_config_missing") {
+      return res.status(503).json({ error: "Account service is not configured." });
+    }
+    if (["invalid_credentials", "invalid_login_credentials", "email_not_confirmed"].includes(code)
+      || /invalid login credentials|email not confirmed/i.test(message)) {
+      return res.status(401).json({ error: "The email or password is incorrect. Check your details and try again." });
+    }
+    if (["user_already_exists", "email_exists"].includes(code)
+      || /already registered|already been registered|user already exists/i.test(message)) {
+      return res.status(409).json({ error: "A user with this email address has already been registered." });
+    }
+    return res.status(500).json({ error: "We could not complete this account request. Please try again." });
   }
 };

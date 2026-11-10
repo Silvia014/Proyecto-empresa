@@ -52,6 +52,23 @@
       <button id="member-profile-save" class="btn-primary mt-5" type="submit">Guardar cambios</button>
       <p id="profile-feedback" class="mt-3 hidden text-sm" role="status" aria-live="polite"></p>
     </form>
+    <form id="password-change-form" class="mt-6 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
+      <div class="mb-5"><p class="section-eyebrow" id="password-eyebrow">SEGURIDAD DE LA CUENTA</p><h2 class="mt-2 font-display text-2xl font-semibold text-wine" id="password-title">Cambiar contraseña</h2></div>
+      <label class="grid max-w-xl gap-1 text-sm font-medium text-walnut" for="new-password">Nueva contraseña<input id="new-password" class="rounded-lg border border-walnut/20 p-3 font-normal" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+      <label class="mt-4 grid max-w-xl gap-1 text-sm font-medium text-walnut" for="confirm-new-password">Confirmar contraseña<input id="confirm-new-password" class="rounded-lg border border-walnut/20 p-3 font-normal" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+      <button id="password-save" class="btn-primary mt-5" type="submit">Actualizar contraseña</button>
+      <p id="password-feedback" class="mt-3 hidden text-sm" role="status" aria-live="polite"></p>
+    </form>
+    <section class="mt-10 rounded-2xl border border-red-200 bg-white p-6 shadow-sm sm:p-8" aria-labelledby="delete-account-title">
+      <p id="delete-account-eyebrow" class="section-eyebrow text-red-800">ELIMINACIÓN DE CUENTA</p>
+      <h2 id="delete-account-title" class="mt-2 font-display text-2xl font-semibold text-red-900">Eliminar mi cuenta</h2>
+      <p id="delete-account-copy" class="mt-3 max-w-3xl text-sm text-walnut/75">Se eliminará tu acceso y se anonimizarán tus datos personales. Conservaremos pedidos para contabilidad; se borrarán direcciones y notas personales. Los pedidos activos y las reservas futuras deben resolverse antes.</p>
+      <form id="delete-account-form" class="mt-5 grid gap-3 sm:max-w-xl">
+        <label id="delete-account-confirm-label" class="grid gap-1 text-sm font-medium text-walnut">Escribe DELETE para confirmar<input id="delete-account-confirmation" class="rounded-lg border border-red-200 p-3 font-normal" type="text" autocomplete="off" required></label>
+        <button id="delete-account-button" class="rounded-lg border border-red-700 bg-red-700 px-5 py-3 font-semibold text-white hover:bg-red-800 disabled:opacity-50" type="submit">Eliminar mi cuenta</button>
+        <p id="delete-account-feedback" class="hidden text-sm" role="status" aria-live="polite"></p>
+      </form>
+    </section>
     <section class="mt-10 rounded-2xl border border-walnut/10 bg-white p-6 shadow-sm sm:p-8">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div><p id="dashboard-history-eyebrow" class="section-eyebrow">HISTORIAL</p><h2 id="dashboard-reservations-title" class="mt-2 font-display text-2xl font-semibold text-wine">Tus reservas</h2></div>
@@ -69,8 +86,8 @@
       <div id="orders-list" class="mt-5 grid gap-3"></div>
     </section>
   </main>
-  <script src="api-config.js?v=20261110-2"></script>
+  <script src="api-config.js?v=20261110-3"></script>
   <script src="translations.js"></script>
-  <script src="account-dashboard.js?v=20261110-2"></script>
+  <script src="account-dashboard.js?v=20261110-3"></script>
 </body>
 </html>

@@ -189,6 +189,16 @@ function applyDashboardLanguage() {
     phoneLabel: "Phone",
     preferencesLabel: "Preferences and allergies",
     saveButton: "Save changes",
+    passwordEyebrow: "ACCOUNT SECURITY",
+    passwordTitle: "Change password",
+    newPassword: "New password",
+    confirmPassword: "Confirm password",
+    passwordSave: "Update password",
+    deleteEyebrow: "ACCOUNT DELETION",
+    deleteTitle: "Delete my account",
+    deleteCopy: "Your sign-in will be removed and personal profile data anonymized. Orders will be retained for accounting; delivery addresses and personal notes will be removed. Active orders and upcoming reservations must be completed or cancelled first.",
+    deleteConfirmLabel: "Type DELETE to confirm",
+    deleteButton: "Delete my account",
     historyEyebrow: "HISTORY",
     reservationsTitle: "Your reservations",
     reserveButton: "Book a table",
@@ -211,6 +221,16 @@ function applyDashboardLanguage() {
     phoneLabel: "Teléfono",
     preferencesLabel: "Preferencias y alergias",
     saveButton: "Guardar cambios",
+    passwordEyebrow: "SEGURIDAD DE LA CUENTA",
+    passwordTitle: "Cambiar contraseña",
+    newPassword: "Nueva contraseña",
+    confirmPassword: "Confirmar contraseña",
+    passwordSave: "Actualizar contraseña",
+    deleteEyebrow: "ELIMINACIÓN DE CUENTA",
+    deleteTitle: "Eliminar mi cuenta",
+    deleteCopy: "Se eliminará tu acceso y se anonimizarán tus datos personales. Conservaremos pedidos para contabilidad; se borrarán direcciones y notas personales. Los pedidos activos y las reservas futuras deben resolverse antes.",
+    deleteConfirmLabel: "Escribe DELETE para confirmar",
+    deleteButton: "Eliminar mi cuenta",
     historyEyebrow: "HISTORIAL",
     reservationsTitle: "Tus reservas",
     reserveButton: "Reservar mesa",
@@ -260,6 +280,25 @@ function applyDashboardLanguage() {
   if (preferencesLabel) preferencesLabel.childNodes[0].textContent = copy.preferencesLabel;
   const saveButton = document.getElementById("member-profile-save");
   if (saveButton) saveButton.textContent = copy.saveButton;
+  const passwordEyebrow = document.getElementById("password-eyebrow");
+  if (passwordEyebrow) passwordEyebrow.textContent = copy.passwordEyebrow;
+  const passwordTitle = document.getElementById("password-title");
+  if (passwordTitle) passwordTitle.textContent = copy.passwordTitle;
+  const passwordLabels = document.querySelectorAll("#password-change-form label");
+  if (passwordLabels[0]) passwordLabels[0].childNodes[0].textContent = copy.newPassword;
+  if (passwordLabels[1]) passwordLabels[1].childNodes[0].textContent = copy.confirmPassword;
+  const passwordSave = document.getElementById("password-save");
+  if (passwordSave) passwordSave.textContent = copy.passwordSave;
+  const deleteEyebrow = document.getElementById("delete-account-eyebrow");
+  if (deleteEyebrow) deleteEyebrow.textContent = copy.deleteEyebrow;
+  const deleteTitle = document.getElementById("delete-account-title");
+  if (deleteTitle) deleteTitle.textContent = copy.deleteTitle;
+  const deleteCopy = document.getElementById("delete-account-copy");
+  if (deleteCopy) deleteCopy.textContent = copy.deleteCopy;
+  const deleteLabel = document.getElementById("delete-account-confirm-label");
+  if (deleteLabel) deleteLabel.childNodes[0].textContent = copy.deleteConfirmLabel;
+  const deleteButton = document.getElementById("delete-account-button");
+  if (deleteButton) deleteButton.textContent = copy.deleteButton;
   const historyEyebrow = document.getElementById("dashboard-history-eyebrow");
   if (historyEyebrow) historyEyebrow.textContent = copy.historyEyebrow;
   const reservationsTitle = document.getElementById("dashboard-reservations-title");
@@ -356,6 +395,80 @@ profileForm.addEventListener("submit", async (event) => {
     feedback.classList.remove("hidden", "text-red-700");
     feedback.classList.add("text-green-800");
     await loadAccount();
+  } catch (error) {
+    feedback.textContent = error.message;
+    feedback.classList.remove("hidden", "text-green-800");
+    feedback.classList.add("text-red-700");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("password-change-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const password = document.getElementById("new-password").value;
+  const confirmation = document.getElementById("confirm-new-password").value;
+  const feedback = document.getElementById("password-feedback");
+  const button = document.getElementById("password-save");
+  feedback.classList.add("hidden");
+  if (password.length < 8) {
+    feedback.textContent = isDashboardEnglish() ? "Use at least 8 characters." : "Usa al menos 8 caracteres.";
+    feedback.classList.remove("hidden");
+    return;
+  }
+  if (password !== confirmation) {
+    feedback.textContent = isDashboardEnglish() ? "The passwords do not match." : "Las contraseñas no coinciden.";
+    feedback.classList.remove("hidden");
+    return;
+  }
+  button.disabled = true;
+  try {
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ action: "change-password", newPassword: password }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || (isDashboardEnglish() ? "The password could not be changed." : "No se pudo cambiar la contraseña."));
+    feedback.textContent = isDashboardEnglish() ? "Your password has been changed." : "Tu contraseña se ha cambiado.";
+    feedback.classList.remove("hidden", "text-red-700");
+    feedback.classList.add("text-green-800");
+    form.reset();
+  } catch (error) {
+    feedback.textContent = error.message;
+    feedback.classList.remove("hidden", "text-green-800");
+    feedback.classList.add("text-red-700");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("delete-account-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const confirmation = document.getElementById("delete-account-confirmation").value.trim();
+  const feedback = document.getElementById("delete-account-feedback");
+  const button = document.getElementById("delete-account-button");
+  if (confirmation !== "DELETE") {
+    feedback.textContent = isDashboardEnglish() ? "Type DELETE exactly to continue." : "Escribe DELETE exactamente para continuar.";
+    feedback.classList.remove("hidden", "text-green-800");
+    feedback.classList.add("text-red-700");
+    return;
+  }
+  button.disabled = true;
+  feedback.classList.add("hidden");
+  try {
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ action: "delete-account", confirmation }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || (isDashboardEnglish() ? "Your account could not be deleted." : "No se pudo eliminar la cuenta."));
+    localStorage.removeItem("brasaland_session");
+    window.location.replace("index.html?account=deleted");
   } catch (error) {
     feedback.textContent = error.message;
     feedback.classList.remove("hidden", "text-green-800");
