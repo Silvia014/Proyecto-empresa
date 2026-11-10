@@ -284,6 +284,9 @@ async function createOrder(supabase, req, body) {
     };
   });
   const subtotal = roundMoney(lines.reduce((sum, item) => sum + item.subtotal, 0), location.currency);
+  const deliveryFee = body.fulfillment === "delivery"
+    ? convertCatalogPrice(5, "USD", location.currency)
+    : 0;
   const customer = await getVerifiedCustomer(supabase, req, body.customer, location, branch);
   const now = new Date().toISOString();
   const orderId = randomUUID();
@@ -294,16 +297,16 @@ async function createOrder(supabase, req, body) {
     currency: location.currency,
     subtotal,
     discount: 0,
-    total: subtotal,
+    total: subtotal + deliveryFee,
     status: "RECEIVED",
     source: "ONLINE",
     fulfillment: body.fulfillment,
     deliveryAddress: body.fulfillment === "delivery" ? body.deliveryAddress.trim() : null,
     customerNotes: body.notes?.trim() || null,
     paymentStatus: "PENDING",
+    deliveryFee,
     createdAt: now,
     updatedAt: now,
-    OrderItem: lines,
   };
   const { data: order, error } = await supabase
     .from("Order")
@@ -311,6 +314,21 @@ async function createOrder(supabase, req, body) {
     .select("id, status, paymentStatus, total, currency")
     .single();
   if (error) throw error;
+
+  // PostgREST does not accept a related table as a nested column in a plain
+  // insert. Save the parent first, then its OrderItem rows using the actual
+  // deployed schema. If the second write fails, mark the order cancelled so
+  // staff never mistake an incomplete cart for a valid order.
+  const itemRows = lines.map((line) => ({ ...line, orderId: order.id }));
+  const { error: itemsError } = await supabase.from("OrderItem").insert(itemRows);
+  if (itemsError) {
+    const { error: cancelError } = await supabase
+      .from("Order")
+      .update({ status: "CANCELLED", paymentStatus: "FAILED", updatedAt: new Date().toISOString() })
+      .eq("id", order.id);
+    if (cancelError) console.error("Incomplete order cleanup failed:", cancelError.code || cancelError.message);
+    throw itemsError;
+  }
 
   return {
     orderId: order.id,
