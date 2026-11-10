@@ -33,8 +33,11 @@ function loadFallbackCatalog() {
 function getFallbackOrderingData(locationId) {
   const catalog = loadFallbackCatalog();
   const fallbackLocations = [
-    { id: "bogota", name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP" },
-    { id: "orlando", name: "Brasaland Orlando", city: "Orlando", country: "United States", currency: "USD" },
+    { id: "bogota", name: "Brasaland Bogotá", city: "Bogotá", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "cali", name: "Brasaland Cali", city: "Cali", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "medellin", name: "Brasaland Medellín", city: "Medellín", country: "Colombia", currency: "COP", deliveryFee: 20500 },
+    { id: "miami", name: "Brasaland Miami", city: "Miami", country: "United States", currency: "USD", deliveryFee: 5 },
+    { id: "orlando", name: "Brasaland Orlando", city: "Orlando", country: "United States", currency: "USD", deliveryFee: 5 },
   ];
 
   if (!catalog.length) return fallbackLocations;
@@ -122,7 +125,11 @@ module.exports = async function handler(req, res) {
     if (req.method === "POST") {
       return await forwardRequest(`${baseUrl}/ordering`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
+        },
         body: JSON.stringify(req.body || {}),
       }, res);
     }
@@ -132,7 +139,7 @@ module.exports = async function handler(req, res) {
       if (!orderId || !email || !["CASH", "PAYMENT_LINK", "BIZUM"].includes(paymentPreference)) {
         return res.status(400).json({ error: "Choose cash, payment link, or Bizum." });
       }
-      return await forwardRequest(`${baseUrl}/ordering`, {
+      return await forwardRequest(`${baseUrl}/ordering/${encodeURIComponent(orderId)}/payment-preference`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ email, paymentPreference }),

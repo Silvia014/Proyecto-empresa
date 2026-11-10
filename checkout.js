@@ -13,6 +13,7 @@ try {
 const checkoutItems = document.getElementById("checkout-items");
 const checkoutTotal = document.getElementById("checkout-total");
 let checkoutLocationId = "";
+let checkoutDeliveryFee = getDeliveryFee();
 const chosenLocationId = localStorage.getItem("brasalandLocationId") || cart[0]?.locationId || "";
 
 async function apiJson(url, options = {}) {
@@ -54,8 +55,8 @@ async function loadBrasaclubCheckoutSession() {
     if (active) {
       const isEnglish = localStorage.getItem("language") !== "es";
       active.textContent = isEnglish
-        ? `Brasaclub · ${result.member.name}. This saved order will appear in your account history. Automatic points earning will activate after the location currency rules are configured.`
-        : `Brasaclub · ${result.member.name}. Este pedido guardado aparecerá en tu historial. La acumulación automática se activará cuando se configuren las reglas de moneda de cada local.`;
+        ? `Brasaclub · ${result.member.name}. This order will appear in your account history. Eligible paid orders earn points; available rewards apply automatically to your next order.`
+        : `Brasaclub · ${result.member.name}. Este pedido aparecerá en tu historial. Los pedidos pagados elegibles suman puntos; las recompensas disponibles se aplican automáticamente en tu próximo pedido.`;
       active.classList.remove("hidden");
     }
   } catch {
@@ -115,8 +116,7 @@ function renderCheckout() {
 
   });
 
-  const deliveryFee = getDeliveryFee(cart[0]?.currency || "USD");
-  total += deliveryFee;
+  total += checkoutDeliveryFee;
 
   checkoutTotal.textContent = formatPrice(total, cart[0]?.currency || "USD");
 }
@@ -232,6 +232,7 @@ async function reconcileCartWithLiveMenu() {
   }
   cart = normalized;
   checkoutLocationId = String(matchingLocation.id);
+  checkoutDeliveryFee = Number(matchingLocation.deliveryFee ?? getDeliveryFee(matchingLocation.currency));
   localStorage.setItem("brasalandLocationId", checkoutLocationId);
   const restaurantSummary = document.getElementById("checkout-restaurant-summary");
   if (restaurantSummary) restaurantSummary.textContent = `Restaurant: ${matchingLocation.name} · Delivery available within 5 km of ${matchingLocation.city}.`;
@@ -295,9 +296,14 @@ checkoutForm.addEventListener("submit", async (event) => {
   }
 
   try {
+    let orderHeaders = { "Content-Type": "application/json", Accept: "application/json" };
+    try {
+      const session = JSON.parse(localStorage.getItem("brasaland_session") || "null");
+      if (session?.access_token) orderHeaders.Authorization = `Bearer ${session.access_token}`;
+    } catch { /* guest checkout */ }
     const result = await apiJson("/api/ordering", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: orderHeaders,
       body: JSON.stringify(payload),
     });
     if (!result.orderId || result.paymentStatus !== "PENDING") {

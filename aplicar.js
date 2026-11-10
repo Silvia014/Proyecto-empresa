@@ -59,7 +59,8 @@ async function handleSubmit(event) {
   try {
     const file = form.elements.cv_file.files[0];
     const inferredType = file.type || (file.name.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/octet-stream");
-    const response = await fetch("/api/candidate", {
+    const candidateEndpoint = window.brasalandApiUrl ? window.brasalandApiUrl("/api/candidate") : "/api/candidate";
+    const response = await fetch(candidateEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
