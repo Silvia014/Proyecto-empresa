@@ -36,6 +36,9 @@ build-backend = "uv_build"
 module-name = "proyecto_empresa"
 module-root = "src"
 
+[tool.vercel]
+entrypoint = "services.api.app.main:app"
+
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",

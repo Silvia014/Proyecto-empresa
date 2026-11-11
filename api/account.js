@@ -64,6 +64,14 @@ module.exports = async function handler(req, res) {
         .select("order_id, value_for_money_rating, comment, created_at")
         .eq("customer_id", customer.id);
       if (feedbackError) throw feedbackError;
+      const { data: customerMessages, error: customerMessagesError } = await supabase
+        .from("customer_messages")
+        .select("id, category, message, status, created_at, updated_at")
+        .eq("customer_id", customer.id)
+        .order("created_at", { ascending: false });
+      // Keep existing account pages usable while the additive migration is pending.
+      const messagesAvailable = !customerMessagesError;
+      if (customerMessagesError && customerMessagesError.code !== "42P01" && customerMessagesError.code !== "PGRST205") throw customerMessagesError;
       const feedbackByOrder = new Map((feedbackRows || []).map((row) => [row.order_id, row]));
       const loyaltyAccount = Array.isArray(customer.BrasapointsAccount)
         ? customer.BrasapointsAccount[0]
@@ -83,6 +91,8 @@ module.exports = async function handler(req, res) {
           items: order.OrderItem || [],
           feedback: feedbackByOrder.get(order.id) || null,
         })),
+        messages: customerMessages ?? [],
+        messagesAvailable,
       });
     }
 
@@ -148,6 +158,26 @@ module.exports = async function handler(req, res) {
       }, { onConflict: "order_id" });
       if (feedbackError) throw feedbackError;
       return res.status(200).json({ ok: true });
+    }
+
+    if (action === "submit-customer-message") {
+      const user = await getUserFromRequest(supabase, req);
+      if (!user) return res.status(401).json({ error: "Inicia sesión para enviar un mensaje." });
+      const category = req.body?.category;
+      const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
+      if (!["suggestion", "complaint"].includes(category) || message.length < 10 || message.length > 3000) {
+        return res.status(400).json({ error: "Elige sugerencia o reclamación y escribe un mensaje de 10 a 3.000 caracteres." });
+      }
+      const { data: customer, error: customerError } = await findOrLinkCustomer(supabase, user);
+      if (customerError) throw customerError;
+      if (!customer) return res.status(404).json({ error: "No encontramos tu cuenta Brasaclub." });
+      const { data, error } = await supabase.from("customer_messages").insert({
+        customer_id: customer.id,
+        category,
+        message,
+      }).select("id, category, message, status, created_at, updated_at").single();
+      if (error) throw error;
+      return res.status(201).json({ ok: true, message: data });
     }
 
     // ==========================================

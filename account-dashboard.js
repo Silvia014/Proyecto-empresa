@@ -5,7 +5,7 @@ const dashboardProfileTitle = document.getElementById("dashboard-profile-title")
 const logoutButton = document.getElementById("logout-button");
 
 let dashboardMemberName = "";
-let dashboardData = { reservations: [], orders: [] };
+let dashboardData = { reservations: [], orders: [], messages: [], messagesAvailable: true };
 
 function isDashboardEnglish() {
   return localStorage.getItem("language") === "en";
@@ -168,6 +168,32 @@ function renderOrders(orders) {
   });
 }
 
+function renderCustomerMessages(messages, available = true) {
+  const list = document.getElementById("customer-messages-list");
+  const empty = document.getElementById("customer-messages-empty");
+  const unavailable = document.getElementById("customer-messages-unavailable");
+  if (!list) return;
+  list.replaceChildren();
+  unavailable?.classList.toggle("hidden", available);
+  if (!available) { empty?.classList.add("hidden"); return; }
+  empty?.classList.toggle("hidden", messages.length > 0);
+  messages.forEach((entry) => {
+    const card = document.createElement("article");
+    card.className = "rounded-xl bg-cream p-4";
+    const heading = document.createElement("p");
+    heading.className = "font-semibold text-wine";
+    const english = isDashboardEnglish();
+    const category = entry.category === "complaint" ? (english ? "Complaint" : "Reclamación") : (english ? "Suggestion" : "Sugerencia");
+    const status = { new: english ? "Received" : "Recibido", reviewed: english ? "Under review" : "En revisión", resolved: english ? "Resolved" : "Resuelto" }[entry.status] || entry.status;
+    heading.textContent = `${category} · ${status} · ${formatDashboardDate(entry.created_at)}`;
+    const message = document.createElement("p");
+    message.className = "mt-2 whitespace-pre-wrap text-sm text-walnut/80";
+    message.textContent = entry.message;
+    card.append(heading, message);
+    list.append(card);
+  });
+}
+
 function applyDashboardLanguage() {
   const english = localStorage.getItem("language") === "en";
   const selector = document.getElementById("language-selector");
@@ -206,6 +232,16 @@ function applyDashboardLanguage() {
     ordersTitle: "Your online orders",
     orderButton: "Order online",
     ordersEmpty: "You do not have any online orders linked to this account yet.",
+    messageEyebrow: "YOUR VOICE",
+    messageTitle: "Suggestions and complaints",
+    messageCopy: "Share an idea or tell us about a problem. The Brasaland team can see it on your customer profile.",
+    messageCategory: "Message type",
+    messageText: "Message",
+    messagePlaceholder: "Write your message here",
+    messageSubmit: "Send message",
+    messagesHistory: "Your previous messages",
+    messagesEmpty: "You have not sent any messages yet.",
+    messagesUnavailable: "Message history will be available when the restaurant enables this feature.",
     branding: "BRASACLUB"
   } : {
     profileTitle: "Mi perfil",
@@ -238,6 +274,16 @@ function applyDashboardLanguage() {
     ordersTitle: "Tus pedidos online",
     orderButton: "Pedir online",
     ordersEmpty: "Todavía no tienes pedidos online asociados a esta cuenta.",
+    messageEyebrow: "TU OPINIÓN",
+    messageTitle: "Sugerencias y reclamaciones",
+    messageCopy: "Comparte una idea o cuéntanos un problema. El equipo de Brasaland podrá verlo en tu perfil de cliente.",
+    messageCategory: "Tipo de mensaje",
+    messageText: "Mensaje",
+    messagePlaceholder: "Escribe aquí tu mensaje",
+    messageSubmit: "Enviar mensaje",
+    messagesHistory: "Tus mensajes anteriores",
+    messagesEmpty: "Todavía no has enviado mensajes.",
+    messagesUnavailable: "El historial de mensajes estará disponible cuando el restaurante active esta función.",
     branding: "BRASACLUB"
   };
 
@@ -315,11 +361,25 @@ function applyDashboardLanguage() {
   if (ordersButton) ordersButton.textContent = copy.orderButton;
   const ordersEmpty = document.getElementById("orders-empty");
   if (ordersEmpty) ordersEmpty.textContent = copy.ordersEmpty;
+  document.getElementById("customer-message-eyebrow").textContent = copy.messageEyebrow;
+  document.getElementById("customer-message-title").textContent = copy.messageTitle;
+  document.getElementById("customer-message-copy").textContent = copy.messageCopy;
+  document.getElementById("customer-message-category-label").childNodes[0].textContent = copy.messageCategory;
+  document.getElementById("customer-message-text-label").childNodes[0].textContent = copy.messageText;
+  document.querySelector('#customer-message-form textarea[name="message"]').placeholder = copy.messagePlaceholder;
+  document.getElementById("customer-message-submit").textContent = copy.messageSubmit;
+  document.getElementById("customer-messages-history-title").textContent = copy.messagesHistory;
+  document.getElementById("customer-messages-empty").textContent = copy.messagesEmpty;
+  document.getElementById("customer-messages-unavailable").textContent = copy.messagesUnavailable;
+  const categorySelect = document.querySelector('#customer-message-form select[name="category"]');
+  categorySelect.options[0].textContent = english ? "Suggestion" : "Sugerencia";
+  categorySelect.options[1].textContent = english ? "Complaint" : "Reclamación";
 
   if (dashboardData.reservations?.length || dashboardData.orders?.length) {
     renderReservations(dashboardData.reservations || []);
     renderOrders(dashboardData.orders || []);
   }
+  renderCustomerMessages(dashboardData.messages || [], dashboardData.messagesAvailable !== false);
 
   document.title = english ? "My profile | Brasaland" : "Mi perfil | Brasaland";
 }
@@ -349,6 +409,8 @@ async function loadAccount() {
     dashboardData = {
       reservations: result.reservations || [],
       orders: result.orders || [],
+      messages: result.messages || [],
+      messagesAvailable: result.messagesAvailable !== false,
     };
     const english = localStorage.getItem("language") === "en";
     document.getElementById("account-welcome").textContent = english ? `Welcome back, @${result.member.name}.` : `¡Bienvenido de nuevo, @${result.member.name}!`;
@@ -361,6 +423,7 @@ async function loadAccount() {
     document.getElementById("brasapoints-balance").textContent = String(result.member.brasapoints);
     renderReservations(dashboardData.reservations);
     renderOrders(dashboardData.orders);
+    renderCustomerMessages(dashboardData.messages, dashboardData.messagesAvailable);
   } catch (error) {
     showError(error.message);
   }
@@ -504,6 +567,40 @@ document.getElementById("orders-list")?.addEventListener("submit", async (event)
     await loadAccount();
   } catch (error) {
     result.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("customer-message-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = document.getElementById("customer-message-submit");
+  const result = document.getElementById("customer-message-result");
+  button.disabled = true;
+  result.classList.add("hidden");
+  try {
+    const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/account") : "/api/account";
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        action: "submit-customer-message",
+        category: form.elements.category.value,
+        message: form.elements.message.value,
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || (isDashboardEnglish() ? "We could not save your message." : "No pudimos guardar tu mensaje."));
+    form.elements.message.value = "";
+    result.textContent = isDashboardEnglish() ? "Your message was sent to the Brasaland team." : "Tu mensaje se ha enviado al equipo de Brasaland.";
+    result.classList.remove("hidden", "text-red-700");
+    result.classList.add("text-green-800");
+    await loadAccount();
+  } catch (error) {
+    result.textContent = error.message;
+    result.classList.remove("hidden", "text-green-800");
+    result.classList.add("text-red-700");
   } finally {
     button.disabled = false;
   }
