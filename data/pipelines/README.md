@@ -30,7 +30,7 @@ and its external schedule are documented in the [nightly export guide](../../scr
 
 ## Cadence and execution
 
-Business cadence is weekly, every Monday morning. The proposed time is 07:00 \`America/Bogota\`; this schedule is configured inactive until the business owner confirms the time and a Prefect work pool/worker is provisioned.
+Business cadence is weekly, every Monday at 07:00 \`America/Bogota\` (12:00 UTC). The active scheduler is GitHub Actions in `.github/workflows/weekly-business-report.yml`; it runs the pipeline and sends the KPI report through Resend. The Prefect deployment schedule is disabled to avoid duplicate scheduled runs.
 
 Run locally from the repository root:
 
@@ -80,7 +80,7 @@ A deployment definition is in the repository root \`prefect.yaml\`. After config
 uv run prefect deploy --all
 \`\`\`
 
-The configured Monday schedule remains inactive until its timezone/time and production worker are approved. Prefect schedules create scheduled flow runs; a running worker is required to execute them.
+The Monday schedule runs from GitHub Actions after this workflow is merged into the repository's default branch. Configure the Actions secrets `DATABASE_URL` or both `SOURCE_DATABASE_URL` and `REPORTING_DATABASE_URL`, plus `RESEND_API_KEY`. The workflow uses `Brasaland <reservas@brasaland.site>` as the sender and `roldansilvi@gmail.com` as the recipient. Set `SEND_WEEKLY_REPORT_EMAIL=true` only in this weekly workflow; ordinary pipeline and nightly-export runs do not send duplicate emails. GitHub scheduled runs can start a few minutes after the cron time during periods of high load.
 
 ## Install and lock dependencies
 

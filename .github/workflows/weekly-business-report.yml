@@ -1,0 +1,55 @@
+name: Weekly Brasaland business report
+
+on:
+  schedule:
+    # Colombia is UTC-5 year-round: 12:00 UTC is 07:00 America/Bogota.
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install project dependencies
+        run: uv sync --python 3.12
+      - name: Validate required secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SOURCE_DATABASE_URL: ${{ secrets.SOURCE_DATABASE_URL }}
+          REPORTING_DATABASE_URL: ${{ secrets.REPORTING_DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          if [ -z "$SOURCE_DATABASE_URL" ] && [ -z "$DATABASE_URL" ]; then
+            echo "Set SOURCE_DATABASE_URL or DATABASE_URL in GitHub Actions secrets." >&2
+            exit 1
+          fi
+          if [ -z "$REPORTING_DATABASE_URL" ] && [ -z "$DATABASE_URL" ]; then
+            echo "Set REPORTING_DATABASE_URL or DATABASE_URL in GitHub Actions secrets." >&2
+            exit 1
+          fi
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "Set RESEND_API_KEY in GitHub Actions secrets." >&2
+            exit 1
+          fi
+      - name: Run the weekly KPI pipeline and email the report
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SOURCE_DATABASE_URL: ${{ secrets.SOURCE_DATABASE_URL }}
+          REPORTING_DATABASE_URL: ${{ secrets.REPORTING_DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: "Brasaland <reservas@brasaland.site>"
+          REPORT_EMAIL_TO: "roldansilvi@gmail.com"
+          SEND_WEEKLY_REPORT_EMAIL: "true"
+        run: PYTHONPATH=services/api uv run --python 3.12 python data/pipelines/pipeline.py
