@@ -5,7 +5,11 @@ import { SUPERADMIN_EMAIL, isStaffRole, type StaffRole } from "./staff-access";
 function getServiceClient() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Server Supabase configuration is missing.");
+  if (!url || !key) {
+    const error = new Error("ERP staff access is missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY.");
+    Object.assign(error, { code: "STAFF_SUPABASE_CONFIG_MISSING" });
+    throw error;
+  }
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -69,7 +73,12 @@ export async function getStaffActor(request: Request, requireRecentAuth = false)
     return { user: data.user, role: profile.role, displayName: profile.display_name, service };
   } catch (error) {
     console.error("Staff authorization failed:", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: "Unable to verify staff access. Check the staff role migration and server configuration." }, { status: 503 });
+    const configMissing = error instanceof Error && "code" in error && error.code === "STAFF_SUPABASE_CONFIG_MISSING";
+    return NextResponse.json({
+      error: configMissing
+        ? "ERP server configuration is incomplete. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for this Vercel environment."
+        : "ERP could not verify staff roles. Confirm the staff_profiles migration is applied to the Supabase project configured for this Vercel deployment and that server-side database access is available.",
+    }, { status: 503 });
   }
 }
 

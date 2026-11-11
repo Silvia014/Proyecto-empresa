@@ -20,11 +20,12 @@ export async function GET(request: Request) {
   const ids = (customers || []).map((customer) => customer.id);
   if (!ids.length) return NextResponse.json({ customers: [], updatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "no-store" } });
 
-  const [pointsResult, ordersResult, reservationsResult, feedbackResult] = await Promise.all([
+  const [pointsResult, ordersResult, reservationsResult, feedbackResult, messagesResult] = await Promise.all([
     actor.service.from("BrasapointsAccount").select('customerId, balance').in("customerId", ids),
     actor.service.from("Order").select("id, customerId, createdAt, total, currency, status, paymentStatus, source").in("customerId", ids).order("createdAt", { ascending: false }).limit(1000),
     actor.service.from("reservations").select('id, customer_id, reservation_date, reservation_time, party_size, status').in("customer_id", ids).order("created_at", { ascending: false }).limit(1000),
     actor.service.from("customer_feedback").select('id, customer_id, order_id, value_for_money_rating, comment, created_at').in("customer_id", ids).order("created_at", { ascending: false }).limit(1000),
+    actor.service.from("customer_messages").select('id, customer_id, category, message, status, created_at, updated_at').in("customer_id", ids).order("created_at", { ascending: false }).limit(1000),
   ]);
   const failed = [pointsResult.error, ordersResult.error, reservationsResult.error].find(Boolean);
   if (failed) {
@@ -37,6 +38,7 @@ export async function GET(request: Request) {
     orders: (ordersResult.data || []).filter((row) => row.customerId === customer.id),
     reservations: (reservationsResult.data || []).filter((row) => row.customer_id === customer.id),
     feedback: (feedbackResult.data || []).filter((row) => row.customer_id === customer.id),
+    messages: (messagesResult.data || []).filter((row) => row.customer_id === customer.id),
   }]));
-  return NextResponse.json({ customers: [...byCustomer.values()], feedbackAvailable: !feedbackResult.error, updatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ customers: [...byCustomer.values()], feedbackAvailable: !feedbackResult.error, messagesAvailable: !messagesResult.error, updatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "no-store" } });
 }
