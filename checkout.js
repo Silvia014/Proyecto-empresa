@@ -319,6 +319,7 @@ checkoutForm.addEventListener("submit", async (event) => {
       total: result.total,
       currency: result.currency || cart[0].currency || "USD",
       locationName: document.getElementById("checkout-restaurant-summary")?.textContent || "",
+      confirmationEmailSent: result.confirmationEmailSent === true,
     }));
     window.location.assign("order-pending.html");
   } catch (error) {

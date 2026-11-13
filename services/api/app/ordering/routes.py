@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import logging
 from typing import Literal, Optional
 from pathlib import Path
 import json
@@ -21,6 +23,7 @@ from sqlalchemy import text
 from ..database import engine
 
 router = APIRouter(prefix="/api")
+logger = logging.getLogger("api.ordering")
 CATALOG_PATH = Path(__file__).with_name("catalog.json")
 DELIVERY_RADIUS_KM = 5.0
 FX_RATE_CACHE_SECONDS = 15 * 60
@@ -33,6 +36,88 @@ BRANCH_ADDRESSES = {
     "Orlando": ("123 Church Street, Orlando, FL 32801, USA", "US"),
 }
 BRANCH_COORDINATES = {}
+
+
+def _resend_email(to: str, subject: str, lines: list[tuple[str, str]]) -> bool:
+    api_key = os.getenv("RESEND_API_KEY")
+    from_email = os.getenv("RESEND_FROM_EMAIL")
+    if not api_key or not from_email:
+        logger.warning("Order email not sent: Resend configuration is missing.")
+        return False
+
+    safe_rows = "".join(
+        f'<tr><th align="left" style="padding:8px">{html.escape(label)}</th>'
+        f'<td style="padding:8px">{html.escape(str(value or "—"))}</td></tr>'
+        for label, value in lines
+    )
+    html_body = (
+        '<!doctype html><html><body style="font-family:Arial,sans-serif;color:#382b24">'
+        '<main style="max-width:620px;margin:24px auto;padding:24px;background:#fffdf9">'
+        '<p style="color:#762b3e;font-weight:bold;letter-spacing:.12em">BRASALAND</p>'
+        f'<h1 style="color:#762b3e">{html.escape(subject)}</h1>'
+        f'<table style="width:100%;border-collapse:collapse">{safe_rows}</table>'
+        '</main></body></html>'
+    )
+    text_body = subject + "\n\n" + "\n".join(f"{label}: {value or '—'}" for label, value in lines)
+    request = UrlRequest(
+        "https://api.resend.com/emails",
+        data=json.dumps({"from": from_email, "to": [to], "subject": subject,
+                         "html": html_body, "text": text_body}).encode(),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=8) as response:
+            return 200 <= response.status < 300
+    except HTTPError as error:
+        logger.error("Order email delivery failed with HTTP %s.", error.code)
+    except (URLError, TimeoutError, OSError) as error:
+        logger.error("Order email delivery failed (%s).", type(error).__name__)
+    return False
+
+
+def _order_email_details(order_id: str) -> tuple[dict, list[dict]]:
+    with engine.connect() as connection:
+        order = connection.execute(text('''
+            SELECT o.id, o.total, o.currency, o.fulfillment, o."deliveryAddress", o."customerNotes",
+                   c.name AS customer_name, c.email, c.phone,
+                   l.name AS location_name, l.city, l.country
+            FROM "Order" o
+            JOIN "Customer" c ON c.id=o."customerId"
+            LEFT JOIN "Location" l ON l.id=o."locationId"
+            WHERE o.id=:id
+        '''), {"id": order_id}).mappings().first()
+        items = connection.execute(text('''
+            SELECT "dishName", quantity, "unitPrice", subtotal
+            FROM "OrderItem" WHERE "orderId"=:id ORDER BY "dishName"
+        '''), {"id": order_id}).mappings().all()
+    if not order:
+        raise RuntimeError("Saved order could not be loaded for email delivery.")
+    return dict(order), [dict(item) for item in items]
+
+
+def _order_email_lines(order: dict, items: list[dict], payment_preference: str | None = None) -> list[tuple[str, str]]:
+    currency = order.get("currency") or "USD"
+    item_summary = "; ".join(
+        f'{item["quantity"]} × {item["dishName"]} ({currency} {item["subtotal"]})'
+        for item in items
+    ) or "—"
+    lines = [
+        ("Order reference", str(order["id"])),
+        ("Status", "Order received — awaiting restaurant confirmation and payment"),
+        ("Delivery update", "The restaurant will contact you with an estimated arrival time."),
+        ("Customer", str(order.get("customer_name") or "")),
+        ("Email", str(order.get("email") or "")),
+        ("Phone", str(order.get("phone") or "")),
+        ("Restaurant", f'{order.get("location_name") or "Brasaland"} · {order.get("city") or ""} · {order.get("country") or ""}'),
+        ("Fulfilment", str(order.get("fulfillment") or "pickup")),
+        ("Delivery address", str(order.get("deliveryAddress") or "Pickup")),
+        ("Items", item_summary),
+        ("Total", f'{currency} {order.get("total")}'),
+        ("Payment", payment_preference or "Customer has not selected a payment method yet"),
+        ("Notes", str(order.get("customerNotes") or "—")),
+    ]
+    return lines
 
 
 def branch_for_city(city: str):
@@ -346,10 +431,30 @@ def create_online_order(payload: CheckoutInput, request: Request):
         print(f"Online order save failed: {error}")
         raise HTTPException(status_code=503, detail="Could not save the order to the ERP database.") from error
 
+    confirmation_email_sent = False
+    restaurant_email_sent = False
+    try:
+        saved_order, saved_items = _order_email_details(order_id)
+        email_lines = _order_email_lines(saved_order, saved_items)
+        confirmation_email_sent = _resend_email(
+            str(saved_order["email"]),
+            "Order received — Brasaland will contact you with an estimated arrival time",
+            email_lines,
+        )
+        restaurant_email_sent = _resend_email(
+            os.getenv("ORDER_NOTIFICATION_EMAIL", os.getenv("RESERVATION_NOTIFICATION_EMAIL", "reservas@brasaland.site")),
+            f'New online order · {saved_order.get("city") or "Brasaland"} · {order_id[:8]}',
+            email_lines,
+        )
+    except Exception:
+        logger.exception("Could not prepare order emails for order_id=%s", order_id)
+
     return {"orderId": order_id, "status": "RECEIVED", "paymentStatus": "PENDING",
             "paymentOptions": ["PAYMENT_LINK", "CASH", "BIZUM"], "total": saved_totals["total"],
             "currency": order_currency, "brasapointsDiscount": saved_totals["brasapointsDiscount"],
             "brasapointsUsed": saved_totals["brasapointsUsed"], "brasapointsEarned": saved_totals["brasapointsEarned"],
+            "confirmationEmailSent": confirmation_email_sent,
+            "restaurantNotificationSent": restaurant_email_sent,
             "message": "Order received. The restaurant will confirm availability and contact you to arrange payment."}
 
 
@@ -357,8 +462,9 @@ def create_online_order(payload: CheckoutInput, request: Request):
 def save_payment_preference(order_id: str, payload: PaymentPreferenceInput):
     with engine.begin() as connection:
         order = connection.execute(text('''
-            SELECT o."id", o."paymentStatus", c."email" FROM "Order" o
+            SELECT o."id", o."paymentStatus", o."paymentPreference", c."email" FROM "Order" o
             JOIN "Customer" c ON c."id"=o."customerId" WHERE o."id"=:id
+            FOR UPDATE OF o
         '''), {"id": order_id}).mappings().first()
         if not order:
             raise HTTPException(status_code=404, detail="Order not found.")
@@ -366,6 +472,23 @@ def save_payment_preference(order_id: str, payload: PaymentPreferenceInput):
             raise HTTPException(status_code=403, detail="This order does not match that email address.")
         if order["paymentStatus"] != "PENDING":
             raise HTTPException(status_code=409, detail="Payment preference can only be changed while payment is pending.")
-        connection.execute(text('UPDATE "Order" SET "paymentPreference"=:preference, "updatedAt"=now() WHERE "id"=:id'),
-                           {"preference": payload.paymentPreference, "id": order_id})
-    return {"ok": True, "paymentPreference": payload.paymentPreference}
+        existing_preference = order["paymentPreference"]
+        if existing_preference and existing_preference != payload.paymentPreference:
+            raise HTTPException(status_code=409, detail="This order already has a confirmed payment preference.")
+        if not existing_preference:
+            connection.execute(text('UPDATE "Order" SET "paymentPreference"=:preference, "updatedAt"=now() WHERE "id"=:id'),
+                               {"preference": payload.paymentPreference, "id": order_id})
+
+    notification_email_sent = False
+    try:
+        saved_order, saved_items = _order_email_details(order_id)
+        notification_email_sent = _resend_email(
+            os.getenv("ORDER_NOTIFICATION_EMAIL", os.getenv("RESERVATION_NOTIFICATION_EMAIL", "reservas@brasaland.site")),
+            f'Payment choice · {saved_order.get("city") or "Brasaland"} · {order_id[:8]}',
+            _order_email_lines(saved_order, saved_items, payload.paymentPreference),
+        )
+    except Exception:
+        logger.exception("Could not send payment preference for order_id=%s", order_id)
+
+    return {"ok": True, "paymentPreference": payload.paymentPreference,
+            "notificationEmailSent": notification_email_sent}
