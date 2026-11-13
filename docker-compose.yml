@@ -13,6 +13,11 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - redis
 
   interfaces:
     build:
@@ -34,6 +39,49 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  flower:
+    image: mher/flower:latest
+    environment:
+      - FLOWER_PORT=5555
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+  worker:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    env_file:
+      - .env.local
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    command:
+      - celery
+      - -A
+      - services.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - --events
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+

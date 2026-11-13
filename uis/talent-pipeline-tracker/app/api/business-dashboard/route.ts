@@ -21,6 +21,7 @@ async function readAllRows<T>(
 
 type OrderRow = {
   id: string;
+  customerId: string | null;
   createdAt: string;
   total: number;
   subtotal: number;
@@ -38,6 +39,17 @@ type OrderRow = {
 
 type ReservationRow = { status: string; party_size: number };
 
+function previousCompletedWeek() {
+  const now = new Date();
+  const todayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const daysSinceMonday = (todayUtc.getUTCDay() + 6) % 7;
+  const thisMonday = new Date(todayUtc);
+  thisMonday.setUTCDate(todayUtc.getUTCDate() - daysSinceMonday);
+  const previousMonday = new Date(thisMonday);
+  previousMonday.setUTCDate(thisMonday.getUTCDate() - 7);
+  return { start: previousMonday.toISOString().slice(0, 10), end: thisMonday.toISOString().slice(0, 10) };
+}
+
 export async function GET(request: Request) {
   const actor = await getStaffActor(request);
   if (isDenied(actor)) return actor;
@@ -47,9 +59,9 @@ export async function GET(request: Request) {
 
   const { service: supabase } = actor;
   try {
-    const [orders, reservations, feedbackRows] = await Promise.all([
+    const [orders, reservations, feedbackRows, customers] = await Promise.all([
       readAllRows<OrderRow>(async (from, to) => supabase.from("Order")
-        .select('id, createdAt, total, subtotal, discount, brasapointsDiscount, currency, source, status, paymentStatus, guestCount, reservationId, Location(name), OrderItem(dishName, quantity, subtotal, menuItemId)')
+        .select('id, customerId, createdAt, total, subtotal, discount, brasapointsDiscount, currency, source, status, paymentStatus, guestCount, reservationId, Location(name), OrderItem(dishName, quantity, subtotal, menuItemId)')
         .order("createdAt", { ascending: false })
         .range(from, to)),
       readAllRows<ReservationRow>(async (from, to) => supabase.from("reservations")
@@ -59,14 +71,43 @@ export async function GET(request: Request) {
         .select("value_for_money_rating, comment, created_at")
         .order("created_at", { ascending: false })
         .range(from, to)),
+      readAllRows<{ id: string; name: string; email: string | null }>(async (from, to) => supabase.from("Customer")
+        .select("id, name, email")
+        .range(from, to)),
     ]);
+    let customerMessages: Array<{ customer_id: string; category: string; message: string; status: string; created_at: string }> = [];
+    let customerMessageCategories: Array<{ category: string }> = [];
+    let customerMessagesAvailable = true;
+    try {
+      [customerMessageCategories, customerMessages] = await Promise.all([
+        readAllRows<{ category: string }>(async (from, to) => supabase.from("customer_messages")
+          .select("category")
+          .range(from, to)),
+        (async () => {
+          const { data, error } = await supabase.from("customer_messages")
+            .select("customer_id, category, message, status, created_at")
+            .order("created_at", { ascending: false })
+            .limit(8);
+          if (error) throw new Error(error.message);
+          return data ?? [];
+        })(),
+      ]);
+    } catch (error) {
+      customerMessagesAvailable = false;
+      console.warn("Customer messages are not available to the business dashboard:", error instanceof Error ? error.message : String(error));
+    }
     const menuItems = await readAllRows<{ id: string; category: string }>(async (from, to) => supabase.from("MenuItem")
       .select("id, category")
       .range(from, to));
     const menuCategoryById = new Map(menuItems.map((item) => [item.id, item.category]));
+    const customerById = new Map(customers.map((customer) => [customer.id, customer]));
 
     const onlineOrders = orders.filter((order) => order.source === "ONLINE");
     const realizedOrders = orders.filter((order) => order.paymentStatus === "PAID" && order.status !== "CANCELLED");
+    const reportWeek = previousCompletedWeek();
+    const inReportWeek = (value: string) => value >= `${reportWeek.start}T00:00:00` && value < `${reportWeek.end}T00:00:00`;
+    const reportWeekOrders = orders.filter((order) => inReportWeek(String(order.createdAt)) && order.status !== "CANCELLED");
+    const reportWeekPaidOrders = reportWeekOrders.filter((order) => order.paymentStatus === "PAID");
     const revenueByCurrency: Record<string, number> = {};
     const coveredRevenueByCurrency: Record<string, number> = {};
     const discountByCurrency: Record<string, number> = {};
@@ -75,6 +116,17 @@ export async function GET(request: Request) {
     const tableCheckCounts: Record<string, number> = {};
     const monthly: Record<string, { month: string; revenueByCurrency: Record<string, number>; paidOrders: number }> = {};
     const productSales: Record<string, { name: string; category: string; quantity: number; revenueByCurrency: Record<string, number> }> = {};
+    const reportWeekRevenueByCurrency: Record<string, number> = {};
+    const reportWeekOrderValueByCurrency: Record<string, number> = {};
+    const reportWeekCustomers = new Set<string>();
+    for (const order of reportWeekOrders) {
+      const currency = (order.currency || "UNKNOWN").toUpperCase();
+      reportWeekOrderValueByCurrency[currency] = (reportWeekOrderValueByCurrency[currency] ?? 0) + Number(order.total || 0);
+      if (order.customerId) reportWeekCustomers.add(order.customerId);
+      if (order.paymentStatus === "PAID") {
+        reportWeekRevenueByCurrency[currency] = (reportWeekRevenueByCurrency[currency] ?? 0) + Number(order.total || 0);
+      }
+    }
 
     for (const order of realizedOrders) {
       const currency = (order.currency || "UNKNOWN").toUpperCase();
@@ -114,8 +166,44 @@ export async function GET(request: Request) {
     const feedbackAverage = feedbackRows.length
       ? feedbackRows.reduce((sum, row) => sum + Number(row.value_for_money_rating || 0), 0) / feedbackRows.length
       : null;
+    let staffSchedule: { available: boolean; staff: Array<{ name: string; shifts: number }>; shiftsByDay: Array<{ date: string; shifts: number }>; shiftsCount: number } = {
+      available: false, staff: [], shiftsByDay: [], shiftsCount: 0,
+    };
+    const { data: rotaRows, error: rotaError } = await supabase.from("hr_rota_shifts")
+      .select("employee_name, employee_email, shift_date")
+      .gte("shift_date", reportWeek.start)
+      .lt("shift_date", reportWeek.end)
+      .order("shift_date", { ascending: true });
+    if (!rotaError) {
+      const staffCounts = new Map<string, { name: string; shifts: number }>();
+      const shiftsByDay = new Map<string, number>();
+      for (const shift of rotaRows ?? []) {
+        const identity = String(shift.employee_email || shift.employee_name).trim().toLowerCase();
+        const member = staffCounts.get(identity) ?? { name: String(shift.employee_name), shifts: 0 };
+        member.shifts += 1;
+        staffCounts.set(identity, member);
+        shiftsByDay.set(shift.shift_date, (shiftsByDay.get(shift.shift_date) ?? 0) + 1);
+      }
+      staffSchedule = {
+        available: true,
+        staff: [...staffCounts.values()].sort((a, b) => a.name.localeCompare(b.name)),
+        shiftsByDay: [...shiftsByDay].sort(([a], [b]) => a.localeCompare(b)).map(([date, shifts]) => ({ date, shifts })),
+        shiftsCount: rotaRows?.length ?? 0,
+      };
+    }
     const response = {
       generatedAt: new Date().toISOString(),
+      reportingPeriod: reportWeek,
+      staffSchedule,
+      customerCount: customers.length,
+      customerMessages: customerMessages.slice(0, 8).map((item) => ({
+        category: item.category,
+        message: item.message,
+        status: item.status,
+        createdAt: item.created_at,
+        customerName: customerById.get(item.customer_id)?.name ?? "Customer",
+        customerEmail: customerById.get(item.customer_id)?.email ?? "",
+      })),
       orders: onlineOrders.map((order) => ({
         id: order.id,
         createdAt: order.createdAt,
@@ -147,10 +235,21 @@ export async function GET(request: Request) {
         guestsServed,
         valueForMoneyAverage: feedbackAverage,
         feedbackCount: feedbackRows.length,
+        customerMessageCount: customerMessageCategories.length,
+        suggestionCount: customerMessageCategories.filter((item) => item.category === "suggestion").length,
+        complaintCount: customerMessageCategories.filter((item) => item.category === "complaint").length,
+        reportWeekRevenueByCurrency,
+        reportWeekOrderValueByCurrency,
+        reportWeekPaidOrderCount: reportWeekPaidOrders.length,
+        reportWeekOrderCount: reportWeekOrders.length,
+        reportWeekOnlineOrderCount: reportWeekOrders.filter((order) => order.source === "ONLINE").length,
+        reportWeekCustomerCount: reportWeekCustomers.size,
       },
       dataAvailability: {
         customerFeedback: feedbackRows.length > 0,
         orderGuestCount: guestsServed > 0,
+        staffRota: staffSchedule.available,
+        customerMessages: customerMessagesAvailable,
         note: "Feedback and guest counts appear as soon as customers submit a review and staff record the covers for orders.",
         recentFeedback: feedbackRows.slice(0, 10).map((row) => ({
           rating: Number(row.value_for_money_rating),

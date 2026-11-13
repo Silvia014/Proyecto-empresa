@@ -9,6 +9,7 @@ from .incidents.models import IncidentRecord
 from .telemetry import router as telemetry_router, record_internal_event
 from app.telemetry_report import router as telemetry_report_router
 
+
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
 
 if env_file.exists():
@@ -20,6 +21,7 @@ from .users.routes import router as users_router
 from .profiles.routes import router as profiles_router
 from .auth.routes import router as auth_router
 from .incidents.routes import router as incidents_router
+from .tasks import router as tasks_router
 from .auth.supabase_dependencies import require_permission
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
@@ -43,6 +45,7 @@ from .models import Supplier, SupplierCreate, SupplierStatus
 app = FastAPI(title="Brasaland Supplier Directory API")
 app.include_router(telemetry_report_router)
 app.include_router(reporting_router)
+app.include_router(tasks_router)
 logger = logging.getLogger("api.timing")
 
 @app.middleware("http")
