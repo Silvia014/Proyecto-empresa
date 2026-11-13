@@ -425,13 +425,15 @@
 }
 .payment-choice:hover { transform: translateY(-2px); border-color: #9b6972; box-shadow: 0 8px 20px rgba(73, 26, 37, .09); }
 .payment-choice:focus-visible { outline: 3px solid rgba(124, 65, 79, .3); outline-offset: 3px; }
-.payment-choice:disabled { cursor: wait; opacity: .65; }
+.payment-choice:disabled { cursor: default; opacity: .75; }
+.payment-choice.is-selected:disabled { opacity: 1; }
 .payment-choice.is-selected { border-color: #5a1f2b; background: #fcf7f4; box-shadow: 0 0 0 2px rgba(90, 31, 43, .1); }
 .payment-choice-icon { display: grid; width: 40px; height: 40px; margin-bottom: 14px; place-items: center; border-radius: 11px; background: #f4e9e6; color: #5a1f2b; font-size: 1.25rem; font-weight: 700; }
 .payment-choice-title { color: #5a1f2b; font-size: 1.08rem; font-weight: 700; }
 .payment-choice-description { margin-top: 7px; color: #71625a; font-size: .88rem; line-height: 1.5; }
 .payment-choice-action { margin-top: auto; padding-top: 16px; color: #5a1f2b; font-size: .86rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .payment-choice-feedback { min-height: 24px; margin: 14px 0 0; color: #315d3d; font-size: .92rem; font-weight: 600; line-height: 1.5; text-align: left; }
+.payment-preference-submit { margin: 16px 0 0; }
 .pending-menu-link { display: inline-block; margin-top: 10px; color: #5a1f2b; font-size: .92rem; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
 
 @media (max-width: 560px) {
