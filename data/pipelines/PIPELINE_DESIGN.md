@@ -1,10 +1,10 @@
 # Business Performance Data Pipeline — Design
 
-- **Status:** Part 3 implementation is on `feat/business-performance-pipeline`: three transformation tasks are coordinated by the transform subflow, unit tests are in `tests/pipelines/test_pipeline.py`, the CLI entrypoint is retained, and a protected KPI dashboard is available from the ERP origin. User-reported local tests and CLI run passed. End-to-end dashboard validation and valid source location mapping remain outstanding.
+- **Status:** Part 3 implementation is on `feat/business-performance-pipeline`: three transformation tasks are coordinated by the transform subflow, unit tests are in `tests/pipelines/test_pipeline.py`, the CLI entrypoint is retained, and a protected KPI dashboard is available from the ERP origin. The weekly KPI email and GitHub Actions schedule are implemented on `codex/vercel-erp-operations-fixes`; scheduling starts after merge to the default branch and configuration of required Actions secrets. End-to-end dashboard validation and valid source location mapping remain outstanding.
 - **Company:** Brasaland
 - **Primary audience:** Mariana Restrepo (CEO) and Felipe Guerrero (Operations Director)
 - **Business cadence:** Weekly, every Monday morning
-- **Proposed schedule:** Monday at 07:00 in `America/Bogota` (headquarters time; confirm before deployment)
+- **Confirmed schedule:** Monday at 07:00 in `America/Bogota` (12:00 UTC, headquarters time), via GitHub Actions.
 - **Destination:** `reporting.weekly_location_performance`
 
 ---
@@ -308,7 +308,7 @@ The implemented pipeline uses Prefect 3 for task execution, retries, caching, fl
 ### Main flow
 
 - **Flow:** `weekly_location_cost_waste_flow(week_start=None, trigger_source="schedule")`.
-- **Scheduled deployment:** every Monday at 07:00 `America/Bogota`; inactive until a production Prefect worker/work pool and business approval are in place.
+- **Scheduled deployment:** GitHub Actions runs every Monday at 12:00 UTC (07:00 `America/Bogota`). The Prefect schedule remains inactive to prevent duplicate scheduled runs.
 - **Manual/backfill:** accepts an optional Monday `week_start` and records the `trigger_source`.
 
 ### Implemented subflows and tasks
@@ -344,7 +344,7 @@ The transformation cache key is based on task inputs, including the transform re
 
 ### Production configuration
 
-Keep production credentials in Prefect blocks/secrets or deployment environment variables, never in source control. The API must not receive database credentials. The Monday schedule remains inactive until the production worker/work pool is configured and the business assumptions are approved.
+Keep production credentials in GitHub Actions secrets, never in source control. The API must not receive database credentials. The weekly workflow sends the KPI rows after a completed/partial run using `Brasaland <reservas@brasaland.site>` to `roldansilvi@gmail.com`. It requires the database URL secret(s) and `RESEND_API_KEY`. GitHub scheduled starts can be delayed a few minutes; they are not guaranteed to start at the exact minute.
 
 ## 10. Application Integration — Reporting Service
 
@@ -400,7 +400,7 @@ The values above illustrate the response shape only; they are not actual Brasala
 
 ### Production gates to confirm
 
-1. Mariana/Felipe accept the Monday 07:00 `America/Bogota` schedule and a production Prefect worker/work pool is provisioned.
+1. Configure the GitHub Actions database and Resend secrets before the next Monday report run.
 2. Lucía/Finance approve last-known inbound unit cost as the v1 valuation basis for waste.
 3. The production `Location` reference contains all active locations and the correct country/currency mapping. The latest local run rejected an event with `location_id = 1` because no matching `public."Location".id` exists; confirm the canonical location mapping before treating that week as complete.
 4. Historical waste events without a cost snapshot cannot be reconstructed reliably from telemetry alone. Such events remain rejected until the business owner accepts the gap or a governed correction is supplied.
@@ -438,8 +438,7 @@ PYTHONPATH=services/api uv run --python 3.12 python -c \
 'from data.pipelines.pipeline import weekly_location_cost_waste_flow; weekly_location_cost_waste_flow(week_start="2026-11-02", trigger_source="backfill")'
 ```
 
-The planned schedule is weekly on Mondays at 07:00 in `America/Bogota`.
-Automatic scheduling remains inactive until a Prefect worker is configured.
+The confirmed schedule is weekly on Mondays at 07:00 in `America/Bogota` (12:00 UTC), through `.github/workflows/weekly-business-report.yml`. The Prefect deployment schedule is disabled; see `data/pipelines/README.md` for the required GitHub Actions secrets and delivery behavior.
 
 ## 13. Implementation and Latest Local Verification
 

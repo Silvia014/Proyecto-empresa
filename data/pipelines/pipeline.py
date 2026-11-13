@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+from html import escape
 import json
+import logging
 import os
 import uuid
 from contextlib import ExitStack, contextmanager
@@ -9,9 +11,12 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterator
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 from prefect import flow, get_run_logger, task
+from prefect.exceptions import MissingContextError
 from prefect.tasks import task_input_hash
 from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
@@ -58,6 +63,176 @@ KPI_EVENT_TYPES = {
 TRANSFORM_REVISION = "2026-11-07-v2"
 PIPELINE_NAME = "weekly_location_cost_waste"
 CORRECTION_WINDOW_WEEKS = 4
+
+
+def get_report_recipients() -> list[str]:
+    """Return the configured weekly report recipients, defaulting to the owner."""
+    configured = (
+        os.getenv("REPORT_EMAIL_TO")
+        or os.getenv("WEEKLY_REPORT_EMAIL_TO")
+        or "roldansilvi@gmail.com"
+    )
+    recipients = [part.strip() for part in configured.split(",") if part.strip()]
+    return recipients or ["roldansilvi@gmail.com"]
+
+
+def build_weekly_report_email(
+    week_start: str,
+    status: str,
+    rows_loaded: int,
+    rows_rejected: int,
+    source_metrics: dict[str, Any] | None = None,
+    report_rows: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Build an email containing the published location KPIs and run metadata."""
+    recipients = get_report_recipients()
+    metrics = source_metrics or {}
+    metrics_summary = ", ".join(
+        f"{key}={value}"
+        for key, value in sorted(metrics.items(), key=lambda item: str(item[0]))
+    ) or "No source metrics recorded."
+
+    subject = f"Brasaland weekly report — {week_start} ({status})"
+    lines = [
+        "Brasaland Weekly Location Cost & Waste Report",
+        f"Week: {week_start}",
+        f"Status: {status}",
+        f"Rows loaded: {rows_loaded}",
+        f"Rows rejected: {rows_rejected}",
+        f"Source metrics: {metrics_summary}",
+    ]
+    rows = report_rows or []
+    if rows:
+        lines.append("Location KPIs:")
+        for row in rows:
+            lines.append(
+                "- {location_id} ({country}): purchase {purchase} {currency}; "
+                "waste {waste} {currency}; waste ratio {ratio:.1%}; "
+                "stockouts {stockouts}; price alerts {price_alerts}".format(
+                    location_id=row.get("location_id", "unknown"),
+                    country=row.get("country", ""),
+                    purchase=float(row.get("total_purchase_cost") or 0),
+                    waste=float(row.get("total_waste_cost") or 0),
+                    currency=row.get("currency", ""),
+                    ratio=float(row.get("waste_ratio") or 0),
+                    stockouts=int(row.get("stockout_events_count") or 0),
+                    price_alerts=int(row.get("price_alert_events_count") or 0),
+                )
+            )
+    else:
+        lines.append("No location KPI rows were published for this period.")
+    text = "\n".join(lines)
+    safe_week = escape(str(week_start))
+    safe_status = escape(str(status))
+    safe_rows_loaded = escape(str(rows_loaded))
+    safe_rows_rejected = escape(str(rows_rejected))
+    safe_metrics = escape(str(metrics_summary))
+    report_html_rows = "".join(
+        "<tr>"
+        f"<td>{escape(str(row.get('location_id', 'unknown')))}</td>"
+        f"<td>{escape(str(row.get('country', '')))}</td>"
+        f"<td>{escape(str(row.get('currency', '')))} {float(row.get('total_purchase_cost') or 0):,.2f}</td>"
+        f"<td>{escape(str(row.get('currency', '')))} {float(row.get('total_waste_cost') or 0):,.2f}</td>"
+        f"<td>{float(row.get('waste_ratio') or 0):.1%}</td>"
+        f"<td>{int(row.get('stockout_events_count') or 0)}</td>"
+        f"<td>{int(row.get('price_alert_events_count') or 0)}</td>"
+        "</tr>"
+        for row in rows
+    )
+    if not report_html_rows:
+        report_html_rows = '<tr><td colspan="7">No location KPI rows were published for this period.</td></tr>'
+    html = (
+        "<!doctype html><html><body style=\"margin:0;background:#f7f1e7;color:#382b24;font-family:Arial,sans-serif\">"
+        "<main style=\"max-width:620px;margin:32px auto;padding:28px;background:#fffdf9;border-radius:16px\">"
+        "<p style=\"color:#762b3e;font-weight:bold;letter-spacing:.12em\">BRASALAND</p>"
+        f"<h1 style=\"color:#762b3e\">{safe_week} — {safe_status}</h1>"
+        "<p>The weekly reporting run finished with the current summary below.</p>"
+        "<ul><li>Rows loaded: <strong>"
+        f"{safe_rows_loaded}</strong></li><li>Rows rejected: <strong>{safe_rows_rejected}</strong></li>"
+        f"<li>Source metrics: {safe_metrics}</li></ul>"
+        "<h2>Weekly Location Cost &amp; Waste KPIs</h2>"
+        "<div style=\"overflow-x:auto\"><table style=\"border-collapse:collapse;width:100%;font-size:13px\">"
+        "<thead><tr><th>Location</th><th>Country</th><th>Purchase cost</th><th>Waste cost</th>"
+        "<th>Waste ratio</th><th>Stockouts</th><th>Price alerts</th></tr></thead>"
+        f"<tbody>{report_html_rows}</tbody></table></div>"
+        "</main></body></html>"
+    )
+    return {"to": recipients, "subject": subject, "html": html, "text": text}
+
+
+def _pipeline_logger() -> logging.Logger:
+    try:
+        return get_run_logger()
+    except MissingContextError:
+        return logging.getLogger("data.pipelines.pipeline")
+
+
+def send_weekly_report_email(
+    week_start: str,
+    status: str,
+    rows_loaded: int,
+    rows_rejected: int,
+    source_metrics: dict[str, Any] | None = None,
+    report_rows: list[dict[str, Any]] | None = None,
+) -> bool:
+    """Send the completed weekly report summary to the configured recipient list."""
+    api_key = os.getenv("RESEND_API_KEY")
+    from_email = os.getenv("RESEND_FROM_EMAIL") or "Brasaland <reservas@brasaland.site>"
+    recipients = get_report_recipients()
+    if os.getenv("SEND_WEEKLY_REPORT_EMAIL", "false").strip().lower() not in {"1", "true", "yes"}:
+        _pipeline_logger().info("Weekly report email skipped: SEND_WEEKLY_REPORT_EMAIL is disabled.")
+        return False
+    if not api_key:
+        _pipeline_logger().warning("Weekly report email skipped: missing RESEND_API_KEY.")
+        return False
+    payload = build_weekly_report_email(
+        week_start=week_start,
+        status=status,
+        rows_loaded=rows_loaded,
+        rows_rejected=rows_rejected,
+        source_metrics=source_metrics,
+        report_rows=report_rows,
+    )
+    try:
+        request = Request(
+            "https://api.resend.com/emails",
+            data=json.dumps(
+                {
+                    "from": from_email,
+                    "to": payload["to"],
+                    "subject": payload["subject"],
+                    "html": payload["html"],
+                    "text": payload["text"],
+                }
+            ).encode(),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "Brasaland-Weekly-Report/1.0",
+            },
+            method="POST",
+        )
+        with urlopen(request, timeout=8) as response:
+            ok = 200 <= response.status < 300
+        if ok:
+            _pipeline_logger().info(
+                "Weekly report email dispatched to %s for week %s.",
+                ", ".join(recipients),
+                week_start,
+            )
+            return True
+        _pipeline_logger().warning(
+            "Weekly report email delivery failed with HTTP %s.",
+            getattr(response, "status", "unknown"),
+        )
+        return False
+    except (HTTPError, URLError, TimeoutError, OSError) as exc:
+        _pipeline_logger().exception(
+            "Weekly report email delivery failed for week %s: %s",
+            week_start,
+            exc,
+        )
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -1087,6 +1262,19 @@ def weekly_location_cost_waste_flow(
                 trigger_source=trigger_source,
             )
 
+            report_email_sent = False
+            if status in {"completed", "partial"} and os.getenv("SEND_WEEKLY_REPORT_EMAIL", "false").strip().lower() in {"1", "true", "yes"}:
+                report_email_sent = send_weekly_report_email(
+                    week_start=target_week.isoformat(),
+                    status=status,
+                    rows_loaded=rows_loaded,
+                    rows_rejected=transformed["rows_rejected"],
+                    source_metrics=source_metrics,
+                    report_rows=transformed["rows"],
+                )
+                if not report_email_sent:
+                    raise RuntimeError("Weekly report email was not delivered by Resend.")
+
             return {
                 "status": status,
                 "run_id": run_id,
@@ -1096,6 +1284,7 @@ def weekly_location_cost_waste_flow(
                 "rows_processed": transformed["rows_processed"],
                 "rows_rejected": transformed["rows_rejected"],
                 "rows_loaded": rows_loaded,
+                "report_email_sent": report_email_sent,
                 "source_metrics": source_metrics,
             }
 

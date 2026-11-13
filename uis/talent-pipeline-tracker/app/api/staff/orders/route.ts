@@ -75,7 +75,6 @@ export async function GET(request: Request) {
     service.from("MenuItem")
       .select("id, name, category, price, currency, locationId, available")
       .eq("available", true)
-      .eq("locationId", locationId)
       .order("category")
       .order("name"),
   ]);
@@ -96,16 +95,14 @@ export async function GET(request: Request) {
         .map((item) => ({ ...item, location_id: null, source: "ONLINE" })) || null,
     } as typeof reservationsResult;
   }
-  if (!menuResult.error && !(menuResult.data || []).length) {
-    // The public menu is shared across restaurants; locations with no duplicated
-    // MenuItem rows reuse the matching country/currency menu.
-    const allMenu = await service.from("MenuItem")
-      .select("id, name, category, price, currency, locationId, available")
-      .eq("available", true).order("category").order("name");
-    if (!allMenu.error) {
-      const sameCurrency = allMenu.data.filter((item) => item.currency === location.currency);
-      menuResult = { ...menuResult, data: sameCurrency.length ? sameCurrency : allMenu.data };
-    }
+  if (!menuResult.error) {
+    // Include the full shared menu plus items specific to this location. Older
+    // code queried only locationId === current location, hiding global items.
+    const eligibleMenu = (menuResult.data || []).filter((item) =>
+      (!item.locationId || item.locationId === locationId)
+      && (!item.currency || !location.currency || item.currency === location.currency)
+    );
+    menuResult = { ...menuResult, data: eligibleMenu };
   }
   const error = reservationsResult.error || menuResult.error;
   if (error) {

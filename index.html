@@ -20,6 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css"/>
+ 
 
   <!-- Schema.org: ayuda a Google a mostrar horario, teléfono y dirección directamente en resultados de búsqueda -->
   <script type="application/ld+json">
@@ -356,10 +357,28 @@
     <!-- ===================== EXPERIENCIA HOTELERA ===================== -->
     <section id="experiencia" class="bg-parchment py-20">
       <div class="fade-up mx-auto max-w-7xl px-6 lg:px-8">
-        <p class="section-eyebrow" data-i18n="experiencia.title">Nuestra experiencia</p>
-        <h2 class="mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl" data-i18n="experiencia.subtitle">
-          De un servicio y cocina premium a tu mesa
-        </h2>
+        <div class="experience-hero">
+          <div>
+            <p class="section-eyebrow" data-i18n="experiencia.title">Nuestra experiencia</p>
+            <div class="experience-title-row">
+              <h2 class="text-3xl font-semibold sm:text-4xl" data-i18n="experiencia.subtitle">
+                De un servicio y cocina premium a tu mesa
+              </h2>
+              <span class="experience-tag">use client</span>
+            </div>
+          </div>
+
+          <div class="experience-globe-wrap" aria-hidden="true">
+            <div class="experience-globe">
+              <span class="orbit"></span>
+              <span class="orbit orbit-two"></span>
+              <span class="dot dot-one"></span>
+              <span class="dot dot-two"></span>
+              <span class="dot dot-three"></span>
+              <span class="dot dot-four"></span>
+            </div>
+          </div>
+        </div>
         <p class="mt-5 max-w-2xl leading-relaxed text-walnut/80" data-i18n="experiencia.description">
           Antes de abrir Brasaland, parte de nuestro equipo dirigió sala y F&amp;B en hoteles boutique gran lujo.
           Ese estándar de servicio —discreto, atento, sin errores— es el que aplicamos

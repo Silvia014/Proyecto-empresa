@@ -10,8 +10,10 @@ requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.16.5",
     "bcrypt<5",
+    "celery>=5.7.0",
     "email-validator>=2.3.0",
     "fastapi>=0.128.8",
+    "flower>=2.2.0",
     "libpass[bcrypt]>=1.9.3",
     "pandas>=2.3.3",
     "prefect>=3",
@@ -20,6 +22,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "python-jose[cryptography]>=3.5.0",
     "python-multipart>=0.0.20",
+    "redis>=8.1.0",
     "resend>=2.49.0",
     "sqlmodel>=0.0.34",
     "uvicorn>=0.39.0",

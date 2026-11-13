@@ -166,6 +166,12 @@ docker compose logs -f
 ```bash
 docker compose down
 ```
+### Celery worker and Flower
+
+Start Redis, the API, the worker, and Flower:
+
+```bash
+docker compose up --build -d redis api worker flower
 
 ---
 
