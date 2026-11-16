@@ -1,0 +1,6 @@
+FROM python:3.12-slim AS dependencies
+RUN python -m pip install --no-cache-dir --target=/dependencies packaging==25.0
+
+FROM mher/flower:2.2.0
+COPY --from=dependencies /dependencies /opt/flower-dependencies
+ENV PYTHONPATH=/opt/flower-dependencies
