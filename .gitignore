@@ -1,6 +1,7 @@
 .vercel
 .env*
 node_modules/
+.next/
 results.csv
 .venv/
 
