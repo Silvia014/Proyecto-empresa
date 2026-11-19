@@ -1,4 +1,7 @@
 {
+  "residual_normality_k2": 0.4901239460345384,
+  "residual_normality_p_value": 0.782656033183021,
+  "mean_residual_usd": -31462.209908202585,
   "mae_usd": 36578.325935958004,
   "baseline_mae_usd": 48253.61000000001,
   "mape_percent": 4.871360322339884,

@@ -246,3 +246,25 @@ The repository is building a modern restaurant platform for Brasaland with:
 - [uis/README.es.md](uis/README.es.md)
 - [services/README.es.md](services/README.es.md)
 - [scripts/README.es.md](scripts/README.es.md)
+
+## Brasaland sales forecast residuals
+
+Run `uv run python scripts/evaluate_sales_forecast.py` from the repository root.
+The evaluation computes residuals as actual minus forecast sales for the 24
+held-out months (January 2024–December 2025). We interpret the course's K2 Score
+as the D’Agostino–Pearson K² test, with normality as the reference distribution.
+
+| Residual diagnostic | Result |
+| --- | ---: |
+| D’Agostino–Pearson K² | 0.4901 |
+| p-value | 0.7827 |
+| Mean residual (actual minus forecast) | −USD 31,462 per month |
+
+The test did not detect a departure from normality. Treat the p-value as
+exploratory because the sample has only 24 consecutive monthly observations
+and errors can be correlated over time. The negative mean residual indicates
+that the model overpredicted monthly sales by USD 31,462 on average.
+R² remains a separate measure of forecast fit.
+
+See the [full metrics](reports/sales_forecast/metrics.json) and
+[forecast with variability band](reports/sales_forecast/forecast.png).

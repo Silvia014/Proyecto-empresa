@@ -7,6 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from scipy.stats import normaltest
 from sklearn.metrics import auc
 from sklearn.metrics import (
     mean_absolute_error,
@@ -79,7 +80,12 @@ def main():
     results["lower_usd"] = (predicted + results["lower_error"]).clip(lower=0)
     results["upper_usd"] = predicted + results["upper_error"]
 
+    residuals = actual - predicted
+    normality = normaltest(residuals)
     metrics = {
+        "residual_normality_k2": float(normality.statistic),
+        "residual_normality_p_value": float(normality.pvalue),
+        "mean_residual_usd": float(residuals.mean()),
         "mae_usd": mean_absolute_error(actual, predicted),
         "baseline_mae_usd": mean_absolute_error(actual, results["baseline_usd"]),
         "mape_percent": 100 * mean_absolute_percentage_error(actual, predicted),
