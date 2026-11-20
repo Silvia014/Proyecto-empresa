@@ -13,8 +13,15 @@ try {
 const checkoutItems = document.getElementById("checkout-items");
 const checkoutTotal = document.getElementById("checkout-total");
 let checkoutLocationId = "";
-let checkoutDeliveryFee = getDeliveryFee();
 const chosenLocationId = localStorage.getItem("brasalandLocationId") || cart[0]?.locationId || "";
+let savedLocation;
+try { savedLocation = JSON.parse(localStorage.getItem("brasalandCheckoutLocation") || "null"); } catch { /* Older carts are resolved by the live menu. */ }
+const explicitCurrency = String(savedLocation?.id) === String(chosenLocationId) ? savedLocation?.currency : null;
+let checkoutCurrency = ["USD", "COP"].includes(explicitCurrency) ? explicitCurrency : null;
+let checkoutDeliveryFee = checkoutCurrency
+  ? Number(savedLocation.deliveryFee ?? getDeliveryFee(checkoutCurrency))
+  : 0;
+
 
 async function apiJson(url, options = {}) {
   let response;
@@ -85,15 +92,26 @@ function getDeliveryFee(currency = cart[0]?.currency || "USD") {
   return normalizedCurrency === "COP" ? 5 * 4100 : 5;
 }
 
+function convertCheckoutPrice(price, source, target) {
+  const unitsPerUsd = { USD: 1, EUR: 0.92, COP: 4100 };
+  const converted = Number(price) / unitsPerUsd[String(source || "EUR").toUpperCase()] * unitsPerUsd[target];
+  return target === "COP" ? Math.round(converted) : Number(converted.toFixed(2));
+}
+
 function renderCheckout() {
 
   checkoutItems.innerHTML = "";
+
+  if (!checkoutCurrency) {
+    checkoutTotal.textContent = "—";
+    return;
+  }
 
   let total = 0;
 
   cart.forEach((item) => {
 
-    const itemTotal = item.price * item.quantity;
+    const itemTotal = convertCheckoutPrice(item.price, item.currency, checkoutCurrency) * item.quantity;
 
     total += itemTotal;
 
@@ -108,7 +126,7 @@ function renderCheckout() {
       </div>
 
       <strong>
-        ${formatPrice(itemTotal, item.currency || "USD")}
+        ${formatPrice(itemTotal, checkoutCurrency)}
       </strong>
     `;
 
@@ -116,9 +134,10 @@ function renderCheckout() {
 
   });
 
-  total += checkoutDeliveryFee;
-
-  checkoutTotal.textContent = formatPrice(total, cart[0]?.currency || "USD");
+  if (document.querySelector('input[name="order-type"]:checked')?.value === "delivery") {
+    total += checkoutDeliveryFee;
+  }
+  checkoutTotal.textContent = formatPrice(total, checkoutCurrency);
 }
 
 
@@ -145,6 +164,7 @@ const addressInputs = [
 orderTypeInputs.forEach((input) => {
 
   input.addEventListener("change", () => {
+    renderCheckout();
 
     if (input.value === "delivery" && input.checked) {
 
@@ -230,7 +250,12 @@ async function reconcileCartWithLiveMenu() {
   if (normalized.some((item) => !item)) {
     throw new Error("One or more items are no longer on this menu. Return to the menu and update your cart. The restaurant will send a payment link after you submit a valid order.");
   }
+  const currency = String(matchingLocation.currency || "").toUpperCase();
+  if (!["COP", "USD"].includes(currency)) {
+    throw new Error("The restaurant currency could not be confirmed. Choose your restaurant again.");
+  }
   cart = normalized;
+  checkoutCurrency = currency;
   checkoutLocationId = String(matchingLocation.id);
   checkoutDeliveryFee = Number(matchingLocation.deliveryFee ?? getDeliveryFee(matchingLocation.currency));
   localStorage.setItem("brasalandLocationId", checkoutLocationId);
@@ -271,6 +296,11 @@ checkoutForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  if (!checkoutCurrency) {
+    checkoutFeedback.textContent = "The restaurant currency is unavailable. Return to the menu and choose your restaurant again.";
+    checkoutFeedback.classList.add("error");
+    return;
+  }
   const locationId = checkoutLocationId || cart[0]?.locationId || localStorage.getItem("brasalandLocationId") || "";
 
   const fulfillment = document.querySelector('input[name="order-type"]:checked')?.value || "pickup";
@@ -319,7 +349,7 @@ checkoutForm.addEventListener("submit", async (event) => {
       items: result.items,
       deliveryFee: result.deliveryFee,
       total: result.total,
-      currency: result.currency || cart[0].currency || "USD",
+      currency: result.currency || checkoutCurrency,
       locationName: document.getElementById("checkout-restaurant-summary")?.textContent || "",
       confirmationEmailSent: result.confirmationEmailSent === true,
     }));
