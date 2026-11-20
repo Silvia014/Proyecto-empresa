@@ -40,6 +40,23 @@ try {
     document.getElementById("pending-total").textContent = new Intl.NumberFormat(saved.currency === "COP" ? "es-CO" : "en-US", {
       style: "currency", currency: saved.currency || "USD",
     }).format(Number(saved.total));
+    const money = new Intl.NumberFormat(saved.currency === "COP" ? "es-CO" : "en-US", {
+      style: "currency", currency: saved.currency || "USD",
+    });
+    if (Array.isArray(saved.items) && saved.items.length) {
+      const list = document.getElementById("pending-items");
+      const addLine = (text) => {
+        const line = document.createElement("li");
+        line.textContent = text;
+        list.append(line);
+      };
+      setCopy("pending-items-title", english ? "Your order" : "Tu pedido");
+      for (const item of saved.items) {
+        addLine(`${item.quantity} × ${item.dishName} — ${money.format(item.subtotal)}`);
+      }
+      if (saved.deliveryFee > 0) addLine(`${english ? "Delivery" : "Envío"}: ${money.format(saved.deliveryFee)}`);
+      document.getElementById("pending-items-section").hidden = false;
+    }
     const paymentChoices = [...document.querySelectorAll("[data-payment-preference]")];
     const confirmChoiceButton = document.getElementById("confirm-payment-preference");
     const feedback = document.getElementById("payment-preference-feedback");
@@ -56,7 +73,11 @@ try {
         choice.setAttribute("aria-pressed", String(isSelected));
       });
       confirmChoiceButton.disabled = true;
-      confirmChoiceButton.classList.add("hidden");
+      document.getElementById("payment-preference-picker").hidden = true;
+      document.getElementById("payment-choice-intro").hidden = true;
+      setCopy("pending-state", preference === "CASH"
+        ? (english ? "CASH SELECTED · AWAITING CONFIRMATION" : "EFECTIVO ELEGIDO · PENDIENTE DE CONFIRMACIÓN")
+        : (english ? "CARD SELECTED · PAYMENT PENDING" : "TARJETA ELEGIDA · PAGO PENDIENTE"));
     };
 
     if (saved.paymentPreference) {
@@ -95,6 +116,7 @@ try {
         const apiUrl = window.brasalandApiUrl ? window.brasalandApiUrl("/api/ordering") : "/api/ordering";
         const response = await fetch(apiUrl, {
           method: "PATCH",
+          signal: AbortSignal.timeout(15000),
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({ orderId: savedOrder.orderId, email: savedOrder.customerEmail, paymentPreference: selectedPreference }),
         });
@@ -102,8 +124,8 @@ try {
         if (!response.ok) throw new Error(result.detail || result.error || "Could not save your choice.");
         savedOrder.paymentPreference = result.paymentPreference;
         savedOrder.paymentPreferenceEmailSent = result.notificationEmailSent;
-        sessionStorage.setItem("brasalandPendingOrder", JSON.stringify(savedOrder));
         lockPaymentChoice(result.paymentPreference);
+        try { sessionStorage.setItem("brasalandPendingOrder", JSON.stringify(savedOrder)); } catch { /* the server has saved the choice */ }
         const chosenCash = result.paymentPreference === "CASH";
         feedback.textContent = result.notificationEmailSent === false
           ? (english

@@ -316,6 +316,8 @@ checkoutForm.addEventListener("submit", async (event) => {
       paymentStatus: result.paymentStatus,
       customerName: customer.name,
       customerEmail: customer.email,
+      items: result.items,
+      deliveryFee: result.deliveryFee,
       total: result.total,
       currency: result.currency || cart[0].currency || "USD",
       locationName: document.getElementById("checkout-restaurant-summary")?.textContent || "",
