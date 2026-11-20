@@ -38,10 +38,12 @@ try {
         ? (english ? `We could not email the receipt to ${saved.customerEmail}. Please contact the restaurant if you need a copy.` : `No pudimos enviar el recibo a ${saved.customerEmail}. Contacta con el restaurante si necesitas una copia.`)
         : (english ? `Order email status is unavailable. Please check ${saved.customerEmail}.` : `No pudimos comprobar el estado del email del pedido. Revisa ${saved.customerEmail}.`);
     document.getElementById("pending-total").textContent = new Intl.NumberFormat(saved.currency === "COP" ? "es-CO" : "en-US", {
-      style: "currency", currency: saved.currency || "USD",
+      style: "currency", currency: saved.currency || "USD", currencyDisplay: "code",
+      ...(saved.currency === "COP" ? { maximumFractionDigits: 0 } : {}),
     }).format(Number(saved.total));
     const money = new Intl.NumberFormat(saved.currency === "COP" ? "es-CO" : "en-US", {
-      style: "currency", currency: saved.currency || "USD",
+      style: "currency", currency: saved.currency || "USD", currencyDisplay: "code",
+      ...(saved.currency === "COP" ? { maximumFractionDigits: 0 } : {}),
     });
     if (Array.isArray(saved.items) && saved.items.length) {
       const list = document.getElementById("pending-items");

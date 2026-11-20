@@ -275,7 +275,8 @@ function escapeHtml(value) {
 
 function formatPrice(value, currency) {
   return new Intl.NumberFormat(currency === "COP" ? "es-CO" : "en-US", {
-    style: "currency", currency,
+    style: "currency", currency, currencyDisplay: "code",
+    ...(currency === "COP" ? { maximumFractionDigits: 0 } : {}),
   }).format(value);
 }
 
