@@ -1,0 +1,27 @@
+name: Sales forecast evaluation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/*sales*forecast*.py"
+      - "scripts/evaluate_sales_learning_curve.py"
+      - "tests/pipelines/test_sales*.py"
+      - "data/raw/brasaland_sales.csv"
+      - "data/eval/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/sales-forecast-evaluation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  temporal-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --python 3.12 --dev
+      - run: uv run --no-sync python -m pytest -q tests/pipelines/test_sales_temporal_cv.py
+      - run: uv run --no-sync python -m scripts.evaluate_sales_learning_curve
