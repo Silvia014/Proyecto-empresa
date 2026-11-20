@@ -333,7 +333,10 @@ async function createOrder(supabase, req, body) {
   }
 
   const items = lines.map(({ dishName, quantity, subtotal }) => ({ dishName, quantity, subtotal }));
-  const money = new Intl.NumberFormat("en", { style: "currency", currency: order.currency });
+  const money = new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", {
+    style: "currency", currency: order.currency, currencyDisplay: "code",
+    ...(order.currency === "COP" ? { maximumFractionDigits: 0 } : {}),
+  });
   const receipt = [
     ...items.map((item) => `${item.quantity} × ${item.dishName} — ${money.format(item.subtotal)}`),
     ...(deliveryFee ? [`Delivery: ${money.format(deliveryFee)}`] : []),
