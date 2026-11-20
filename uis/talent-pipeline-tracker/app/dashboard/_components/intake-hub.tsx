@@ -38,6 +38,10 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
   const [coversMessages, setCoversMessages] = useState<Record<string, string>>({});
   const [paymentMessages, setPaymentMessages] = useState<Record<string, string>>({});
 
+  const [reservationBusy, setReservationBusy] = useState<string | null>(null);
+  const [editingReservation, setEditingReservation] = useState<string | null>(null);
+  const [reservationError, setReservationError] = useState("");
+
   const load = useCallback(async () => {
     try {
       const supabase = createClient();
@@ -113,6 +117,29 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
     return () => window.clearInterval(interval);
   }, [load]);
 
+  async function saveReservation(id: string, form?: FormData) {
+    if (!form && !window.confirm("Permanently delete this reservation?")) return;
+    setReservationBusy(id);
+    setReservationError("");
+    try {
+      const { data: { session } } = await createClient().auth.getSession();
+      if (!session) throw new Error("Sign in again to manage reservations.");
+      const response = await fetch(`/api/staff/reservations/${encodeURIComponent(id)}`, {
+        method: form ? "PATCH" : "DELETE",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: form ? JSON.stringify({ ...Object.fromEntries(form), party_size: Number(form.get("party_size")) }) : undefined,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Could not save the reservation change.");
+      setEditingReservation(null);
+      await load();
+    } catch (cause) {
+      setReservationError(cause instanceof Error ? cause.message : "Could not save the reservation change.");
+    } finally {
+      setReservationBusy(null);
+    }
+  }
+
   return <section className="rounded-3xl bg-white p-6 shadow-sm lg:p-8">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -134,6 +161,7 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
     {data && <div className={`mt-7 grid gap-6 ${view === "all" ? "xl:grid-cols-2" : "grid-cols-1"}`}>
       {(view === "all" || view === "reservations") && <div>
         <h4 className="mb-3 font-semibold text-gray-900">Reservations <span className="ml-1 text-xs font-normal text-gray-500">Latest {data.reservations.length}</span></h4>
+        {reservationError && <p role="alert" className="mb-3 text-sm text-red-700">{reservationError}</p>}
         <div className="space-y-3">
           {data.reservations.length === 0 && <p className={cardClass + " text-sm text-gray-500"}>No reservations received yet.</p>}
           {data.reservations.map((item) => <article key={item.id} className={cardClass}>
@@ -142,6 +170,25 @@ export default function IntakeHub({ view = "all" }: { view?: IntakeView }) {
             <p className="mt-1 text-sm text-gray-700">{item.city}, {item.country} · <a className="underline" href={`mailto:${item.email}`}>{item.email}</a> · <a className="underline" href={`tel:${item.phone}`}>{item.phone}</a></p>
             <p className="mt-1 text-xs text-gray-500">{item.location_preference || "No location preference"} · {item.status} · received {showDate(item.created_at)}</p>
             {item.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{item.notes}</p>}
+            {editingReservation === item.id ? (
+              <form className="mt-3 grid gap-3 sm:grid-cols-2" onSubmit={(event) => {
+                event.preventDefault();
+                void saveReservation(item.id, new FormData(event.currentTarget));
+              }}>
+                <label>Date <input type="date" name="reservation_date" required defaultValue={item.reservation_date} /></label>
+                <label>Time <input type="time" name="reservation_time" required defaultValue={item.reservation_time.slice(0, 5)} /></label>
+                <label>Guests <input type="number" name="party_size" min={1} max={100} required defaultValue={item.party_size} /></label>
+                <label>Status <select name="status" defaultValue={item.status}>
+                  {["NEW", "CONFIRMED", "CANCELLED", "COMPLETED"].map((status) => <option key={status}>{status}</option>)}
+                </select></label>
+                <label className="sm:col-span-2">Notes <textarea name="notes" maxLength={1000} defaultValue={item.notes ?? ""} /></label>
+                <button className="font-semibold text-[#5a1f2b] underline" disabled={reservationBusy !== null}>Save changes</button>
+                <button type="button" className="underline" disabled={reservationBusy !== null} onClick={() => setEditingReservation(null)}>Cancel edit</button>
+              </form>
+            ) : <div className="mt-3 flex gap-4 text-sm">
+              <button type="button" className="font-semibold text-[#5a1f2b] underline" disabled={reservationBusy !== null} onClick={() => setEditingReservation(item.id)}>Edit reservation</button>
+              <button type="button" className="text-red-700 underline" disabled={reservationBusy !== null} onClick={() => void saveReservation(item.id)}>Delete reservation</button>
+            </div>}
           </article>)}
         </div>
       </div>}
