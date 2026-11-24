@@ -30,6 +30,7 @@ from pydantic import BaseModel, Field
 from .inventory.routes import router as inventory_router
 from .ordering.routes import router as ordering_router
 from .public_intake import router as public_intake_router
+from .rag.routes import router as knowledge_router
 from services.reporting.routes import router as reporting_router
 
 from .crud import (
@@ -134,6 +135,7 @@ app.include_router(incidents_router)
 app.include_router(inventory_router)
 app.include_router(ordering_router)
 app.include_router(public_intake_router)
+app.include_router(knowledge_router)
 app.include_router(telemetry_router)
 
 app.add_middleware(

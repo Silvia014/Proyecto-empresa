@@ -1,0 +1,42 @@
+[
+  {
+    "question": "How do Brasa Points work and when can a customer redeem them?",
+    "expected_source_document": "brasaland-loyalty-program.en.md",
+    "expected_section": "\"Brasa Points\" Loyalty Program"
+  },
+  {
+    "question": "¿Cómo se acumulan y canjean los Brasa Points?",
+    "expected_source_document": "brasaland-loyalty-program.es.md",
+    "expected_section": "Programa de Lealtad \"Brasa Points\""
+  },
+  {
+    "question": "What should staff do when a guest reports a food allergy?",
+    "expected_source_document": "brasaland-menu-allergens.en.md",
+    "expected_section": "Menu Allergen Guide"
+  },
+  {
+    "question": "¿Qué debe hacer el equipo ante una alergia alimentaria?",
+    "expected_source_document": "brasaland-menu-allergens.es.md",
+    "expected_section": "Guía de Alérgenos del Menú"
+  },
+  {
+    "question": "How does a restaurant location place an order with a supplier?",
+    "expected_source_document": "brasaland-supplier-ordering.en.md",
+    "expected_section": "Supplier Ordering Procedure"
+  },
+  {
+    "question": "¿Cómo se realiza un pedido a proveedores?",
+    "expected_source_document": "brasaland-supplier-ordering.es.md",
+    "expected_section": "Procedimiento de Pedido a Proveedores"
+  },
+  {
+    "question": "How should the kitchen record and reduce food waste?",
+    "expected_source_document": "brasaland-waste-protocol.en.md",
+    "expected_section": "Waste Control Protocol"
+  },
+  {
+    "question": "¿Cómo registra el equipo el desperdicio de alimentos?",
+    "expected_source_document": "brasaland-waste-protocol.es.md",
+    "expected_section": "Protocolo de Control de Desperdicio"
+  }
+]

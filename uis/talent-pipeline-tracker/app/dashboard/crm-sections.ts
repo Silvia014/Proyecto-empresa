@@ -89,6 +89,12 @@ const sectionDefinitions = [
     panelTitle: "Profile and permissions", panelDescription: "Your staff account settings.",
     ctaLabel: "Profile settings", recordsTitle: "Profile",
   },
+  {
+    slug: "knowledge", title: "Knowledge assistant", route: "/dashboard/knowledge",
+    navLabel: "Policies and procedures", description: "Ask questions about Brasaland's indexed policies, products, and operating procedures.",
+    panelTitle: "Brasaland knowledge base", panelDescription: "Get a concise answer grounded in the company documents indexed for the ERP.",
+    ctaLabel: "Ask the knowledge assistant", recordsTitle: "Knowledge assistant",
+  },
 ].map((section) => ({ ...section, metrics: [], records: [] })) satisfies CrmSection[];
 
 export const crmSectionSlugs = sectionDefinitions.map((section) => section.slug);
