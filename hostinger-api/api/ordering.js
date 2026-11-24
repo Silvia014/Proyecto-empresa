@@ -3,6 +3,8 @@ const path = require("node:path");
 const { randomUUID } = require("node:crypto");
 const { createAdminClient, getUserFromRequest } = require("../lib/api-supabase");
 
+const { escapeHtml, sendResendEmail } = require("../lib/resend-email");
+
 const CATALOG_PATH = path.join(__dirname, "..", "data", "catalog.json");
 const DELIVERY_RADIUS_KM = 5;
 const USD_TO_COP_RATE = 4100;
@@ -330,7 +332,28 @@ async function createOrder(supabase, req, body) {
     throw itemsError;
   }
 
+  const items = lines.map(({ dishName, quantity, subtotal }) => ({ dishName, quantity, subtotal }));
+  const money = new Intl.NumberFormat(order.currency === "COP" ? "es-CO" : "en-US", {
+    style: "currency", currency: order.currency, currencyDisplay: "code",
+    ...(order.currency === "COP" ? { maximumFractionDigits: 0 } : {}),
+  });
+  const receipt = [
+    ...items.map((item) => `${item.quantity} × ${item.dishName} — ${money.format(item.subtotal)}`),
+    ...(deliveryFee ? [`Delivery: ${money.format(deliveryFee)}`] : []),
+    `Total: ${money.format(order.total)}`,
+    "Payment pending. The restaurant will confirm your order.",
+  ].join("\n");
+  const confirmationEmailSent = await sendResendEmail({
+    to: body.customer.email.trim().toLowerCase(),
+    subject: `Brasaland order receipt · ${order.id}`,
+    text: `Order reference: ${order.id}\n\n${receipt}`,
+    html: `<h1>Brasaland order receipt</h1><p>Order reference: ${escapeHtml(order.id)}</p><p>${escapeHtml(receipt).replace(/\n/g, "<br>")}</p>`,
+  });
+
   return {
+    items,
+    deliveryFee,
+    confirmationEmailSent,
     orderId: order.id,
     status: order.status,
     paymentStatus: order.paymentStatus,
@@ -352,7 +375,7 @@ async function savePaymentPreference(supabase, body) {
   }
   const { data: order, error: readError } = await supabase
     .from("Order")
-    .select("id, customerId, paymentStatus")
+    .select("id, customerId, paymentStatus, paymentPreference")
     .eq("id", orderId)
     .maybeSingle();
   if (readError) throw readError;
@@ -377,11 +400,18 @@ async function savePaymentPreference(supabase, body) {
     error.statusCode = 409;
     throw error;
   }
+  if (order.paymentPreference === preference) return { ok: true, paymentPreference: preference };
+  if (order.paymentPreference) {
+    const error = new Error("A payment preference has already been saved.");
+    error.statusCode = 409;
+    throw error;
+  }
   const { data: updatedOrder, error: updateError } = await supabase
     .from("Order")
     .update({ paymentPreference: preference, updatedAt: new Date().toISOString() })
     .eq("id", orderId)
     .eq("paymentStatus", "PENDING")
+    .is("paymentPreference", null)
     .select("id")
     .maybeSingle();
   if (updateError) throw updateError;

@@ -121,7 +121,8 @@ function getDisplayCurrency(currency = selectedLocation?.currency || cart[0]?.cu
 function getDisplayPrice(value, currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
   const targetCurrency = getDisplayCurrency(currency);
   const sourceCurrency = String(currency || "USD").toUpperCase();
-  return convertCurrencyValue(value, sourceCurrency, targetCurrency);
+  const converted = convertCurrencyValue(value, sourceCurrency, targetCurrency);
+  return targetCurrency === "COP" ? Math.round(converted) : Number(converted.toFixed(2));
 }
 
 function formatPrice(value, currency = selectedLocation?.currency || cart[0]?.currency || "USD") {
@@ -223,7 +224,7 @@ function renderProducts() {
 function renderCart() {
   if (!cartItems || !emptyCart || !cartSummary) return;
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + getDisplayPrice(item.price, item.currency) * item.quantity, 0);
   const deliveryFee = getDeliveryFee(selectedLocation?.currency || cart[0]?.currency || "USD");
   const total = subtotal + deliveryFee;
   if (cartCount) cartCount.textContent = String(count);
@@ -238,7 +239,7 @@ function renderCart() {
     return `<article class="cart-item"><div class="cart-item-header"><div>
       <h3 class="cart-item-name">${escapeHtml(copy.name)}</h3>
       <p class="cart-item-unit-price">${formatPrice(item.price, item.currency)} · ${item.quantity}</p></div>
-      <span class="cart-item-price">${formatPrice(item.price * item.quantity, item.currency)}</span></div>
+      <span class="cart-item-price">${formatPrice(getDisplayPrice(item.price, item.currency) * item.quantity)}</span></div>
       <div class="cart-item-controls"><button class="remove-product-button" type="button" data-remove-id="${escapeHtml(item.id)}">${escapeHtml(translation("remove", "Remove"))}</button>
       <div class="quantity-controls"><button class="quantity-button" type="button" data-change-id="${escapeHtml(item.id)}" data-change="-1" aria-label="Remove one">−</button>
       <span class="quantity-value">${item.quantity}</span><button class="quantity-button plus" type="button" data-change-id="${escapeHtml(item.id)}" data-change="1" aria-label="Add one">+</button></div></div></article>`;
@@ -354,7 +355,11 @@ clearCartButton?.addEventListener("click", () => {
 
 checkoutButton?.addEventListener("click", () => {
   if (!cart.length) { window.alert(translation("checkoutEmpty", "Your cart is empty.")); return; }
-  saveCart(); window.location.href = "checkout.html";
+  saveCart();
+  localStorage.setItem("brasalandCheckoutLocation", JSON.stringify({
+    id: selectedLocation.id, currency: selectedLocation.currency, deliveryFee: getDeliveryFee(),
+  }));
+  window.location.href = "checkout.html";
 });
 
 document.addEventListener("DOMContentLoaded", () => { renderCart(); void initializeCatalog(); });

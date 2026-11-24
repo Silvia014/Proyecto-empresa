@@ -62,8 +62,8 @@ export default function RegisterPage() {
     if (!role) return setError("Choose an access category.");
     setLoading(true);
     try {
-      // Reauthenticate immediately before creation so the API receives a fresh
-      // auth_time claim for its recent-admin verification.
+      // Reauthenticate immediately before creation so the API receives a recent
+      // password authentication event for its admin verification.
       const { data: authData, error: sessionError } = await supabase.auth.signInWithPassword({
         email: adminEmail,
         password: adminPassword,

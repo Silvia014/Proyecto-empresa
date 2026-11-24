@@ -35,9 +35,18 @@ export async function getStaffActor(request: Request, requireRecentAuth = false)
     if (requireRecentAuth) {
       const payload = token.split(".")[1];
       const claims = payload ? JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) : {};
-      const authTime = Number(claims.auth_time);
-      const ageSeconds = Math.floor(Date.now() / 1000) - authTime;
-      if (!Number.isFinite(authTime) || ageSeconds < 0 || ageSeconds > 10 * 60) {
+      const now = Math.floor(Date.now() / 1000);
+      const methods: unknown[] = Array.isArray(claims.amr) ? claims.amr : [];
+      const recentlyVerifiedPassword = methods.some((entry) => {
+        if (!entry || typeof entry !== "object" || !("method" in entry) ||
+            !("timestamp" in entry) || entry.method !== "password" ||
+            typeof entry.timestamp !== "number" || !Number.isInteger(entry.timestamp)) {
+          return false;
+        }
+        const age = now - entry.timestamp;
+        return age >= 0 && age <= 10 * 60;
+      });
+      if (!recentlyVerifiedPassword) {
         return NextResponse.json({ error: "Verify your admin password again before creating staff accounts." }, { status: 401 });
       }
     }

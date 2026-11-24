@@ -1,0 +1,14 @@
+{
+  "residual_normality_k2": 0.4901239460345384,
+  "residual_normality_p_value": 0.782656033183021,
+  "mean_residual_usd": -31462.209908202585,
+  "mae_usd": 36578.325935958004,
+  "baseline_mae_usd": 48253.61000000001,
+  "mape_percent": 4.871360322339884,
+  "mse_usd_squared": 1899870824.8962848,
+  "r2": 0.6509327486088182,
+  "psi_revenue_train_vs_test": 2.2409830309169285,
+  "gini_normalized_test": 0.8811194307987124,
+  "band_coverage_percent": 58.333333333333336,
+  "mean_band_width_usd": 74777.0366471862
+}

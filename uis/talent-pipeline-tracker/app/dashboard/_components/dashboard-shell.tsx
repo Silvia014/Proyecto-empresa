@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import IntakeHub from "./intake-hub";
-import BusinessDashboard from "./business-dashboard";
 import OrdersWorkspace from "./orders-workspace";
 import CandidatesFrame from "../candidates/CandidatesFrame";
 import StaffRequirements from "../hr/StaffRequirements";
@@ -44,7 +43,6 @@ export default function DashboardShell({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [locations, setLocations] = useState<LocationSummary[]>([]);
-  const [previewSlug, setPreviewSlug] = useState(initialSectionSlug);
 
   useEffect(() => {
     async function loadDashboardContext() {
@@ -98,15 +96,15 @@ export default function DashboardShell({
     user ? canAccess(user.role, (section.slug === "online-orders" ? "orders" : section.slug) as StaffPermission) : false
   ), [locations, user]);
   const activeSection =
-    getCrmSectionBySlug(previewSlug, locations) && sections.some((section) => section.slug === previewSlug)
-      ? getCrmSectionBySlug(previewSlug, locations)!
+    getCrmSectionBySlug(initialSectionSlug, locations) && sections.some((section) => section.slug === initialSectionSlug)
+      ? getCrmSectionBySlug(initialSectionSlug, locations)!
       : sections[0] ?? getCrmSectionBySlug("locations", locations)!;
 
   useEffect(() => {
     const current = sections.find((section) => section.route === pathname) ||
       (pathname.startsWith("/dashboard/inventory/") && sections.some((section) => section.slug === "inventory") ? true : undefined);
-    if (pathname.startsWith("/dashboard/") && !current) router.replace("/dashboard");
-  }, [pathname, previewSlug, router, sections]);
+    if (user && pathname.startsWith("/dashboard/") && !current) router.replace("/dashboard");
+  }, [pathname, router, sections, user]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -215,7 +213,6 @@ export default function DashboardShell({
 
             <div className="flex flex-col gap-3 lg:block lg:space-y-3">
               {sections.map((section) => {
-                const isPreview = activeSection.slug === section.slug;
                 const isCurrentRoute =
                   pathname === section.route ||
                   (pathname === "/dashboard" && initialSectionSlug === section.slug);
@@ -224,13 +221,13 @@ export default function DashboardShell({
                   <Link
                     key={section.slug}
                     href={section.route}
-                    onMouseEnter={() => setPreviewSlug(section.slug)}
-                    onFocus={() => setPreviewSlug(section.slug)}
+                    prefetch={false}
+                    aria-current={isCurrentRoute ? "page" : undefined}
                     className={[
-                      "block w-full rounded-2xl border p-4 transition",
-                      isPreview || isCurrentRoute
+                      "block w-full rounded-2xl border p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5a1f2b]",
+                      isCurrentRoute
                         ? "border-[#5a1f2b] bg-[#5a1f2b] text-white shadow-md"
-                        : "border-[#eadfce] bg-[#fdfaf5] text-gray-900 hover:border-[#c9b49f] hover:bg-white",
+                        : "border-[#eadfce] bg-[#fdfaf5] text-gray-900",
                     ].join(" ")}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -238,7 +235,7 @@ export default function DashboardShell({
                         <p
                           className={[
                             "text-xs font-semibold uppercase tracking-[0.2em]",
-                            isPreview || isCurrentRoute
+                            isCurrentRoute
                               ? "text-[#f8e9d8]"
                               : "text-[#8c6a52]",
                           ].join(" ")}
@@ -255,7 +252,7 @@ export default function DashboardShell({
                         <span
                           className={[
                             "inline-flex rounded-full px-2 py-1 text-[11px] font-medium",
-                            isPreview || isCurrentRoute
+                            isCurrentRoute
                               ? "bg-white/15 text-white"
                               : "bg-[#efe2d3] text-[#5a1f2b]",
                           ].join(" ")}
@@ -268,7 +265,7 @@ export default function DashboardShell({
                     <p
                       className={[
                         "mt-3 text-sm",
-                        isPreview || isCurrentRoute
+                        isCurrentRoute
                           ? "text-[#fdf3ea]"
                           : "text-gray-600",
                       ].join(" ")}
@@ -300,7 +297,7 @@ export default function DashboardShell({
 
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch">
                   <Link
-                    href={activeSection.slug === "candidates" ? `${activeSection.route}#staff-requirements` : activeSection.route}
+                    href={activeSection.slug === "dashboard" ? "/dashboard/business-intelligence" : activeSection.slug === "candidates" ? `${activeSection.route}#staff-requirements` : activeSection.route}
                     className="rounded-xl bg-[#5a1f2b] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-[#4a1a28] sm:flex-1 lg:flex-none"
                   >
                     {activeSection.ctaLabel}
@@ -310,7 +307,7 @@ export default function DashboardShell({
               </div>
             </section>
 
-            {activeSection?.slug === "dashboard" ? <BusinessDashboard /> :
+            {activeSection?.slug === "dashboard" ? null :
              activeSection?.slug === "suppliers" ? <SuppliersWorkspace /> :
              activeSection?.slug === "customers" ? <CustomersWorkspace /> :
              activeSection?.slug === "locations" ? <LocationsWorkspace locations={locations} /> :

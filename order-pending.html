@@ -18,9 +18,13 @@
         <div class="pending-receipt-summary">
           <p id="pending-order-id" class="pending-order-id"></p>
           <p id="pending-total" class="pending-total"></p>
+          <div id="pending-items-section" class="pending-email" hidden>
+            <h2 id="pending-items-title">Your order</h2>
+            <ul id="pending-items"></ul>
+          </div>
           <p id="pending-email" class="pending-email"></p>
         </div>
-        <div class="payment-choice-intro">
+        <div class="payment-choice-intro" id="payment-choice-intro">
           <h2 id="payment-preference-title">Choose how you’d like to pay</h2>
           <p id="pending-payment-copy">Your order has been sent. Select one payment option below.</p>
         </div>
@@ -42,8 +46,8 @@
           <button type="button" id="confirm-payment-preference" class="checkout-button payment-preference-submit" disabled>
             Send payment choice
           </button>
-          <p id="payment-preference-feedback" class="payment-choice-feedback" role="status" aria-live="polite"></p>
         </fieldset>
+        <p id="payment-preference-feedback" class="payment-choice-feedback" role="status" aria-live="polite"></p>
         <a href="order.html" class="pending-menu-link" id="pending-menu-link">Back to menu</a>
       </article>
       <article id="missing-order" class="order-success hidden" role="alert">
@@ -54,6 +58,6 @@
     </section>
   </main>
   <script src="api-config.js?v=20261110-2"></script>
-  <script src="order-pending.js"></script>
+  <script src="order-pending.js?v=20261120-3"></script>
 </body>
 </html>
