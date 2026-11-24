@@ -16,7 +16,7 @@ COPY alembic.ini ./
 RUN uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="/app/services/api"
+    PYTHONPATH="/app:/app/services/api"
 
 EXPOSE 8000
 

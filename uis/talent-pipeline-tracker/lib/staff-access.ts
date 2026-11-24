@@ -22,16 +22,17 @@ export type StaffPermission =
   | "inventory"
   | "hr"
   | "brasapuntos"
-  | "profile";
+  | "profile"
+  | "knowledge";
 
 const rolePermissions: Record<StaffRole, StaffPermission[]> = {
-  superadmin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
-  admin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile"],
-  manager_hr: ["locations", "customers", "candidates", "inventory", "hr", "profile"],
-  marketing: ["locations", "customers", "suppliers", "profile"],
-  economato: ["locations", "suppliers", "orders", "inventory", "profile"],
-  chef: ["suppliers", "locations", "customers", "orders", "reservations", "inventory", "brasapuntos", "profile"],
-  staff: ["locations", "customers", "orders", "reservations", "brasapuntos", "profile"],
+  superadmin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile", "knowledge"],
+  admin: ["dashboard", "suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "hr", "brasapuntos", "profile", "knowledge"],
+  manager_hr: ["locations", "customers", "candidates", "inventory", "hr", "profile", "knowledge"],
+  marketing: ["locations", "customers", "suppliers", "profile", "knowledge"],
+  economato: ["locations", "suppliers", "orders", "inventory", "profile", "knowledge"],
+  chef: ["suppliers", "locations", "customers", "orders", "reservations", "inventory", "brasapuntos", "profile", "knowledge"],
+  staff: ["locations", "customers", "orders", "reservations", "brasapuntos", "profile", "knowledge"],
 };
 
 export function isStaffRole(value: unknown): value is StaffRole {

@@ -14,6 +14,7 @@ import CustomersWorkspace from "./customers-workspace";
 import LocationsWorkspace from "./locations-workspace";
 import InventoryWorkspace from "./inventory-workspace";
 import PayrollRotaWorkspace from "../hr/PayrollRotaWorkspace";
+import KnowledgeAssistant from "./knowledge-assistant";
 import { canAccess, roleLabels, type StaffPermission, type StaffRole } from "@/lib/staff-access";
 import {
   crmSectionSlugs,
@@ -316,6 +317,7 @@ export default function DashboardShell({
              activeSection?.slug === "inventory" ? <InventoryWorkspace /> :
              activeSection?.slug === "orders" ? <OrdersWorkspace /> :
              activeSection?.slug === "brasapuntos" ? <IntakeHub view="members" /> :
+             activeSection?.slug === "knowledge" ? <KnowledgeAssistant embedded /> :
              activeSection?.slug === "reservations" ? <IntakeHub view="reservations" /> :
              activeSection?.slug === "online-orders" ? <IntakeHub view="orders" /> :
              activeSection?.slug === "candidates" ? <>
