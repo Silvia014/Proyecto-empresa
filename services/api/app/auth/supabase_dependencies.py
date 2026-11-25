@@ -46,13 +46,13 @@ def _get_jwks(url: str):
 
 
 ROLE_PERMISSIONS = {
-    "superadmin": {"suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"},
-    "admin": {"suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile"},
-    "manager_hr": {"locations", "customers", "candidates", "inventory", "profile"},
-    "marketing": {"locations", "customers", "suppliers", "profile"},
-    "economato": {"locations", "suppliers", "orders", "inventory", "profile"},
-    "chef": {"suppliers", "locations", "customers", "orders", "reservations", "inventory", "brasapuntos", "profile"},
-    "staff": {"locations", "customers", "orders", "reservations", "brasapuntos", "profile"},
+    "superadmin": {"suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile", "knowledge"},
+    "admin": {"suppliers", "locations", "customers", "orders", "reservations", "candidates", "inventory", "brasapuntos", "profile", "knowledge"},
+    "manager_hr": {"locations", "customers", "candidates", "inventory", "profile", "knowledge"},
+    "marketing": {"locations", "customers", "suppliers", "profile", "knowledge"},
+    "economato": {"locations", "suppliers", "orders", "inventory", "profile", "knowledge"},
+    "chef": {"suppliers", "locations", "customers", "orders", "reservations", "inventory", "brasapuntos", "profile", "knowledge"},
+    "staff": {"locations", "customers", "orders", "reservations", "brasapuntos", "profile", "knowledge"},
 }
 
 

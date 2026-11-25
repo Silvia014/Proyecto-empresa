@@ -42,6 +42,8 @@ def calculate_stock(session: Session, item_id: int) -> float:
 def calculate_stocks(
     session: Session,
     items: list[InventoryItem],
+    *,
+    force_refresh: bool = False,
 ) -> dict[int, float]:
     item_ids = [item.id for item in items if item.id is not None]
     if not item_ids:
@@ -51,12 +53,15 @@ def calculate_stocks(
     stocks: dict[int, float] = {}
     missing_ids: list[int] = []
 
-    for item_id in item_ids:
-        cached = _stock_cache.get(item_id)
-        if cached and now - cached[0] < CACHE_TTL_SECONDS:
-            stocks[item_id] = cached[1]
-        else:
-            missing_ids.append(item_id)
+    if force_refresh:
+        missing_ids = item_ids
+    else:
+        for item_id in item_ids:
+            cached = _stock_cache.get(item_id)
+            if cached and now - cached[0] < CACHE_TTL_SECONDS:
+                stocks[item_id] = cached[1]
+            else:
+                missing_ids.append(item_id)
 
     if missing_ids:
         movements = session.exec(

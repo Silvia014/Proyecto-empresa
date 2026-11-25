@@ -1,10 +1,11 @@
 import logging
 from uuid import UUID
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from .graph import get_run_trace, run_agent
+from ..auth.supabase_dependencies import require_permission
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/agent", tags=["Knowledge agent"])
@@ -23,9 +24,12 @@ class AgentResult(BaseModel):
 
 
 @router.post("/query", response_model=AgentResult)
-def ask_agent(request: AgentQuestion) -> AgentResult:
+def ask_agent(
+    request: AgentQuestion,
+    current_user=Depends(require_permission("knowledge")),
+) -> AgentResult:
     try:
-        result = run_agent(request.question)
+        result = run_agent(request.question, actor=current_user)
     except Exception as exc:
         logger.exception("Agent graph execution failed")
         raise HTTPException(
@@ -42,7 +46,7 @@ def ask_agent(request: AgentQuestion) -> AgentResult:
     return AgentResult(**result)
 
 
-@router.get("/traces/{run_id}")
+@router.get("/traces/{run_id}", dependencies=[Depends(require_permission("knowledge"))])
 def read_agent_trace(run_id: str) -> dict:
     try:
         UUID(run_id)

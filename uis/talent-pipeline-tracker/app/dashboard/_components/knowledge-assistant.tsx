@@ -7,7 +7,13 @@ type TraceEvent = {
   step?: number;
   node?: string;
   status?: string;
-  details?: { chunks_found?: number; sources?: string[] };
+  details?: {
+    chunks_found?: number;
+    records_found?: number;
+    route?: string;
+    sources?: string[];
+    truncated?: boolean;
+  };
   next?: string[];
 };
 
@@ -101,7 +107,7 @@ export default function KnowledgeAssistant({
           Ask the knowledge base
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Ask about Brasaland&apos;s documented policies and procedures. Answers are generated from relevant source documents.
+          Ask about documented policies, current incident tickets, or inventory stock. The assistant chooses the right source and tells you when live data cannot be confirmed.
         </p>
 
         <form onSubmit={ask} className="mt-8 space-y-3 rounded-2xl border border-[#d8c9b5] bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -115,7 +121,7 @@ export default function KnowledgeAssistant({
             maxLength={2000}
             rows={4}
             required
-            placeholder="For example: What should a team member do if a guest reports a food allergy?"
+            placeholder="For example: What should we do about a food allergy, what is ticket 482&apos;s status, or how much sirloin is in stock?"
             className="w-full resize-y rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#7d2939] focus:ring-2 focus:ring-[#7d2939]/20 dark:border-slate-600 dark:bg-slate-950"
           />
           <div className="flex items-center justify-between gap-3">
@@ -127,12 +133,12 @@ export default function KnowledgeAssistant({
               disabled={loading || !question.trim()}
               className="rounded-xl bg-[#5a1f2b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#742b3b] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Searching documents…" : "Ask"}
+              {loading ? "Checking sources…" : "Ask"}
             </button>
           </div>
         </form>
 
-        {loading && <p role="status" className="mt-5 text-sm text-slate-600 dark:text-slate-300">Searching documents and preparing an answer…</p>}
+        {loading && <p role="status" className="mt-5 text-sm text-slate-600 dark:text-slate-300">Checking the knowledge base and live services…</p>}
         {error && <div role="alert" className="mt-5 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">{error}</div>}
 
         {answer && <section aria-live="polite" className="mt-5 rounded-2xl border border-[#d8c9b5] bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -149,8 +155,11 @@ export default function KnowledgeAssistant({
             {trace.map((item, index) => <li key={`${item.step ?? index}-${item.node ?? "node"}`} className="rounded-lg bg-[#fdfaf5] p-3 dark:bg-slate-800">
               <strong>{item.node || "Node"}</strong>
               {item.status && <span> · {item.status}</span>}
+              {item.details?.route && <p className="mt-1 text-xs">Selected route: {item.details.route}</p>}
               {item.details?.chunks_found !== undefined && <p className="mt-1 text-xs">Chunks retrieved: {item.details.chunks_found}</p>}
+              {item.details?.records_found !== undefined && <p className="mt-1 text-xs">Live records: {item.details.records_found}</p>}
               {!!item.details?.sources?.length && <p className="mt-1 text-xs">Sources: {item.details.sources.join(", ")}</p>}
+              {item.details?.truncated && <p className="mt-1 text-xs">Showing a partial list; narrow the search for more specific results.</p>}
               {!!item.next?.length && <p className="mt-1 text-xs">Next: {item.next.join(", ")}</p>}
             </li>)}
           </ol>
