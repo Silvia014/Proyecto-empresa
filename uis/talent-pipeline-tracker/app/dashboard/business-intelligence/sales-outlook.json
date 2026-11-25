@@ -1,0 +1,19 @@
+{
+  "firstYear": 2016,
+  "lastYear": 2025,
+  "januaryTypicalChangePercent": -16.2,
+  "januaryBottomThreeYears": 10,
+  "backtestStartYear": 2020,
+  "baselineMaeUsd": 38009,
+  "outlookMaeUsd": 29813,
+  "estimates": [
+    {
+      "month": "2026-12",
+      "revenueUsd": 1044901
+    },
+    {
+      "month": "2027-01",
+      "revenueUsd": 738337
+    }
+  ]
+}
