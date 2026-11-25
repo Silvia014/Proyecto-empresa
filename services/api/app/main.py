@@ -8,6 +8,7 @@ from .database import create_db_and_tables, get_db
 from .incidents.models import IncidentRecord
 from .telemetry import router as telemetry_router, record_internal_event
 from app.telemetry_report import router as telemetry_report_router
+from .rag.agent_routes import router as agent_router
 
 
 env_file = Path(__file__).resolve().parents[3] / ".env.local"
@@ -47,6 +48,7 @@ app = FastAPI(title="Brasaland Supplier Directory API")
 app.include_router(telemetry_report_router)
 app.include_router(reporting_router)
 app.include_router(tasks_router)
+app.include_router(agent_router)
 logger = logging.getLogger("api.timing")
 
 @app.middleware("http")

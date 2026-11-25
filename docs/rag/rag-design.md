@@ -1,50 +1,90 @@
-# Brasaland knowledge assistant — RAG design
+# Brasaland RAG and LangGraph design
 
-## Audience and purpose
+## Purpose and audience
 
-The assistant supports CEO Mariana Restrepo with concise, decision-oriented answers grounded in Brasaland's approved knowledge documents. It answers in the language of the question. It is not a source of live sales, staff, inventory, or customer data; those require operational APIs and dashboards.
+The knowledge assistant serves CEO Mariana Restrepo with concise, decision-oriented answers based only on Brasaland's approved policy, product, and operating-procedure documents. It replies in the language of the question. It is not a source of live sales, staff, inventory, reservation, or customer data; those belong to operational APIs and dashboards.
 
-## Components and flow
+## End-to-end flow
 
 ```text
-Markdown corpus
-  -> data.process.rag.setup()
-  -> heading/paragraph-aware chunks
-  -> dedicated embedding model via embed()
-  -> Qdrant collection brasaland_knowledge
+Approved Markdown files
+  -> setup(): parse headings and semantic blocks
+  -> embed(chunk): dedicated embeddings model
+  -> Qdrant collection `brasaland_knowledge` (cosine vectors + source metadata)
 
-POST /knowledge/query
-  -> data.pipelines.rag.query()
-  -> retrieve(): embed question, Qdrant top-k, minimum similarity filter
-  -> generate_answer(): assemble grounded prompt and call separate chat model
-  -> {"answer": "model-generated text"}
+POST /agent/query
+  -> validate_question
+  -> retrieve_context: embed question -> Qdrant top-k -> min-score filter
+  -> conditional edge:
+       context found    -> generate_with_context -> END
+       no context found -> answer_without_context -> END
+  -> model-generated answer + run_id + graph trace
+
+GET /agent/traces/{run_id}
+  -> read the persisted LangGraph checkpoints for that run
 ```
 
-The HTTP route delegates to `query()` and never returns Qdrant points, payloads, or scores.
+The graph is compiled at module import time by `build_graph()` before the API serves requests. The endpoint delegates to `run_agent()` and does not contain retrieval or prompt-generation logic. The graph reuses `retrieve()` and `generate_answer()` from `data/pipelines/rag.py`; it does not duplicate the RAG implementation.
 
-## Corpus and metadata
+## Graph state, nodes, and routing
 
-Source files live in `docs/company-knowledge-base/`. Each indexed payload contains `source_document`, `section`, `company`, `language`, `chunk_index`, and `text`. Language is inferred from `.en.md` / `.es.md` filenames.
+`AgentState` is a `TypedDict` containing only the current question, retrieved context, answer, error, and trace entries. It does not carry a conversation history. A new UUID `run_id` is used as the LangGraph `thread_id` for each invocation.
 
-## Chunking and idempotency
+| Node | Responsibility |
+| --- | --- |
+| `validate_question` | Reject a blank question with a clear validation error; otherwise retain the trimmed question. |
+| `retrieve_context` | Call the existing `retrieve()` function and append safe trace metadata: number of chunks and source names. |
+| `generate_with_context` | Generate the final answer with the retrieved chunks as the only factual context. |
+| `answer_without_context` | Call the same generator with empty context so the model responds honestly that the knowledge base lacks enough information. |
 
-Markdown headings are retained as section metadata. Paragraphs and list blocks are kept together when possible and grouped up to roughly 2,400 characters; oversized blocks are split at sentence boundaries where possible. This keeps policy conditions close to the relevant section while bounding embedding input size.
+Edges are explicit: `START -> validate_question`; validation routes either to `retrieve_context` or `END`; retrieval routes either to `generate_with_context` or `answer_without_context`; both answer nodes end the run. Thus empty input does not trigger retrieval, and a below-threshold/empty retrieval does not force irrelevant chunks into the prompt.
 
-`setup()` uses deterministic UUIDv5 point IDs and clears only the `company=brasaland` points before upserting the current corpus. Re-running the indexer therefore replaces Brasaland's index without duplicating points or deleting any other company's data.
+## Indexing, corpus, and metadata
 
-Run `uv run python -m data.process.rag --dry-run` to inspect chunk counts and sizes without calling the LLM gateway or changing Qdrant. The current corpus produces eight chunks: one per bilingual source document.
+The source corpus lives in `docs/company-knowledge-base/`. `data/process/rag.py` reads supported Markdown documents, retains heading names as section metadata, and keeps paragraphs and list blocks together when possible. It groups blocks up to roughly 2,400 characters and splits oversized blocks at sentence boundaries when possible, preserving policy conditions and related procedure steps.
 
-## Models and vector settings
+Each Qdrant payload records `source_document`, `section`, `company`, `language`, `chunk_index`, and `text`. Language is inferred from `.en.md` and `.es.md` filenames. Point IDs are deterministic UUIDv5 values. `setup()` replaces only points for `company=brasaland` before upserting the current corpus, so repeated indexing is idempotent and does not remove other companies' points.
 
-`RAG_EMBEDDING_MODEL` and `RAG_GENERATION_MODEL` are separate settings. The embedding model is used by `embed()` both at indexing and query time; the generation model is used only by `generate_answer()`. Both use the OpenAI-compatible 4Geeks LLM gateway through `LLM_API_KEY` and `LLM_BASE_URL`. The verified gateway host is `https://llm.4geeks.ai`. The selected embedding model is `madrid-spain/openrouter/perplexity/pplx-embed-v1-0.6b`; the generation model is `madrid-spain/openrouter/deepseek/deepseek-v4-flash` (the `litellm/` prefix from the catalog is omitted as directed).
+Useful indexing commands:
 
-Qdrant uses cosine distance. Collection vector size is inferred from the first embedding during setup. Retrieval uses top-k 5 with configurable `RAG_MIN_SCORE=0.45`. On the current eight-query development evaluation, this threshold retrieved the expected document and section in the top three for all eight queries (100% Recall@3). The sample is small and should be expanded before treating the threshold as production-validated.
+```bash
+uv run python -m data.process.rag --dry-run
+uv run python -m data.process.rag
+```
 
-## Runtime and configuration
+The dry run reports chunk counts and sizes without calling the embeddings service or changing Qdrant.
 
-Locally, Qdrant is exposed only on loopback at `localhost:6333`; the Docker API reaches it at `http://qdrant:6333`. The API image sets `PYTHONPATH=/app:/app/services/api` so root and API package imports resolve inside the container. Keep actual credentials in the ignored root `.env.local`; `.env.example` contains names only. The Next.js UI is available at `/knowledge` and uses `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`).
+## Embeddings, generation, and retrieval settings
 
-Required model variables:
+Embeddings and answer generation use separate model IDs and separate API operations:
+
+- Embeddings: `madrid-spain/openrouter/perplexity/pplx-embed-v1-0.6b`, used by `embed()` at indexing and query time.
+- Generation: `madrid-spain/openrouter/deepseek/deepseek-v4-flash`, used only by `generate_answer()`.
+- Both use the OpenAI-compatible 4Geeks gateway configured by `LLM_API_KEY` and `LLM_BASE_URL` (`https://llm.4geeks.ai`).
+
+Qdrant uses cosine similarity. The vector dimension is taken from the embedding response when the collection is created. Retrieval requests at most five nearest chunks and removes any below `RAG_MIN_SCORE` (default `0.45`); `top-k` is a maximum, not a guarantee. Only surviving payload dictionaries are passed to answer generation.
+
+The prompt identifies the audience and tone, requires the model to answer in the question's language, prohibits unsupported company facts, and tells it to say when the supplied context is insufficient. The API response exposes the generated answer and trace metadata, never raw Qdrant SDK results or similarity scores.
+
+The development evaluation in `data/eval/` contains eight bilingual questions covering the indexed source documents. At the recorded threshold, the expected source/section appears in the top three for all eight questions (Recall@3 8/8, 100%). This is a small milestone evaluation, not a production quality guarantee; add representative questions and expected source chunks before relying on it operationally.
+
+## API and trace inspection
+
+- `POST /agent/query` accepts `{"question": "..."}` and returns `run_id`, `status`, `answer`, `error`, and `trace`. Invalid input returns HTTP 400; a graph/model failure returns HTTP 502 with a safe error message.
+- `GET /agent/traces/{run_id}` returns the saved trace for a valid run ID, or HTTP 404 when no checkpoint exists.
+- Trace entries identify executed nodes and their outcomes. Retrieval traces include chunk count and source document names, not full chunk text or similarity scores.
+
+The ERP uses its same-origin `/api/knowledge/query` route as a server-side proxy to `RAG_API_URL/agent/query`. This keeps the browser from calling `localhost` or requiring cross-origin CORS access. Production must set `RAG_API_URL` to the deployed FastAPI base URL.
+
+## Checkpointing and local development
+
+The graph uses LangGraph's SQLite `SqliteSaver` checkpoint backend. By default, checkpoints are stored at `data/eval/rag-checkpoints.sqlite`; `RAG_CHECKPOINT_DB` can override the path. The database file contains run state, including questions and generated answers, and should remain local/ignored rather than being committed. Checkpoints let the trace endpoint inspect completed runs after invocation.
+
+The SQLite file is a local/development checkpoint store. Before running multiple API replicas or deploying a horizontally scaled service, use a shared production-grade checkpointer and configure retention/access controls appropriate for the sensitivity of user questions. Qdrant is started locally with Docker Compose and is available to the API container at `http://qdrant:6333`; local host processes use `http://localhost:6333`.
+
+## Configuration
+
+Keep credentials in the ignored root `.env.local`; never commit real API keys. `.env.example` contains names and non-secret defaults:
 
 ```dotenv
 LLM_API_KEY=
@@ -54,11 +94,28 @@ RAG_GENERATION_MODEL=madrid-spain/openrouter/deepseek/deepseek-v4-flash
 RAG_MIN_SCORE=0.45
 QDRANT_URL=http://localhost:6333
 RAG_COLLECTION=brasaland_knowledge
+RAG_CHECKPOINT_DB=data/eval/rag-checkpoints.sqlite
 ```
 
-## Guardrails and limitations
+Inside Docker Compose, set `QDRANT_URL=http://qdrant:6333` for the API service.
 
-- The generation prompt permits answers only from retrieved context and requires an honest no-information response when retrieval is empty.
-- Low-scoring chunks are filtered before prompt assembly; top-k is a maximum, not a promise to return k results.
-- The current threshold met the 80% milestone target on the eight-query evaluation; expand the evaluation set before production.
-- This assistant answers policy/procedure questions from the indexed files. It must not claim access to live restaurant telemetry or customer records.
+## Tests and evaluation
+
+Run the RAG and graph tests from the repository root:
+
+```bash
+uv run pytest tests/pipelines/test_rag.py tests/pipelines/test_rag_graph.py -q
+```
+
+Graph tests should use mocked retrieval and generation boundaries, verify conditional routing (valid/invalid question and context/no-context), and check a grounded answer against the expected real source content. The offline Recall@3 evaluation is run with:
+
+```bash
+uv run python -m data.eval.evaluate_rag
+```
+
+## Guardrails and known limitations
+
+- The final answer always comes from the generation model; raw vector-search results are never returned as the answer.
+- Retrieval thresholds prevent forcing low-similarity material into the prompt, but the threshold and eight-question evaluation need broader validation.
+- Answers are limited to the indexed documents and cannot provide live business metrics.
+- SQLite checkpointing is intended for local development/single-instance use, not shared multi-replica production deployments.
