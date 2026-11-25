@@ -2,7 +2,7 @@
 
 ## Purpose and audience
 
-The knowledge assistant serves CEO Mariana Restrepo with concise, decision-oriented answers based only on Brasaland's approved policy, product, and operating-procedure documents. It replies in the language of the question. It is not a source of live sales, staff, inventory, reservation, or customer data; those belong to operational APIs and dashboards.
+The knowledge assistant serves CEO Mariana Restrepo with concise, decision-oriented answers grounded in Brasaland's approved policy, product, and operating-procedure documents. It replies in the language of the question. For current incident and inventory questions, it can consult the authorized live operational services; it is not a source of live sales, reservation, or customer data.
 
 ## End-to-end flow
 
@@ -78,7 +78,7 @@ The ERP uses its same-origin `/api/knowledge/query` route as a server-side proxy
 
 ## Checkpointing and local development
 
-The graph uses LangGraph's SQLite `SqliteSaver` checkpoint backend. By default, checkpoints are stored at `data/eval/rag-checkpoints.sqlite`; `RAG_CHECKPOINT_DB` can override the path. The database file contains run state, including questions and generated answers, and should remain local/ignored rather than being committed. Checkpoints let the trace endpoint inspect completed runs after invocation.
+The graph uses LangGraph's SQLite `SqliteSaver` checkpoint backend. By default, checkpoints are stored at `data/eval/rag-checkpoints.sqlite`; `RAG_CHECKPOINT_DB` can override the path. The database file contains run state, including questions, retrieved text, generated answers, and (when used) live incident or inventory results, so it should remain local/ignored rather than being committed and should be protected/retained accordingly. Checkpoints let the trace endpoint inspect completed runs after invocation.
 
 The SQLite file is a local/development checkpoint store. Before running multiple API replicas or deploying a horizontally scaled service, use a shared production-grade checkpointer and configure retention/access controls appropriate for the sensitivity of user questions. Qdrant is started locally with Docker Compose and is available to the API container at `http://qdrant:6333`; local host processes use `http://localhost:6333`.
 
@@ -117,5 +117,37 @@ uv run python -m data.eval.evaluate_rag
 
 - The final answer always comes from the generation model; raw vector-search results are never returned as the answer.
 - Retrieval thresholds prevent forcing low-similarity material into the prompt, but the threshold and eight-question evaluation need broader validation.
-- Answers are limited to the indexed documents and cannot provide live business metrics.
+- Answers use only indexed documents and authorized live incident/inventory service results; the assistant cannot provide other live business metrics.
 - SQLite checkpointing is intended for local development/single-instance use, not shared multi-replica production deployments.
+
+## Part 2 — live incident tool and automatic routing
+
+The compiled graph automatically routes questions to the knowledge base, the existing incident service, the inventory service, or a combination of RAG plus one live service. The model-based `classify_agent_question()` returns a constrained JSON decision (`rag`, `incident`, `inventory`, or `both`) plus supported filters. For `both`, it also selects the relevant live tool. The `classify_request` graph node validates those fields against the corresponding Pydantic input model; on classifier/provider or validation failure it records a fallback trace and routes through RAG, whose generator is instructed to admit when the documents do not contain the answer.
+
+```text
+validate_question -> classify_request
+  rag      -> retrieve_context -> generate_with_context OR answer_without_context
+  incident -> lookup_incident -> generate_from_sources
+  inventory -> lookup_inventory -> generate_from_sources
+  both_incident -> retrieve_context -> lookup_incident -> generate_from_sources
+  both_inventory -> retrieve_context -> lookup_inventory -> generate_from_sources
+```
+
+`services/api/app/rag/tools.py` defines typed Pydantic input/output contracts and a read-only adapter to the existing endpoints:
+
+- `GET {INCIDENTS_API_URL}/api/incidents/{ticket_id}` for an individual ticket.
+- `GET {INCIDENTS_API_URL}/api/incidents?status=...&origin=...&category=...&branch=...` for filtered lists.
+
+The adapter makes GET requests only, sends no mutation requests, applies a four-second timeout, validates returned incident records, and caps list results at 25. It reports `not_found`, `needs_filter`, `timeout`, `unavailable`, or `invalid_response` as explicit outcomes. The graph records the route, tool execution order, result status, ticket ID, and result count in its checkpoint trace, without copying incident descriptions into the trace. If a list is capped, the answer must identify it as partial. The final answer is generated from retrieved document text and/or the live API result; on tool failure the generator is instructed to say it could not confirm current information and never invent a ticket state.
+
+`INCIDENTS_API_URL` is the base URL of the service, not the `/api/incidents` path. Local default is `http://127.0.0.1:8000`; set it to the incidents service's reachable base URL when the RAG API is deployed separately. The current incidents GET endpoints do not require authentication. If that service is secured later, add backend-to-backend credentials through secret environment configuration before enabling the tool; do not put tokens in source control.
+
+The optional inventory tool is enabled through the existing inventory service layer: it uses `InventoryItem` and the same `calculate_stocks()` function as `GET /inventory/products`, and accepts a product name or location filter rather than dumping the full catalogue. It checks the verified staff role against the backend `inventory` permission before querying and returns at most 25 results. PostgreSQL statements and the bounded worker wait use a four-second timeout; database failures return an explicit fallback status.
+
+The ERP knowledge proxy forwards the signed-in staff bearer token to `POST /agent/query`. The FastAPI agent endpoint verifies that token and the `knowledge` role permission; it passes only the verified role (never the token) into graph state. The inventory adapter separately requires the same role's `inventory` permission. Thus staff without inventory access can use RAG and incident lookup but receive an honest access fallback for stock questions. The current incident GET endpoints themselves have no auth dependency; this should be revisited if their access policy changes.
+
+Part 2 route and fallback evals are in `tests/pipelines/test_rag_graph.py`; adapter permission and timeout checks are in `tests/pipelines/test_rag_tools.py`. Run these with the Part 1 grounding checks:
+
+```bash
+uv run pytest tests/pipelines/test_rag.py tests/pipelines/test_rag_graph.py tests/pipelines/test_rag_tools.py -q
+```
