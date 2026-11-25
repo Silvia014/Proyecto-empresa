@@ -42,7 +42,7 @@ Qdrant uses cosine distance. Collection vector size is inferred from the first e
 
 ## Runtime and configuration
 
-Locally, Qdrant is exposed only on loopback at `localhost:6333`; the Docker API reaches it at `http://qdrant:6333`. The API image sets `PYTHONPATH=/app:/app/services/api` so root and API package imports resolve inside the container. Keep actual credentials in the ignored root `.env.local`; `.env.example` contains names only. The Next.js UI is available at `/knowledge` and uses `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`).
+Locally, Qdrant is exposed only on loopback at `localhost:6333`; the Docker API reaches it at `http://qdrant:6333`. The API image sets `PYTHONPATH=/app:/app/services/api` so root and API package imports resolve inside the container. Keep actual credentials in the ignored root `.env.local`; `.env.example` contains configuration examples only. The ERP knowledge assistant calls the same-origin `/api/knowledge/query` route; that server-side proxy forwards to `RAG_API_URL` (local development defaults to `http://localhost:8000`). Production must set `RAG_API_URL` to the deployed FastAPI service, so the browser never calls localhost or depends on cross-origin CORS configuration.
 
 Required model variables:
 
