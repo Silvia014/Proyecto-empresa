@@ -1,6 +1,6 @@
 from sqlmodel import Session, SQLModel, create_engine
 from fastapi import HTTPException
-from app.inventory.services import calculate_stock, invalidate_stock_cache
+from app.inventory.services import calculate_stock, calculate_stocks, invalidate_stock_cache
 
 from app.inventory.models import (
     InventoryItem,
@@ -88,6 +88,38 @@ def test_calculate_stock():
     session.commit()
 
     assert calculate_stock(session, item.id) == 6
+
+
+def test_calculate_stocks_can_force_fresh_movements_for_live_tool_reads():
+    invalidate_stock_cache()
+    session = create_test_session()
+    item = create_test_item(session)
+    session.add(
+        InventoryMovement(
+            item_id=item.id,
+            movement_type="inbound",
+            quantity=10,
+            reason="Initial stock",
+            user_uuid="test-user",
+        )
+    )
+    session.commit()
+
+    assert calculate_stocks(session, [item])[item.id] == 10
+    session.add(
+        InventoryMovement(
+            item_id=item.id,
+            movement_type="outbound",
+            quantity=3,
+            reason="New sale",
+            user_uuid="test-user",
+        )
+    )
+    session.commit()
+
+    # Existing callers keep the 30-second cache; the agent tool opts into fresh data.
+    assert calculate_stocks(session, [item])[item.id] == 10
+    assert calculate_stocks(session, [item], force_refresh=True)[item.id] == 7
 
 
 def test_outbound_cannot_create_negative_stock():

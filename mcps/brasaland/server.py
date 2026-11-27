@@ -195,7 +195,7 @@ async def update_incident_status(
     return result
 
 
-def _read_inventory_products(query: str | None) -> list[dict[str, Any]]:
+def _read_inventory_products(query: str | None, location_id: str | None) -> list[dict[str, Any]]:
     """Read the existing inventory repository and its canonical stock calculation."""
     from sqlmodel import Session, select
 
@@ -204,7 +204,10 @@ def _read_inventory_products(query: str | None) -> list[dict[str, Any]]:
     from services.api.app.inventory.services import calculate_stocks
 
     with Session(engine) as session:
-        items = session.exec(select(InventoryItem).order_by(InventoryItem.name)).all()
+        statement = select(InventoryItem).order_by(InventoryItem.name)
+        if location_id:
+            statement = statement.where(InventoryItem.location_id == location_id)
+        items = session.exec(statement).all()
         stocks = calculate_stocks(session, items)
         normalized_query = (query or "").casefold().strip()
         return [
@@ -224,12 +227,12 @@ def _read_inventory_products(query: str | None) -> list[dict[str, Any]]:
 
 
 @mcp.tool
-async def list_inventory_products(query: str | None = None) -> list[dict[str, Any]]:
-    """Read live inventory products and calculated current stock, optionally filtered by product-name substring. This tool cannot change products or stock. Requires inventory:read."""
+async def list_inventory_products(query: str | None = None, location_id: str | None = None) -> list[dict[str, Any]]:
+    """Read live inventory products and calculated current stock, optionally filtered by product name and location ID. This tool cannot change products or stock. Requires inventory:read."""
     info = _auth_info(("inventory:read",), "list_inventory_products")
     try:
         result = await asyncio.wait_for(
-            asyncio.to_thread(_read_inventory_products, query),
+            asyncio.to_thread(_read_inventory_products, query, location_id),
             timeout=REQUEST_TIMEOUT_SECONDS,
         )
     except asyncio.TimeoutError as exc:

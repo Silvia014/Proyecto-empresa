@@ -49,9 +49,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    const authorization = request.headers.get("authorization");
     const response = await fetch(`${base}/agent/query`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(authorization ? { Authorization: authorization } : {}),
+      },
       body: JSON.stringify({ question }),
       cache: "no-store",
       signal: AbortSignal.timeout(60_000),
