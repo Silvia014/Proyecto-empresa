@@ -32,6 +32,9 @@ dependencies = [
     "scikit-learn>=1.9.1",
     "sqlmodel>=0.0.34",
     "uvicorn>=0.39.0",
+    "fastmcp>=3.4.8,<4",
+    "mcpauth==0.2.0b1",
+    "langchain-mcp-adapters>=0.3.2",
 ]
 
 [project.scripts]

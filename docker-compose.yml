@@ -17,6 +17,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
       QDRANT_URL: http://qdrant:6333
+      MCP_SERVER_URL: http://mcp:8300/mcp
     depends_on:
       - redis
       - qdrant
@@ -27,6 +28,25 @@ services:
       - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  mcp:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    env_file:
+      - .env.local
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8300
+      INCIDENTS_API_BASE_URL: http://api:8000
+    command: ["python", "-m", "mcps.brasaland.server"]
+    ports:
+      - "8300:8300"
+    depends_on:
+      - api
     restart: unless-stopped
     networks:
       - app-network

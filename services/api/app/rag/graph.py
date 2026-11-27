@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 import os
 import sqlite3
@@ -23,8 +25,9 @@ from .tools import (
     IncidentLookupResult,
     InventoryLookupInput,
     InventoryLookupResult,
-    lookup_incidents,
-    lookup_inventory,
+    INCIDENTS_RESULT_LIMIT,
+    InventoryStockRecord,
+    IncidentRecord,
 )
 
 logger = logging.getLogger(__name__)
@@ -140,8 +143,80 @@ def retrieve_context(state: AgentState) -> AgentState:
     }
 
 
+def _invoke_mcp_tool(tool_name: str, arguments: dict[str, Any]) -> Any:
+    """Call the remote MCP server through langchain-mcp-adapters (never the API directly)."""
+    async def invoke() -> Any:
+        from langchain_mcp_adapters.client import MultiServerMCPClient
+
+        url = os.getenv("MCP_SERVER_URL", "http://localhost:8300/mcp").strip()
+        token = os.getenv("MCP_AGENT_ACCESS_TOKEN", "").strip()
+        if not token:
+            raise RuntimeError("MCP_AGENT_ACCESS_TOKEN is not configured for the agent MCP client.")
+        client = MultiServerMCPClient({
+            "brasaland": {
+                "transport": "streamable_http",
+                "url": url,
+                "headers": {"Authorization": f"Bearer {token}"},
+                "timeout": 7.0,
+            }
+        }, handle_tool_errors=False)
+        available = await client.get_tools(server_name="brasaland")
+        selected = next((tool for tool in available if tool.name == tool_name), None)
+        if selected is None:
+            raise RuntimeError(f"MCP server did not advertise required tool {tool_name}.")
+        message = await selected.ainvoke({
+            "type": "tool_call", "name": tool_name, "id": str(uuid4()), "args": arguments,
+        })
+        structured = (message.artifact or {}).get("structured_content")
+        if structured is not None:
+            return structured.get("result", structured)
+        blocks = message.content
+        if isinstance(blocks, str):
+            return json.loads(blocks)
+        records = [json.loads(block["text"]) for block in blocks if block.get("type") == "text"]
+        if tool_name == "get_incident":
+            return records[0]
+        return records[0] if len(records) == 1 and isinstance(records[0], list) else records
+
+    return asyncio.run(asyncio.wait_for(invoke(), timeout=8))
+
+
+def lookup_incidents(request: IncidentLookupInput) -> IncidentLookupResult:
+    filters = request.model_dump(mode="json", exclude_none=True, exclude={"ticket_id"})
+    if request.ticket_id is not None:
+        rows = [_invoke_mcp_tool("get_incident", {"incident_id": request.ticket_id})]
+    elif filters:
+        rows = _invoke_mcp_tool("list_incidents", filters)
+    else:
+        return IncidentLookupResult(status="needs_filter")
+    incidents = [IncidentRecord.model_validate(row) for row in rows[:INCIDENTS_RESULT_LIMIT]]
+    return IncidentLookupResult(
+        status="success" if incidents else "not_found",
+        incidents=incidents,
+        truncated=len(rows) > INCIDENTS_RESULT_LIMIT,
+    )
+
+
+def lookup_inventory(request: InventoryLookupInput, *, actor_role: str | None) -> InventoryLookupResult:
+    from ..auth.supabase_dependencies import ROLE_PERMISSIONS
+
+    if "inventory" not in ROLE_PERMISSIONS.get(actor_role or "", set()):
+        return InventoryLookupResult(status="forbidden")
+    if not request.product_name and not request.location_id:
+        return InventoryLookupResult(status="needs_filter")
+    rows = _invoke_mcp_tool("list_inventory_products", {
+        "query": request.product_name, "location_id": request.location_id,
+    })
+    products = [InventoryStockRecord.model_validate(row) for row in rows[:20]]
+    return InventoryLookupResult(
+        status="success" if products else "not_found",
+        products=products,
+        truncated=len(rows) > 20,
+    )
+
+
 def lookup_incident(state: AgentState) -> AgentState:
-    """Call the existing read-only incidents API through its typed adapter."""
+    """Call the existing read-only incidents API through the OAuth-protected MCP server."""
     try:
         request = IncidentLookupInput.model_validate(state.get("incident_query", {}))
         result = lookup_incidents(request)
@@ -163,7 +238,7 @@ def lookup_incident(state: AgentState) -> AgentState:
 
 
 def lookup_inventory_tool(state: AgentState) -> AgentState:
-    """Read stock through the existing inventory service layer with role checks."""
+    """Read stock through MCP after checking the staff role."""
     try:
         request = InventoryLookupInput.model_validate(state.get("inventory_query", {}))
         result = lookup_inventory(request, actor_role=state.get("actor_role"))
