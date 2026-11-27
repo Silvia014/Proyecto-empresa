@@ -35,10 +35,12 @@ def test_agent_eval_known_allergen_answer_is_anchored_to_brasaland_doc(monkeypat
     assert "contains soy" in result["answer"]
     assert [event["node"] for event in result["trace"]] == [
         "validate_question",
+        "route_question",
         "retrieve_context",
-        "generate_with_context",
+        "generate_answer",
     ]
-    assert result["trace"][1]["details"]["sources"] == [source_name]
+    assert result["trace"][2]["details"]["sources"] == [source_name]
+    assert result["trace"][1]["details"]["route"] == "rag"
 
 
 def test_agent_eval_empty_retrieval_takes_honest_no_context_branch(monkeypatch):
@@ -56,8 +58,9 @@ def test_agent_eval_empty_retrieval_takes_honest_no_context_branch(monkeypatch):
     assert "does not contain enough information" in result["answer"]
     assert [event["node"] for event in result["trace"]] == [
         "validate_question",
+        "route_question",
         "retrieve_context",
-        "answer_without_context",
+        "generate_answer",
     ]
 
 

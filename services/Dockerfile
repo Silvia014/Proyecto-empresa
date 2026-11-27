@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
 COPY services/ ./services/
+COPY mcps/ ./mcps/
 COPY data/ ./data/
 COPY alembic.ini ./
 
